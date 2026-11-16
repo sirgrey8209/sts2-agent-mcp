@@ -35,5 +35,7 @@ if ($Install) {
     # Knowledge base documents served by `info` (mirror: removed docs are removed too).
     $kb = Join-Path $PSScriptRoot "kb"
     if (Test-Path $kb) { robocopy $kb (Join-Path $modsDir "STS2AgentMcp-kb") /MIR /NFL /NDL /NJH /NJS | Out-Null }
+    if ($LASTEXITCODE -ge 8) { throw "robocopy failed ($LASTEXITCODE)" }  # 0-7 mean success
+    $global:LASTEXITCODE = 0
     Write-Host "Installed to $modsDir (restart the game to load)." -ForegroundColor Green
 }

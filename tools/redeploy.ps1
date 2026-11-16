@@ -24,6 +24,8 @@ Copy-Item (Join-Path $root "out\STS2AgentMcp.dll") (Join-Path $GameDir "mods") -
 Copy-Item (Join-Path $root "mod_manifest.json") (Join-Path $GameDir "mods\STS2AgentMcp.json") -Force
 $kb = Join-Path $root "kb"
 if (Test-Path $kb) { robocopy $kb (Join-Path $GameDir "mods\STS2AgentMcp-kb") /MIR /NFL /NDL /NJH /NJS | Out-Null }
+if ($LASTEXITCODE -ge 8) { throw "robocopy failed ($LASTEXITCODE)" }  # 0-7 mean success
+$global:LASTEXITCODE = 0
 
 $launchedAt = Get-Date
 Start-Process "steam://rungameid/2868840"

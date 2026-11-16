@@ -56,7 +56,7 @@ The server only exists while the game runs: start the game first, or reconnect w
 |---|---|
 | `state(detail?)` | Current screen, run status and the actions the screen accepts. `detail: "full"` adds deck, pile contents, relic and potion text, and run-level actions. |
 | `act(actions[])` | Runs actions in order, waiting for the game to settle after each. Returns the events plus the resulting screen. Stops early on an error, a screen change, combat end, or an unexpected choice prompt. |
-| `info(ids[])` | Cards, relics, potions, powers, monsters and characters by id (`CARD.BASH`, `BASH`) or displayed name. |
+| `info(ids[])` | Cards, relics, potions, powers, monsters, encounters, events and characters by id (`CARD.BASH`, `BASH`) or displayed name. `e1` = a live enemy, `boss` = this act's boss. Monsters show their move state machine; monsters and events add the matching knowledge-base document. |
 | `screenshot(attach?, max_width?)` | Saves the game window as JPEG and returns the file path. |
 | `render_cards(source? \| cards?, columns?, attach?)` | Draws cards with the game's own card visuals into one PNG. `source`: hand, draw, discard, exhaust, deck, choice, screen (card reward / shop / pending choice). `cards`: combat ids (`c3`) or card ids/names. Captions show the id or index `act` uses. |
 | `render_map(attach?)` | Draws the whole act map as one tall PNG with the game's map icons: path taken (red), current position, next choices (green, labelled with the `choose` index). |
@@ -131,6 +131,14 @@ Game text is shown in the game's language (Korean above); structure words are sh
 ```
 
 Game log (mod lines start with `[STS2 Agent MCP]`): `%APPDATA%\SlayTheSpire2\logs\godot.log`.
+
+### Knowledge base
+
+`kb/` holds documents (Korean) summarizing monster and event behaviour for one game version: exact numbers,
+ascension changes, move patterns, event outcomes — what game text does not show. They are written from a locally
+decompiled copy of the game (never committed) and record the hash of each source file, so after a game update
+`tools\kb-check.ps1` lists the documents whose sources changed. Format and update procedure: [kb/README.md](kb/README.md).
+`build.ps1 -Install` / `redeploy.ps1` install them next to the DLL as `STS2AgentMcp-kb/`.
 
 ## Security
 

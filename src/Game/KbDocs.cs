@@ -1,5 +1,6 @@
 using System;
 using System.IO;
+using System.Text.RegularExpressions;
 using MegaCrit.Sts2.Core.Models;
 
 namespace Sts2AgentMcp.Game;
@@ -17,6 +18,9 @@ internal static class KbDocs
         Path.GetDirectoryName(typeof(KbDocs).Assembly.Location) is { } dir ? Path.Combine(dir, FolderName) : null;
 
     public static string? GameVersion { get; set; }
+
+    // Tool markers such as the glossary marker are for the kb scripts, not the reader.
+    private static readonly Regex HtmlComment = new(@"[ \t]*<!--.*?-->[ \t]*\r?\n?", RegexOptions.Singleline);
 
     /// <summary>The document body for a model, or null. Notes when it was written for another game version.</summary>
     public static string? For(AbstractModel model)
@@ -49,6 +53,7 @@ internal static class KbDocs
                     text = text[(end + 4)..];
                 }
             }
+            text = HtmlComment.Replace(text, "");
             text = text.Trim();
             if (docVersion != null && GameVersion != null && docVersion != GameVersion)
                 text = $"(kb written for {docVersion}; running {GameVersion} — may be outdated)\n" + text;
