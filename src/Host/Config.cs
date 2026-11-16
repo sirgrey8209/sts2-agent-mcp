@@ -17,6 +17,8 @@ internal sealed class Config
     public string Token { get; private set; } = "";
     /// <summary>"instant" (default) forces FastMode=Instant at startup; "keep" leaves the player's setting.</summary>
     public string FastMode { get; private set; } = "instant";
+    /// <summary>Where screenshots and card sheets are written. Null = %TEMP%\sts2-agent-mcp.</summary>
+    public string? CaptureDir { get; private set; }
 
     public string? FilePath { get; private set; }
 
@@ -50,6 +52,8 @@ internal sealed class Config
             config.Token = token;
         if (root["fast_mode"] is JsonValue f && f.TryGetValue(out string? fast) && fast is "instant" or "keep")
             config.FastMode = fast;
+        if (root["capture_dir"] is JsonValue c && c.TryGetValue(out string? captureDir) && !string.IsNullOrWhiteSpace(captureDir))
+            config.CaptureDir = captureDir;
 
         bool changed = false;
         if (string.IsNullOrEmpty(config.Token))

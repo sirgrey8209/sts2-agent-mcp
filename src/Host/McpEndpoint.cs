@@ -79,12 +79,18 @@ internal sealed class McpEndpoint
     {
         string? name = (parameters?["name"] as JsonValue)?.GetValue<string>();
         var args = parameters?["arguments"] as JsonObject ?? new JsonObject();
-        var (text, isError) = await _tools.Call(name ?? "", args);
-        return new JsonObject
+        var (output, isError) = await _tools.Call(name ?? "", args);
+        var content = new JsonArray(new JsonObject { ["type"] = "text", ["text"] = output.Text });
+        foreach (var image in output.Images)
         {
-            ["content"] = new JsonArray(new JsonObject { ["type"] = "text", ["text"] = text }),
-            ["isError"] = isError,
-        };
+            content.Add(new JsonObject
+            {
+                ["type"] = "image",
+                ["data"] = Convert.ToBase64String(image.Data),
+                ["mimeType"] = image.MimeType,
+            });
+        }
+        return new JsonObject { ["content"] = content, ["isError"] = isError };
     }
 
     private static string Result(JsonNode id, JsonNode result) =>

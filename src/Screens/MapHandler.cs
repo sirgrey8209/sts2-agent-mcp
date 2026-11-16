@@ -23,6 +23,20 @@ internal sealed class MapHandler : IScreenHandler
             .OrderBy(p => p.Point!.coord.col)
             .ToList();
 
+    /// <summary>
+    /// Coordinates of the next choices, in the order `choose &lt;i&gt;` uses. Falls back to the current node's children
+    /// when the map screen has no travelable points (e.g. it is closed during a fight).
+    /// </summary>
+    public static List<(int Col, int Row)> NextCoords(RunState run)
+    {
+        var screen = NMapScreen.Instance;
+        var fromScreen = screen != null ? Travelable(screen).Select(p => (p.Point!.coord.col, p.Point!.coord.row)).ToList() : new();
+        if (fromScreen.Count > 0) return fromScreen;
+        if (run.VisitedMapCoords.Count == 0) return new();
+        var current = run.Map.GetPoint(run.VisitedMapCoords[^1]);
+        return current?.Children.OrderBy(c => c.coord.col).Select(c => (c.coord.col, c.coord.row)).ToList() ?? new();
+    }
+
     public ScreenView Render(GameCtx ctx, bool full)
     {
         var view = new ScreenView(Kind);

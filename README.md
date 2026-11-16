@@ -30,6 +30,7 @@ settings if asked. On first launch the mod writes `<game>\mods\STS2AgentMcp.conf
 
 - `token`: bearer token required on every request.
 - `fast_mode`: `instant` (default) switches the game's animation speed to Instant after boot; `keep` leaves your setting.
+- `capture_dir` (optional): where screenshots and rendered images are written. Default `%TEMP%\sts2-agent-mcp`; the newest 60 are kept.
 
 ## Connect an MCP client
 
@@ -56,6 +57,15 @@ The server only exists while the game runs: start the game first, or reconnect w
 | `state(detail?)` | Current screen, run status and the actions the screen accepts. `detail: "full"` adds deck, pile contents, relic and potion text, and run-level actions. |
 | `act(actions[])` | Runs actions in order, waiting for the game to settle after each. Returns the events plus the resulting screen. Stops early on an error, a screen change, combat end, or an unexpected choice prompt. |
 | `info(ids[])` | Cards, relics, potions, powers, monsters and characters by id (`CARD.BASH`, `BASH`) or displayed name. |
+| `screenshot(attach?, max_width?)` | Saves the game window as JPEG and returns the file path. |
+| `render_cards(source? \| cards?, columns?, attach?)` | Draws cards with the game's own card visuals into one PNG. `source`: hand, draw, discard, exhaust, deck, choice, screen (card reward / shop / pending choice). `cards`: combat ids (`c3`) or card ids/names. Captions show the id or index `act` uses. |
+| `render_map(attach?)` | Draws the whole act map as one tall PNG with the game's map icons: path taken (red), current position, next choices (green, labelled with the `choose` index). |
+
+### Playing through chat
+
+The image tools are for showing the game to a person while an agent plays alongside them. They write files to
+`%TEMP%\sts2-agent-mcp` (or `capture_dir` in the config) and return the path, so the agent can forward the file to the
+user's chat. With `attach: true` the image is also returned to the agent itself (costs tokens).
 
 ### Actions (each screen lists the ones it accepts)
 

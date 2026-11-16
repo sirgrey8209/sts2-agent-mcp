@@ -33,12 +33,16 @@ public static class ModEntry
             Features.Try("event-log", EventLog.Install);
             Features.Try("turn-tracker", TurnTracker.Install);
             if (config.FastMode == "instant") ApplyInstantModeWhenReady();
+            Capture.Configure(config.CaptureDir);
 
             var runner = new ActRunner();
             var tools = new ToolRegistry()
                 .Add(new StateTool(runner))
                 .Add(new ActTool(runner))
-                .Add(new InfoTool());
+                .Add(new InfoTool())
+                .Add(new ScreenshotTool())
+                .Add(new RenderCardsTool())
+                .Add(new RenderMapTool());
 
             _host = new HttpHost(config, new McpEndpoint(tools));
             _host.Start();

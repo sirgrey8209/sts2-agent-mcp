@@ -29,7 +29,7 @@ internal sealed class InfoTool : ITool
         ["required"] = new JsonArray("ids"),
     };
 
-    public Task<string> Call(JsonObject args)
+    public async Task<ToolOutput> Call(JsonObject args)
     {
         var ids = new List<string>();
         if (args["ids"] is JsonArray array)
@@ -40,6 +40,6 @@ internal sealed class InfoTool : ITool
         }
         if (ids.Count == 0) throw new ToolError("`ids` must be a non-empty array of strings");
         if (!Features.IsEnabled("catalog")) throw new ToolError("info is unavailable: " + Features.Summary());
-        return MainThread.Run(() => Catalog.Describe(ids));
+        return await MainThread.Run(() => Catalog.Describe(ids));
     }
 }

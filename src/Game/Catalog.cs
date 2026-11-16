@@ -40,6 +40,10 @@ internal static class Catalog
             .ToList();
     }
 
+    /// <summary>A canonical card by id ("CARD.BASH", "BASH") or displayed name, or null.</summary>
+    public static CardModel? FindCard(string query) =>
+        Find(query).Select(e => e.Model).OfType<CardModel>().FirstOrDefault();
+
     public static string Describe(IReadOnlyList<string> queries)
     {
         var sb = new StringBuilder();

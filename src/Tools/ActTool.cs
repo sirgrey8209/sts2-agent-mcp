@@ -35,7 +35,7 @@ internal sealed class ActTool : ITool
         ["required"] = new JsonArray("actions"),
     };
 
-    public Task<string> Call(JsonObject args)
+    public async Task<ToolOutput> Call(JsonObject args)
     {
         var actions = new List<string>();
         if (args["actions"] is JsonArray array)
@@ -52,6 +52,6 @@ internal sealed class ActTool : ITool
         }
 
         if (actions.Count == 0) throw new ToolError("`actions` must be a non-empty array of strings");
-        return _runner.Run(actions);
+        return await _runner.Run(actions);
     }
 }

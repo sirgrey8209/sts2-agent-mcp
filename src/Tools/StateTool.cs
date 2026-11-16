@@ -30,9 +30,9 @@ internal sealed class StateTool : ITool
         },
     };
 
-    public Task<string> Call(JsonObject args)
+    public async Task<ToolOutput> Call(JsonObject args)
     {
         bool full = (args["detail"] as JsonValue)?.GetValue<string>() == "full";
-        return _runner.RenderCurrent(full);
+        return await _runner.RenderCurrent(full);
     }
 }
