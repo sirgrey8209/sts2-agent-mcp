@@ -31,6 +31,9 @@ internal static class Catalog
         AddAll(() => ModelDb.AllPotions, "potions");
         AddAll(() => ModelDb.AllPowers, "powers");
         AddAll(() => ModelDb.Monsters, "monsters");
+        AddAll(() => ModelDb.AllEncounters, "encounters");
+        AddAll(() => ModelDb.AllEvents, "events");
+        AddAll(() => ModelDb.AllAncients, "ancients");
         AddAll(() => ModelDb.AllCharacters, "characters");
 
         return models
@@ -49,7 +52,35 @@ internal static class Catalog
         var sb = new StringBuilder();
         foreach (var query in queries)
         {
+            // Enemies in the current fight by id (e1, e2...): live pattern with history and upcoming moves.
+            var ctx = GameCtx.Capture();
+            if (ctx.InCombat && query.TrimStart('@').StartsWith('e')
+                && Ids.ResolveCreature(ctx.Combat, ctx.Me?.Creature, query) is { Monster: not null } enemy)
+            {
+                sb.AppendLine(WithKb(MonsterInfo.DescribeLive(enemy), enemy.Monster));
+                continue;
+            }
+
+            // "boss": the current act's boss encounter(s).
+            if (query.Equals("boss", StringComparison.OrdinalIgnoreCase))
+            {
+                if (ctx.Run == null)
+                {
+                    sb.AppendLine("boss: no run in progress (look up an encounter or monster by name instead)");
+                    continue;
+                }
+                var act = ctx.Run.Act;
+                foreach (var encounter in new[] { Try(() => act.BossEncounter), Try(() => act.SecondBossEncounter) })
+                    if (encounter != null) sb.AppendLine(MonsterInfo.DescribeEncounter(encounter));
+                continue;
+            }
+
             var matches = Find(query);
+            // An encounter already lists its monsters; drop separate matches for the same monsters.
+            var covered = matches.Select(m => m.Model).OfType<EncounterModel>()
+                .SelectMany(e => Try(() => e.AllPossibleMonsters.ToList()) ?? new List<MonsterModel>())
+                .Select(m => m.Id.ToString()).ToHashSet();
+            matches = matches.Where(m => m.Model is not MonsterModel || !covered.Contains(m.Id)).ToList();
             if (matches.Count == 0)
             {
                 sb.AppendLine($"{query}: not found");
@@ -77,6 +108,15 @@ internal static class Catalog
             .ToList();
     }
 
+    /// <summary>Appends the knowledge-base document for the model, if there is one.</summary>
+    public static string WithKb(string description, AbstractModel model) =>
+        KbDocs.For(model) is { } doc ? $"{description}\n--- kb ---\n{doc}" : description;
+
+    private static T? Try<T>(Func<T?> get) where T : class
+    {
+        try { return get(); } catch { return null; }
+    }
+
     public static string? TitleOf(AbstractModel model) => model switch
     {
         CardModel c => Text.Of(() => c.Title),
@@ -84,6 +124,8 @@ internal static class Catalog
         PotionModel p => Text.Of(() => p.Title),
         PowerModel p => Text.Of(() => p.Title),
         MonsterModel m => Text.Of(() => m.Title),
+        EncounterModel e => Text.Of(() => e.Title),
+        EventModel e => Text.Of(() => e.Title),
         CharacterModel c => Text.Of(() => c.Title),
         _ => null,
     };
@@ -106,6 +148,12 @@ internal static class Catalog
                 return $"{id} {title} ({power.Type}): {Text.Of(() => power.Description)}";
             case CharacterModel character:
                 return $"{id} {title}: HP {character.StartingHp}, gold {character.StartingGold}, energy {character.MaxEnergy}";
+            case MonsterModel monster:
+                return WithKb(MonsterInfo.Describe(monster), monster);
+            case EncounterModel encounter:
+                return MonsterInfo.DescribeEncounter(encounter);
+            case EventModel evt:
+                return WithKb($"{id} {title}", evt);
             default:
                 return $"{id} {title}";
         }

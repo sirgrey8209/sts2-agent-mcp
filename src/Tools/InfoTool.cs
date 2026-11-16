@@ -11,8 +11,10 @@ internal sealed class InfoTool : ITool
     public string Name => "info";
 
     public string Description =>
-        "Look up descriptions of cards, relics, potions, powers, monsters or characters by id (e.g. CARD.BASH, BASH) " +
-        "or by the name shown on screen.";
+        "Look up cards, relics, potions, powers, characters, monsters and encounters by id (e.g. CARD.BASH, BASH) or by " +
+        "the name shown on screen. Monsters and encounters include their move pattern (moves, base damage for this " +
+        "run's ascension, follow-ups, random weights). Special ids: \"boss\" = this act's boss; \"e1\" (an enemy in the " +
+        "current fight) = its move history, announced move and what follows.";
 
     public JsonObject InputSchema() => new()
     {

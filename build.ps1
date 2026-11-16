@@ -32,5 +32,8 @@ if ($Install) {
     New-Item -ItemType Directory -Force $modsDir | Out-Null
     Copy-Item (Join-Path $outDir "STS2AgentMcp.dll") $modsDir -Force
     Copy-Item (Join-Path $PSScriptRoot "mod_manifest.json") (Join-Path $modsDir "STS2AgentMcp.json") -Force
+    # Knowledge base documents served by `info` (mirror: removed docs are removed too).
+    $kb = Join-Path $PSScriptRoot "kb"
+    if (Test-Path $kb) { robocopy $kb (Join-Path $modsDir "STS2AgentMcp-kb") /MIR /NFL /NDL /NJH /NJS | Out-Null }
     Write-Host "Installed to $modsDir (restart the game to load)." -ForegroundColor Green
 }

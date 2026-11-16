@@ -42,7 +42,8 @@ public static class ModEntry
                 .Add(new InfoTool())
                 .Add(new ScreenshotTool())
                 .Add(new RenderCardsTool())
-                .Add(new RenderMapTool());
+                .Add(new RenderMapTool())
+                .Add(new ExportLocTool());
 
             _host = new HttpHost(config, new McpEndpoint(tools));
             _host.Start();
@@ -90,6 +91,7 @@ public static class ModEntry
             string file = Path.Combine(dir, "release_info.json");
             if (!File.Exists(file)) return;
             string? version = (JsonNode.Parse(File.ReadAllText(file))?["version"] as JsonValue)?.GetValue<string>();
+            KbDocs.GameVersion = version;
             if (version != null && version != TargetGameVersion)
                 Log.Warn($"game version {version} differs from target {TargetGameVersion}; incompatible features will be disabled individually");
         }
