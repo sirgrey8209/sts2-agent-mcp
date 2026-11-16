@@ -1,0 +1,6 @@
+bin/
+obj/
+out/
+
+# Local MCP client config contains the bearer token
+.mcp.json
