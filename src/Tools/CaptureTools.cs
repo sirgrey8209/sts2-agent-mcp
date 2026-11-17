@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Linq;
 using System.Text.Json.Nodes;
 using System.Threading.Tasks;
 using Sts2AgentMcp.Game;
@@ -59,13 +60,53 @@ internal sealed class RenderMapTool : ITool
 
     public string Description =>
         "Render the whole act map as one PNG (game map icons, path taken in red, next choices in green labelled with " +
-        "the index for `choose <i>`) and return its path (to forward to the user).";
+        "the index for `choose <i>`) and return its path (to forward to the user). Optional annotations: node " +
+        "coordinates, extra paths (e.g. route options to compare), marked nodes with text, and notes under the map. " +
+        "Nodes are written r<row>c<col> as on the map screen (r7c3), or \"current\" / \"boss\". Colors: names (blue, " +
+        "orange, purple...) or #rrggbb; omitted colors are picked from a palette.";
 
     public JsonObject InputSchema() => new()
     {
         ["type"] = "object",
         ["properties"] = new JsonObject
         {
+            ["coords"] = new JsonObject { ["type"] = "boolean", ["description"] = "Write r<row>c<col> under every node." },
+            ["paths"] = new JsonObject
+            {
+                ["type"] = "array",
+                ["items"] = new JsonObject
+                {
+                    ["type"] = "object",
+                    ["properties"] = new JsonObject
+                    {
+                        ["nodes"] = new JsonObject { ["type"] = "array", ["items"] = new JsonObject { ["type"] = "string" }, ["minItems"] = 2 },
+                        ["color"] = new JsonObject { ["type"] = "string" },
+                        ["label"] = new JsonObject { ["type"] = "string", ["description"] = "Shown in the legend under the map." },
+                    },
+                    ["required"] = new JsonArray("nodes"),
+                },
+            },
+            ["marks"] = new JsonObject
+            {
+                ["type"] = "array",
+                ["items"] = new JsonObject
+                {
+                    ["type"] = "object",
+                    ["properties"] = new JsonObject
+                    {
+                        ["node"] = new JsonObject { ["type"] = "string" },
+                        ["color"] = new JsonObject { ["type"] = "string" },
+                        ["text"] = new JsonObject { ["type"] = "string", ["description"] = "Short text drawn next to the node." },
+                    },
+                    ["required"] = new JsonArray("node"),
+                },
+            },
+            ["notes"] = new JsonObject
+            {
+                ["type"] = "array",
+                ["items"] = new JsonObject { ["type"] = "string" },
+                ["description"] = "Lines of text under the map.",
+            },
             ["attach"] = CaptureArgs.AttachSchema(),
             ["max_width"] = new JsonObject { ["type"] = "integer", ["description"] = "Downscale to this width (default: no limit)." },
         },
@@ -73,14 +114,31 @@ internal sealed class RenderMapTool : ITool
 
     public async Task<ToolOutput> Call(JsonObject args)
     {
+        var notes = new MapRender.Annotations(
+            args["coords"] is JsonValue c && c.TryGetValue(out bool coords) && coords,
+            Objects(args["paths"]).Select(p => new MapRender.PathSpec(Strings(p["nodes"]), Str(p["color"]), Str(p["label"]))).ToList(),
+            Objects(args["marks"]).Select(m => new MapRender.MarkSpec(
+                Str(m["node"]) ?? throw new ToolError("each mark needs `node`"), Str(m["color"]), Str(m["text"]))).ToList(),
+            Strings(args["notes"]));
         var snapshot = await MainThread.Run(() =>
         {
             var run = GameCtx.Capture().Run ?? throw new ToolError("no run in progress");
             return (Run: run, Next: MapHandler.NextCoords(run));
         });
-        var capture = await MapRender.Render(snapshot.Run, snapshot.Next, CaptureArgs.Int(args, "max_width", 0));
+        var capture = await MapRender.Render(snapshot.Run, snapshot.Next, CaptureArgs.Int(args, "max_width", 0), notes);
         return CaptureArgs.Result(capture, CaptureArgs.Attach(args), "map");
     }
+
+    private static IEnumerable<JsonObject> Objects(JsonNode? node) =>
+        node is JsonArray array ? array.OfType<JsonObject>() : Enumerable.Empty<JsonObject>();
+
+    private static List<string> Strings(JsonNode? node) =>
+        node is JsonArray array
+            ? array.Select(Str).Where(s => s != null).Select(s => s!).ToList()
+            : new List<string>();
+
+    private static string? Str(JsonNode? node) =>
+        node is JsonValue v && v.TryGetValue(out string? s) && !string.IsNullOrWhiteSpace(s) ? s.Trim() : null;
 }
 
 /// <summary>Cards drawn with the game's own card visuals into one PNG sheet.</summary>

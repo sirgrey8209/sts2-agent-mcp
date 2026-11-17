@@ -47,7 +47,7 @@
   kb/                  몬스터와 이벤트 문서 (14절). 설치 시 DLL 옆 STS2AgentMcp-kb/로 복사
   src/
     Host/      ModEntry  HttpHost  McpEndpoint  MainThread  Config  Features  Log
-    Tools/     ToolRegistry  StateTool  ActTool  InfoTool  CaptureTools (screenshot, render_cards, render_map)  ExportLocTool
+    Tools/     ToolRegistry  StateTool  ActTool  InfoTool  SearchTool  CaptureTools (screenshot, render_cards, render_map)  ExportLocTool
     Session/   ActRunner (행동 실행 → 안정 대기 → 이벤트 수집 → 렌더)
     Screens/   Core (ActionSpec, ExecResult, ScreenView, IScreenHandler, ScreenRegistry)
                CombatHandler  ChoiceHandler  RewardHandlers (rewards, card_reward)
@@ -56,7 +56,7 @@
                PotionActions (모든 런 화면 공통)  RunActions (quit_to_menu, abandon_run)
     View/      Fmt (출력 형식 전부 + 캐릭터 자원 제공자 Resources)
     Game/      GameCtx  Observation  Settle  TurnTracker  ChoiceBroker  EventLog  Ids  Ui  Text  Catalog
-               MonsterInfo (행동 상태 기계 요약)  KbDocs (kb 문서 읽기)  Capture  MapRender (이미지 생성)
+               Search (카드·유물·포션 검색)  MonsterInfo (행동 상태 기계 요약)  KbDocs (kb 문서 읽기)  Capture  MapRender (이미지 생성)
 ```
 (구현하면서 파일을 합쳤다: 처음 안의 `ScreenProbe`·`IdMap`·`TextEncoder`는 각각 `Observation`·`Ids`·`Fmt`가 맡는다. 게임 없이 돌리는 단위 테스트는 아직 없다.)
 
@@ -93,11 +93,13 @@
 |---|---|---|
 | `state` | `detail?: "brief" \| "full"` | 현재 화면, 가능한 행동, 요약 상태 |
 | `act` | `actions: string[]`, (예약) `dry_run` | 행동을 순서대로 실행. 각 행동 사이에 안정 대기. 결과 = 행동별 이벤트 + 최종 화면 |
-| `info` | `ids: string[]` | 카드·유물·파워·포션·몬스터·조우·이벤트·키워드 설명 (ModelId 또는 화면에 표시된 이름, 전투 중 적 `e1`, 이번 막 보스 `boss`). 몬스터는 행동 상태 기계를, 몬스터와 이벤트는 kb 문서를 덧붙인다 |
+| `info` | `ids: string[]` | 카드·유물·파워·포션·몬스터·조우·이벤트·키워드 설명 (ModelId 또는 화면에 표시된 이름, 전투 중 적 `e1`, 이번 막 보스 `boss`). 카드는 강화 후 비용·설명을, 몬스터는 행동 상태 기계를, 몬스터와 이벤트는 kb 문서를 덧붙인다 |
+| `search` | `query?`, `kind?`, `pool?`, `type?`, `rarity?`, `cost?`, `keyword?`, `upgraded?`, `limit?` | 카드·유물·포션 검색. 이름·설명·id 문자열 검색(단어 AND) + 조건. 한 줄 목록. 강화 기준 검색은 카드 라이브러리와 같은 방식(복제 → 강화 → 미리보기 수치) |
 | `screenshot` / `render_cards` / `render_map` | `attach?` 등 | 채팅 플레이용 이미지. 파일로 저장하고 경로를 돌려준다 (`attach: true`면 이미지도 반환) |
+| `render_map` 덧그리기 | `coords?`, `paths?`, `marks?`, `notes?` | 이미지에만 그린다(게임 지도의 그리기 기능은 쓰지 않음). 칸은 `r7c3` / `current` / `boss`. 없는 칸·잘못된 색은 오류로 돌려준다 |
 | `export_loc` | `tables?: string[]` | kb 관리용. 현지화 문구 표를 JSON으로 저장 |
 
-런 시작·이어하기·포기도 별도 도구 없이 메뉴 화면의 행동으로 제공한다 (9.1절). 플레이에 쓰는 도구는 state, act, info 3개로 유지하고, 나머지는 보여 주기와 관리용이다.
+런 시작·이어하기·포기도 별도 도구 없이 메뉴 화면의 행동으로 제공한다 (9.1절). 플레이에 쓰는 도구는 state, act, info, search로 유지하고, 나머지는 보여 주기와 관리용이다.
 
 ### 행동 문법
 

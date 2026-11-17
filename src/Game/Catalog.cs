@@ -139,6 +139,7 @@ internal static class Catalog
             case CardModel card:
                 return $"{id} {title} [{Fmt.Cost(card)}] {card.Type} {card.Rarity}: "
                        + (Text.Of(() => card.GetDescriptionForPile(PileType.None)) ?? "")
+                       + UpgradeLine(card)
                        + Tips(card.HoverTips);
             case RelicModel relic:
                 return $"{id} {title}: {Text.Of(() => relic.DynamicDescription)}" + Tips(relic.HoverTipsExcludingRelic);
@@ -157,6 +158,14 @@ internal static class Catalog
             default:
                 return $"{id} {title}";
         }
+    }
+
+    /// <summary>"\n  upgraded: 타격+ [1E]: ..." for upgradable cards; "" otherwise.</summary>
+    private static string UpgradeLine(CardModel card)
+    {
+        if (card.IsMutable && card.IsUpgraded) return ""; // already upgraded (a card from the run)
+        if (Search.UpgradedCard(card) is not { } up) return "";
+        return $"\n  upgraded: {TitleOf(up) ?? "+"} [{Fmt.Cost(up)}]: {Search.UpgradedText(up)}";
     }
 
     private static string Tips(IEnumerable<IHoverTip> tips)

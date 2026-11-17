@@ -40,6 +40,7 @@ public static class ModEntry
                 .Add(new StateTool(runner))
                 .Add(new ActTool(runner))
                 .Add(new InfoTool())
+                .Add(new SearchTool())
                 .Add(new ScreenshotTool())
                 .Add(new RenderCardsTool())
                 .Add(new RenderMapTool())
