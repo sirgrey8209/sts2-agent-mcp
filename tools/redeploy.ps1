@@ -20,6 +20,7 @@ if (Get-Process -Name SlayTheSpire2 -ErrorAction SilentlyContinue) {
     Start-Sleep -Seconds 2
 }
 
+New-Item -ItemType Directory -Force (Join-Path $GameDir "mods") | Out-Null  # else the DLL is copied as a file named "mods"
 Copy-Item (Join-Path $root "out\STS2AgentMcp.dll") (Join-Path $GameDir "mods") -Force
 Copy-Item (Join-Path $root "mod_manifest.json") (Join-Path $GameDir "mods\STS2AgentMcp.json") -Force
 $kb = Join-Path $root "kb"
