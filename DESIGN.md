@@ -372,3 +372,7 @@ interface IResourceProvider { bool Applies(PlayerCtx p); IEnumerable<ResourceVie
 - 머리말: `game_version`과 근거 원본 파일 목록(`sources`, 파일별 sha256). `info`는 게임 버전이 다르면 문서 앞에 안내를 붙인다.
 - 업데이트: 새 버전을 디컴파일 → `kb-check`가 원본이 바뀐 문서와 문서가 없는 몬스터·이벤트를 나열 → 원본 diff를 보고 고쳐 씀 → `kb-glossary`로 게임 용어 확인 → `kb-stamp`로 해시 기록. 형식과 작성 규칙은 `kb/README.md`.
 - 문서 안의 이름은 게임 현지화 문구와 같아야 한다. `kb-glossary`가 문서별 용어 목록을 만들고, 게임 이름과 다른 이름을 보고한다.
+
+## 15. 검토 중인 것
+
+- 게임 안 채팅창: 화면 왼쪽에 에이전트 채팅창을 두고 게임 화면을 오른쪽으로 옮기는 안, 모드가 Claude Code를 직접 실행하는 연결 구조. [docs/in-game-chat.md](docs/in-game-chat.md)
