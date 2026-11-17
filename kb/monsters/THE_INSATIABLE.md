@@ -1,7 +1,7 @@
 ---
 id: MONSTER.THE_INSATIABLE
 name: 탐
-game_version: v0.107.1
+game_version: v0.111.1
 sources:
 - MegaCrit.Sts2.Core.Models.Monsters/TheInsatiable.cs sha256:7691ddc7f524425d96ec710d85165102adcf72e16fe9442d18cb13cb8521663d
 - MegaCrit.Sts2.Core.Models.Powers/SandpitPower.cs sha256:3f580babc9ff97b54541d5e2a254708558c71418875f023ae04a2ed43ee668f8

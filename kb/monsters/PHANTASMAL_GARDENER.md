@@ -1,9 +1,9 @@
 ---
 id: MONSTER.PHANTASMAL_GARDENER
 name: 허깨비 정원사
-game_version: v0.107.1
+game_version: v0.111.1
 sources:
-- MegaCrit.Sts2.Core.Models.Monsters/PhantasmalGardener.cs sha256:99bff217af84a3f9e31530f394bb72fbe0256089c36ed5616b98aa11ee3c1a9f
+- MegaCrit.Sts2.Core.Models.Monsters/PhantasmalGardener.cs sha256:47196e293d1ce084d4884032b29f5e2b03edfb993b02d8b539047524a4cffcaf
 - MegaCrit.Sts2.Core.Models.Powers/SkittishPower.cs sha256:4c98d0d082a19634912b43812fdfbf003c8e05b8ec01f01ebb5c00d917102a77
 - MegaCrit.Sts2.Core.Models.Encounters/PhantasmalGardenersElite.cs sha256:bed10f5feebd36d498891cbff36cf61d47b2485a02b1e86d6543a44ef4fb3841
 - MegaCrit.Sts2.Core.Models.Acts/Underdocks.cs sha256:b5f91ba221afa5ca83ca92290f481c8bef88c28f1ff8272f780f2540700964fb

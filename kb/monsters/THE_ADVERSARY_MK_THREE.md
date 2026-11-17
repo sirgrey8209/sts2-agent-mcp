@@ -1,7 +1,7 @@
 ---
 id: MONSTER.THE_ADVERSARY_MK_THREE
 name: 적대자 Mk 3
-game_version: v0.107.1
+game_version: v0.111.1
 sources:
 - MegaCrit.Sts2.Core.Models.Monsters/TheAdversaryMkThree.cs sha256:29c86ff19eda1fc9352f9ba9b663f3a3c83e164829da394888021136aebf7cb5
 ---

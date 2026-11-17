@@ -1,7 +1,7 @@
 ---
 id: MONSTER.ONE_HP_MONSTER
 name: 대형 더미 인형
-game_version: v0.107.1
+game_version: v0.111.1
 sources:
 - MegaCrit.Sts2.Core.Models.Monsters/OneHpMonster.cs sha256:f5d5449dd8f57340346ac13502454a3e0ddedd25aabd3d20f6c05dcae3502907
 ---

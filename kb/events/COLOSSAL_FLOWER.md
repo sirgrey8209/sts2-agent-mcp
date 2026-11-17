@@ -1,11 +1,11 @@
 ---
 id: EVENT.COLOSSAL_FLOWER
 name: 거대한 꽃
-game_version: v0.107.1
+game_version: v0.111.1
 sources:
 - MegaCrit.Sts2.Core.Models.Events/ColossalFlower.cs sha256:bb623a8b816ed8477b2185999af535b16d08cb31950620eec255e4ad6b13b6df
 - MegaCrit.Sts2.Core.Models.Acts/Hive.cs sha256:085d95a7ea0418ada9e8544efdc97afc01c4bada90eca76fd65d3755c62c784e
-- MegaCrit.Sts2.Core.Models.Relics/PollinousCore.cs sha256:58d3bed387d66ccb814a0064c3cbd40303e7fb4b65b2801d373054763071b76e
+- MegaCrit.Sts2.Core.Models.Relics/PollinousCore.cs sha256:713af9c01f0751680ff0702c47e754524f176e74f517a39ad40c4447c036a13b
 ---
 # 거대한 꽃 (COLOSSAL_FLOWER)
 
@@ -30,7 +30,7 @@ sources:
 - 체력 손실은 모두 방어 무시·보정 없음(`Unblockable | Unpowered`).
 - 누적 체력 손실: 골드 35 = 0, 골드 75 = 5, 골드 135 = 11, 유물 = 18.
 - `PollinousCore` (이벤트 유물):
-  - 내 턴이 시작될 때마다 카운터 +1. 카운터가 4인 턴의 드로우에 카드 +2장, 그 후 카운터 0으로 초기화.
+  - 내 턴의 손패 드로우 직전마다 카운터 +1. 카운터가 4 이상이면 그 드로우에 카드 +2장, 그 후 카운터 0으로 초기화.
   - 카운터는 저장되는 값이며 전투가 끝나도 초기화되지 않는다(다음 전투로 이어진다).
 
 ## 플레이 메모

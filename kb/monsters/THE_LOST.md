@@ -1,7 +1,7 @@
 ---
 id: MONSTER.THE_LOST
 name: 사라진 자
-game_version: v0.107.1
+game_version: v0.111.1
 sources:
 - MegaCrit.Sts2.Core.Models.Monsters/TheLost.cs sha256:564b08d314fab67ac4b9370b7da00d9bd6508a652672c7ee07e76f2507d0fc2c
 - MegaCrit.Sts2.Core.Models.Powers/PossessStrengthPower.cs sha256:02845e1c055e88e4301efe7db612ca8176deca5677a0eb73ce46cf33888ac385

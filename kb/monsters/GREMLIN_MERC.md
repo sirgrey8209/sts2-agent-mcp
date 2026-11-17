@@ -1,16 +1,16 @@
 ---
 id: MONSTER.GREMLIN_MERC
 name: 그렘린 용병
-game_version: v0.107.1
+game_version: v0.111.1
 sources:
-- MegaCrit.Sts2.Core.Models.Monsters/GremlinMerc.cs sha256:c797fc8dff23fb3a2d6366ac257ee044f66d0bac6bfddc3f5b9f4bd302ddcf9c
-- MegaCrit.Sts2.Core.Models.Powers/SurprisePower.cs sha256:fb21c38261dc713279719feacbb628053fa5a1e9c9f361957d6c1dd8e20ebe2e
+- MegaCrit.Sts2.Core.Models.Monsters/GremlinMerc.cs sha256:cdb0f5d81f2d73ab7f31a61e19959e2c7eb450226d4d74db6fd0d4a88703a11a
+- MegaCrit.Sts2.Core.Models.Powers/SurprisePower.cs sha256:4cf7a79109a1a824b8e6a577dd82d838e12daefa5687f039c183efe977fee06b
 - MegaCrit.Sts2.Core.Models.Powers/ThieveryPower.cs sha256:62b6c27e34859003de32552302da65a2c8a7a5d8bf0df51cf3ab0ad79c59090a
 - MegaCrit.Sts2.Core.Models.Powers/HeistPower.cs sha256:0f0259a6b3aacf62e888c92cf628d6f9bdb6f9baa07c53d99b8384e6d9c3a0ae
-- MegaCrit.Sts2.Core.Models.Monsters/FatGremlin.cs sha256:838247477921bdbd2d9eab3c05109be1dac8b00033417e4d2cdc15aa15534472
+- MegaCrit.Sts2.Core.Models.Monsters/FatGremlin.cs sha256:819114b154fde3d43e051c0fcf96da2a2b78df54b8322f546d625630f3d5e6eb
 - MegaCrit.Sts2.Core.Models.Monsters/SneakyGremlin.cs sha256:ad35c5bfcd96bad7cedd5e616340ea399653705fd88c205bacfc4cb817215725
 - MegaCrit.Sts2.Core.Models.Encounters/GremlinMercNormal.cs sha256:0d68c699af2cd9778313d5707cfa5afe5c4b9bb4203fd392c2a2e9e52b1319ee
-- MegaCrit.Sts2.Core.Rewards/RewardsSet.cs sha256:abe34962b1030f2972affddb7da72cfef916f0a3b5a5ad12fe4853c4fe80e31e
+- MegaCrit.Sts2.Core.Rewards/RewardsSet.cs sha256:7978bb1591415598e74341721cb5eaa1cddd0dfb3aa49dc6d90ff3e3b69a99e9
 ---
 # 그렘린 용병 (GREMLIN_MERC)
 

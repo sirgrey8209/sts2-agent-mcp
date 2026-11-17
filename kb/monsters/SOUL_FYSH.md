@@ -1,11 +1,11 @@
 ---
 id: MONSTER.SOUL_FYSH
 name: 영혼 물교기
-game_version: v0.107.1
+game_version: v0.111.1
 sources:
-- MegaCrit.Sts2.Core.Models.Monsters/SoulFysh.cs sha256:ac118a01aef90c979783e045100ca765cc794551ea33b873276a20befbaba1d7
-- MegaCrit.Sts2.Core.Models.Cards/Beckon.cs sha256:c0ae5c8d49273b34c5159ccf9530dcaf37358d362fad721c95e9c7c03d7fe54d
-- MegaCrit.Sts2.Core.Models.Powers/IntangiblePower.cs sha256:86a2e1989d424b90dd6b35592a9dcaa356454ef3a6eac9bc21f5f76209fe4b87
+- MegaCrit.Sts2.Core.Models.Monsters/SoulFysh.cs sha256:436b4bb624fe01892a085eb7b6745d8369882525fe50b77a9676faca4472a473
+- MegaCrit.Sts2.Core.Models.Cards/Beckon.cs sha256:0f624bd1927d5456c376bd782302e1ea8a2372aa019e7b90586d9724f280b1ca
+- MegaCrit.Sts2.Core.Models.Powers/IntangiblePower.cs sha256:762dd2ba60ab484f256c4beaea291080732bd9081f8ae4b28bc4141e371cb4a2
 - MegaCrit.Sts2.Core.Models.Encounters/SoulFyshBoss.cs sha256:a5cc41556f7878a644b630643f71a0bd43cb396a75fbcb7fe48640bf7607cd89
 - MegaCrit.Sts2.Core.Models.Acts/Underdocks.cs sha256:b5f91ba221afa5ca83ca92290f481c8bef88c28f1ff8272f780f2540700964fb
 ---
@@ -22,7 +22,7 @@ sources:
 | 행동 | 의도 | 효과 |
 |---|---|---|
 | 유인 (`BECKON_MOVE`) | 상태이상 | 각 플레이어에게 유인(`Beckon`) 2장: 1장은 뽑을 카드 더미의 무작위 위치, 1장은 버린 카드 더미 |
-| 가스 방출 (`DE_GAS_MOVE`) | 공격 | 피해 16 (A9+ 17) |
+| 가스 방출 (`DE_GAS_MOVE`) | 공격 | 피해 16 (A9+ 18) |
 | 응시 (`GAZE_MOVE`) | 공격 + 상태이상 | 피해 7 (A9+ 8), 이후 각 플레이어 버린 카드 더미에 유인 1장 |
 | 사라지기 (`FADE_MOVE`) | 버프 | 자신에게 불가침(`IntangiblePower`) 2 |
 | 절규 (`SCREAM_MOVE`) | 공격 + 디버프 | 피해 13 (A9+ 15), 이후 취약(`VulnerablePower`) 3 |

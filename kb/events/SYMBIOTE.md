@@ -1,12 +1,12 @@
 ---
 id: EVENT.SYMBIOTE
 name: 공생체
-game_version: v0.107.1
+game_version: v0.111.1
 sources:
 - MegaCrit.Sts2.Core.Models.Events/Symbiote.cs sha256:eb2f1b0bc9c18dbca1770e3149629eeb840559d151053479b903a96db19dcb1d
-- MegaCrit.Sts2.Core.Models/ModelDb.cs sha256:7144c6e265fc4484e40860f4ec7cb288c677a63256675222010f66ab628d6e4f
-- MegaCrit.Sts2.Core.Models.Enchantments/Corrupted.cs sha256:4710884614a3b2f898604feeb5c72426c1b052329d5292973768cd65ba1f29b8
-- MegaCrit.Sts2.Core.Models/EnchantmentModel.cs sha256:3bb36197749db36c0776b52fe2b1c1a0faaec2b66f623277c48427906784210c
+- MegaCrit.Sts2.Core.Models/ModelDb.cs sha256:2f7bdb25b700a1725266c720525542b660056bbc86f357852239b39b8fbf14f8
+- MegaCrit.Sts2.Core.Models.Enchantments/Corrupted.cs sha256:775d0ca8ce4d3e0e4f15a0888d1a9fcbd3de9f48168d812c27ffa49c4d526428
+- MegaCrit.Sts2.Core.Models/EnchantmentModel.cs sha256:74deff3aabe7b7564d91299c49eb1c222b8aa6b987900e9fc1f19cf29e778006
 ---
 # 공생체 (SYMBIOTE)
 

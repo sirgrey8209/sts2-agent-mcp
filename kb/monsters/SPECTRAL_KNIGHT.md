@@ -1,7 +1,7 @@
 ---
 id: MONSTER.SPECTRAL_KNIGHT
 name: 유령 기사
-game_version: v0.107.1
+game_version: v0.111.1
 sources:
 - MegaCrit.Sts2.Core.Models.Monsters/SpectralKnight.cs sha256:2304a3b673a334a8e7431c39504a0fc26c58393791d63f780a04c0175e7eabde
 - MegaCrit.Sts2.Core.Models.Powers/HexPower.cs sha256:2589e1ef80f95ee7e2a3ada0bca7c121a5907bd52ab5ecede3fdd1fb2b83ce8d

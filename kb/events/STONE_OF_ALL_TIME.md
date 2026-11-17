@@ -1,13 +1,13 @@
 ---
 id: EVENT.STONE_OF_ALL_TIME
 name: 영원의 돌
-game_version: v0.107.1
+game_version: v0.111.1
 sources:
-- MegaCrit.Sts2.Core.Models.Events/StoneOfAllTime.cs sha256:fbf680e9d471b9b7a9e947a717cdf8f6df546b71b803ad6caef83710a1d8ef0e
-- MegaCrit.Sts2.Core.Models/ModelDb.cs sha256:7144c6e265fc4484e40860f4ec7cb288c677a63256675222010f66ab628d6e4f
+- MegaCrit.Sts2.Core.Models.Events/StoneOfAllTime.cs sha256:62c8e917636f411d268ad77f176320069659c6ce26953a143c8ddbe6d75c05d1
+- MegaCrit.Sts2.Core.Models/ModelDb.cs sha256:2f7bdb25b700a1725266c720525542b660056bbc86f357852239b39b8fbf14f8
 - MegaCrit.Sts2.Core.Models.Enchantments/Vigorous.cs sha256:cce81d7cc2f06d963e5b046aa91d357cd24e03f14078a775451174bda6ba556e
-- MegaCrit.Sts2.Core.Models/EnchantmentModel.cs sha256:3bb36197749db36c0776b52fe2b1c1a0faaec2b66f623277c48427906784210c
-- MegaCrit.Sts2.Core.Entities.Players/Player.cs sha256:4672a42656cec2b61d7f720000a462648b12d303d92af92d21c0ac3325d156db
+- MegaCrit.Sts2.Core.Models/EnchantmentModel.cs sha256:74deff3aabe7b7564d91299c49eb1c222b8aa6b987900e9fc1f19cf29e778006
+- MegaCrit.Sts2.Core.Entities.Players/Player.cs sha256:6bb4db73a40fce98c353ea9c3a15bb40f221cfb7a6153f11a9c98f7999d6b5b3
 ---
 # 영원의 돌 (STONE_OF_ALL_TIME)
 
@@ -16,7 +16,7 @@ sources:
 ## 조건
 - 막 공용 이벤트 풀(`ModelDb.AllSharedEvents`)에 속하지만 2막에서만 등장한다.
 - 모든 플레이어가 포션을 1개 이상 가지고 있어야 한다.
-- 이벤트 진행 중에는 포션을 버리거나 쓸 수 없다(`CanRemovePotions` 꺼짐, 종료 시 복구).
+- 이벤트 진행 중에는 포션을 버리거나 쓸 수 없다(`CanUseOrRemovePotions` 꺼짐, 종료 시 복구).
 
 ## 선택지
 | 선택지 | 효과 |

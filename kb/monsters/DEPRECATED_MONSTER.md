@@ -1,7 +1,7 @@
 ---
 id: MONSTER.DEPRECATED_MONSTER
 name: 구식 몬스터
-game_version: v0.107.1
+game_version: v0.111.1
 sources:
 - MegaCrit.Sts2.Core.Models.Monsters/DeprecatedMonster.cs sha256:4b814ba56f8cccc831c940f9733d4815b7f175e7c57a8c8e9fab2a028073d3ef
 ---

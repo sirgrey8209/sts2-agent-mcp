@@ -1,7 +1,7 @@
 ---
 id: EVENT.HUNGRY_FOR_MUSHROOMS
 name: 버섯이 먹고 싶어
-game_version: v0.107.1
+game_version: v0.111.1
 sources:
 - MegaCrit.Sts2.Core.Models.Events/HungryForMushrooms.cs sha256:da5872f6298892d71e7bcf571842bc39ffe0d15521ead55da84aa356066c487c
 - MegaCrit.Sts2.Core.Models.Relics/BigMushroom.cs sha256:1ae4612bf38153236819d1eef9639c3dbe0fcccf846002aab52764febff2da4b

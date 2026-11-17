@@ -1,11 +1,11 @@
 ---
 id: EVENT.WATERLOGGED_SCRIPTORIUM
 name: 물에 잠긴 기록실
-game_version: v0.107.1
+game_version: v0.111.1
 sources:
 - MegaCrit.Sts2.Core.Models.Events/WaterloggedScriptorium.cs sha256:06f6e6a0fc8821ad02411ca8481479496ddb42b1cf72b0e77e904173b8b4e4f0
 - MegaCrit.Sts2.Core.Models.Enchantments/Steady.cs sha256:d999e603f048e30cb4644806984e08a40ae5fe3218904fd84a56510f35ccb2eb
-- MegaCrit.Sts2.Core.Models/EnchantmentModel.cs sha256:3bb36197749db36c0776b52fe2b1c1a0faaec2b66f623277c48427906784210c
+- MegaCrit.Sts2.Core.Models/EnchantmentModel.cs sha256:74deff3aabe7b7564d91299c49eb1c222b8aa6b987900e9fc1f19cf29e778006
 - MegaCrit.Sts2.Core.Models.Acts/Underdocks.cs sha256:b5f91ba221afa5ca83ca92290f481c8bef88c28f1ff8272f780f2540700964fb
 ---
 # 물에 잠긴 기록실 (WATERLOGGED_SCRIPTORIUM)

@@ -1,18 +1,18 @@
 ---
 id: EVENT.TANX
 name: 탄스
-game_version: v0.107.1
+game_version: v0.111.1
 sources:
 - MegaCrit.Sts2.Core.Models.Events/Tanx.cs sha256:6ecc93471b8c7824f00015989c2b89a286f64e90ae304fbe5d752be4ff03851c
 - MegaCrit.Sts2.Core.Models/AncientEventModel.cs sha256:1e721b13dc512b05d2d0e8cb208701a5ca902026f59b645f16aaff5a37725105
 - MegaCrit.Sts2.Core.Models/ActModel.cs sha256:55f3a43c7e055aff1e35985c0cd229f22a271698a82b0d0a24a3f01320dcab0b
 - MegaCrit.Sts2.Core.Models.Acts/Glory.cs sha256:d70575f5ac62dda4c1e80d424955c412eb00248e127caaa2751a2775db4b03d0
-- MegaCrit.Sts2.Core.Runs/RunManager.cs sha256:1c4d11b1b2261f2e5a0e7338866d0ca8c219152567700c9608d23f46a15258e1
+- MegaCrit.Sts2.Core.Runs/RunManager.cs sha256:db8f6c79a7ae1d1932028af1b9f4d2b01092e6294251f4eab40f7e67a03ee8bd
 - MegaCrit.Sts2.Core.Models.Relics/Claws.cs sha256:35cf7a686399737cdb0264e492f33838b030f2c763cbf809383cf7fe844f0b62
 - MegaCrit.Sts2.Core.Models.Relics/Crossbow.cs sha256:bfa426b3aaf4be1309fcf286dec412d21cf53562130f5d4a742b50ec7937d84e
 - MegaCrit.Sts2.Core.Models.Relics/IronClub.cs sha256:427bb4a254261a9447f0f07f44a1497acb055ac3b597a64cbe33112d02e88a64
 - MegaCrit.Sts2.Core.Models.Relics/MeatCleaver.cs sha256:7afde0bde5327a5552954983f53bd7435ac63a931dc1f7888342f53eb44aa5c8
-- MegaCrit.Sts2.Core.Entities.RestSite/CookRestSiteOption.cs sha256:d64bd74cf3b549090e0e8751f9e21d230893b9de0a3ceead1148121a025e28af
+- MegaCrit.Sts2.Core.Entities.RestSite/CookRestSiteOption.cs sha256:72135a5ea5d581811edfe1a5f6638c19a99c952f582cc418bf55e497ac455fa8
 - MegaCrit.Sts2.Core.Models.Relics/Sai.cs sha256:49bf579ad10937264e4a1fc8280809dde99c322393e78ea0539f8d51d755f094
 - MegaCrit.Sts2.Core.Models.Relics/SpikedGauntlets.cs sha256:78733958b4e5af1b410fcd4b12112836d43b3c1df2957edf363e7352d41eaac8
 - MegaCrit.Sts2.Core.Models.Relics/TanxsWhistle.cs sha256:72f36d38b260e5f1fbebb7188a17ea0924b880a9ea23a4b97516672e93aa0f7f
@@ -40,7 +40,7 @@ sources:
 | 클로 (`Claws`) | 획득 시 덱에서 0~6장을 골라 `할퀴기`(`Maul`)로 변화. 강화된 카드는 강화된 할퀴기가 되고, 인챈트는 옮겨 붙을 수 있으면 유지. 취소 불가(확인 필요) |
 | 크로스보우 (`Crossbow`) | 내 턴 시작마다 자기 캐릭터 카드 풀의 무작위 공격 카드 1장을 손으로. 그 턴 동안 비용 0 |
 | 쇠몽둥이 (`IronClub`) | 카드를 4장 사용할 때마다 1장 뽑음. 사용 횟수는 전투가 바뀌어도 이어서 센다 |
-| 고기 써는 칼 (`MeatCleaver`) | 휴식처에 '요리' 추가: 덱에서 카드 2장 제거 + 최대 체력 +9. 제거 가능한 카드가 2장 이상일 때만 가능 |
+| 고기 써는 칼 (`MeatCleaver`) | 휴식처에 '요리' 추가: 덱에서 카드 2장 제거 + 최대 체력 +5. 제거 가능한 카드가 2장 이상일 때만 가능 |
 | 사이 (`Sai`) | 내 턴 시작마다 방어도 7(민첩 등 보정 없음) |
 | 가시 박힌 건틀릿 (`SpikedGauntlets`) | 최대 에너지 +1. 전투 중 파워 카드 비용 +1 |
 | 탄스의 호각 (`TanxsWhistle`) | 획득 시 덱에 `호각 불기`(`Whistle`) 1장 추가: 비용 3 공격, 피해 33, 적 기절, 소멸 |

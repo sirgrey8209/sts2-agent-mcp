@@ -1,9 +1,9 @@
 ---
 id: EVENT.WHISPERING_HOLLOW
 name: 속삭이는 골짜기
-game_version: v0.107.1
+game_version: v0.111.1
 sources:
-- MegaCrit.Sts2.Core.Models.Events/WhisperingHollow.cs sha256:822e082cab4023a4c55d10c129ee178860c54f2c96cd4f463f629b0dcb5f51ab
+- MegaCrit.Sts2.Core.Models.Events/WhisperingHollow.cs sha256:d854997fa77fba0ab818afceb0acbe4b4a22fed40e3e9ff92e94a8bb9eb6ffe9
 - MegaCrit.Sts2.Core.Models.Acts/Overgrowth.cs sha256:61ff9d71f9b17f2f6a2f7f51f64bbfaa6752ec8cf7e75b4d291f2b0f89dc232b
 ---
 # 속삭이는 골짜기 (WHISPERING_HOLLOW)

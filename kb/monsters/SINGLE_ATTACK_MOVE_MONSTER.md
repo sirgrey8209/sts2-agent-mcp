@@ -1,7 +1,7 @@
 ---
 id: MONSTER.SINGLE_ATTACK_MOVE_MONSTER
 name: 대형 더미 인형
-game_version: v0.107.1
+game_version: v0.111.1
 sources:
 - MegaCrit.Sts2.Core.Models.Monsters/SingleAttackMoveMonster.cs sha256:d9bf0ce715f23e765428d7f1019b7a3e90c87013be46d0eb57b1b8e217ea13ab
 ---

@@ -1,14 +1,14 @@
 ---
 id: MONSTER.FROG_KNIGHT
 name: 개구리 기사
-game_version: v0.107.1
+game_version: v0.111.1
 sources:
 - MegaCrit.Sts2.Core.Models.Monsters/FrogKnight.cs sha256:00913af20ac39aa5a41b6d4a0b9b4ada1339a9317797ed40f16fef58d758c018
 - MegaCrit.Sts2.Core.Models.Powers/PlatingPower.cs sha256:f8e6f35b5df38ec5d79234ccc25a8e6e51f65ef01db10043be23c5bee64c377a
 - MegaCrit.Sts2.Core.Models.Powers/FrailPower.cs sha256:3334f1dda0a5cff6a1373c71456313fdfd23f200c96512336df29ae8e4246dbe
 - MegaCrit.Sts2.Core.Models.Encounters/FrogKnightNormal.cs sha256:91ea3468c6309284cc386d98cf17895fc0cfff337eeebc09a859d989a5500f96
 - MegaCrit.Sts2.Core.Models.Acts/Glory.cs sha256:d70575f5ac62dda4c1e80d424955c412eb00248e127caaa2751a2775db4b03d0
-- MegaCrit.Sts2.Core.Combat/CombatManager.cs sha256:7ae1b7259e72befa07f4aceaa9ab0e23783fc55876bcde6090b9b2cfae65a43e
+- MegaCrit.Sts2.Core.Combat/CombatManager.cs sha256:8b1e0a22403cd8f9bd647ae640de30467dd70319d860a0527549ff800d2b97f3
 ---
 # 개구리 기사 (FROG_KNIGHT)
 

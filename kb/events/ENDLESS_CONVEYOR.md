@@ -1,14 +1,14 @@
 ---
 id: EVENT.ENDLESS_CONVEYOR
 name: 무한의 컨베이어
-game_version: v0.107.1
+game_version: v0.111.1
 sources:
 - MegaCrit.Sts2.Core.Models.Events/EndlessConveyor.cs sha256:411671108fb41a80cac3c89a58a71e947c0715a666f70281ecb9e78ae141b7ff
 - MegaCrit.Sts2.Core.Models.Acts/Underdocks.cs sha256:b5f91ba221afa5ca83ca92290f481c8bef88c28f1ff8272f780f2540700964fb
 - MegaCrit.Sts2.Core.Models.Cards/FeedingFrenzy.cs sha256:1b5249517d986ccae7c54a8c6127572536646d42b46b94de2c61d0627a26bade
 - MegaCrit.Sts2.Core.Models.Powers/FeedingFrenzyPower.cs sha256:5d64456fe4de34dfffedbb893a1b6fc55b0b6cedcc769c473d9817690a34d591
-- MegaCrit.Sts2.Core.Models.Powers/TemporaryStrengthPower.cs sha256:0b0ae6f9f69dd2a451b4f307b51b2c69b00515114660c26e9e7d3b472b25a398
-- MegaCrit.Sts2.Core.Commands/CreatureCmd.cs sha256:f52882086d141dea85b8de65b8e526db5418e390d3f5ba3f2191d3d7f8a6420b
+- MegaCrit.Sts2.Core.Models.Powers/TemporaryStrengthPower.cs sha256:692dead244d5d3c0daf6b9a90fa921d02ad4ce88842f4a27a3a0f85c3a3f9cc6
+- MegaCrit.Sts2.Core.Commands/CreatureCmd.cs sha256:3e11f255f18296998511d03ee952a7b16974f5999de7db8941e35a3ef4e92768
 ---
 # 무한의 컨베이어 (ENDLESS_CONVEYOR)
 

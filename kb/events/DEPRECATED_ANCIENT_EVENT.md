@@ -1,10 +1,10 @@
 ---
 id: EVENT.DEPRECATED_ANCIENT_EVENT
 name: DeprecatedAncientEvent
-game_version: v0.107.1
+game_version: v0.111.1
 sources:
 - MegaCrit.Sts2.Core.Models.Events/DeprecatedAncientEvent.cs sha256:6759cf195b5fa2ce1b154fb2c6ca5524d6a5ecea00a820c1f62dfd2f025dcff9
-- MegaCrit.Sts2.Core.Models/ModelDb.cs sha256:7144c6e265fc4484e40860f4ec7cb288c677a63256675222010f66ab628d6e4f
+- MegaCrit.Sts2.Core.Models/ModelDb.cs sha256:2f7bdb25b700a1725266c720525542b660056bbc86f357852239b39b8fbf14f8
 ---
 # DeprecatedAncientEvent (DEPRECATED_ANCIENT_EVENT)
 

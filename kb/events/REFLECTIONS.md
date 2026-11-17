@@ -1,14 +1,14 @@
 ---
 id: EVENT.REFLECTIONS
 name: 거울에 비치다 다치비 에울거
-game_version: v0.107.1
+game_version: v0.111.1
 sources:
 - MegaCrit.Sts2.Core.Models.Events/Reflections.cs sha256:bb894825b5321da122b6620e0085275dd655dd0cef0ebd798fad8417b1345f1c
-- MegaCrit.Sts2.Core.Models.Cards/BadLuck.cs sha256:1c44414ab445f1266aa3650e6cdee3711839a11dfada22241536d79a6f0ecf8b
+- MegaCrit.Sts2.Core.Models.Cards/BadLuck.cs sha256:382d73d80447f5390176466b5d9c395ae2f906621fd75e67605d6e780385576d
 - MegaCrit.Sts2.Core.Models.Acts/Glory.cs sha256:d70575f5ac62dda4c1e80d424955c412eb00248e127caaa2751a2775db4b03d0
 - MegaCrit.Sts2.Core.Timeline.Epochs/Event2Epoch.cs sha256:bbfd971e7bbbe596051db2cbd07ead9ddc491ddc912b4f1e43f156fb95a7573e
 - MegaCrit.Sts2.Core.Models/ActModel.cs sha256:55f3a43c7e055aff1e35985c0cd229f22a271698a82b0d0a24a3f01320dcab0b
-- MegaCrit.Sts2.Core.Runs/RunState.cs sha256:2049583b323c7864016a966efa4b462ed2a95b16789f235ad3f84fbef02e1b0d
+- MegaCrit.Sts2.Core.Runs/RunState.cs sha256:55f1e2c49a3bdcfc49f15bd5983736d38a36ffa192fb41ed13f3a855d4f33a5a
 ---
 # 거울에 비치다 다치비 에울거 (REFLECTIONS)
 

@@ -1,17 +1,17 @@
 ---
 id: MONSTER.THIEVING_HOPPER
 name: 폴짝이 도적
-game_version: v0.107.1
+game_version: v0.111.1
 sources:
-- MegaCrit.Sts2.Core.Models.Monsters/ThievingHopper.cs sha256:f8ff0d2ecb0200d7f5d66969645ca6d701739e63770efc5835c7301f4f9b265e
+- MegaCrit.Sts2.Core.Models.Monsters/ThievingHopper.cs sha256:af61615b033d49c643bfc56d8292fce9ef1e2bdec6f444aa56aaf09340eef8c5
 - MegaCrit.Sts2.Core.Models.Powers/EscapeArtistPower.cs sha256:490abb0e9eca5e133f3231741e363dce71afb1ded375bd45aebd922719f2f244
 - MegaCrit.Sts2.Core.Models.Powers/SwipePower.cs sha256:8800ca6b31089f72bc6929036c4251bcb6fabf179c57f1e9e3e1e28086937cd9
-- MegaCrit.Sts2.Core.Models.Powers/FlutterPower.cs sha256:5746c575f76d22fe8ec8bc0c83747771df0527df8792120ec9e2148393aa338d
+- MegaCrit.Sts2.Core.Models.Powers/FlutterPower.cs sha256:1f99cda0c63a444295a69e8ef7501dea316fe0374279a4ae7aef928548fcc3b8
 - MegaCrit.Sts2.Core.Models.Encounters/ThievingHopperWeak.cs sha256:dadf66ac4d10376057a33300f5cd2e5e71923279cf4a45dc1320a7aedb429624
 - MegaCrit.Sts2.Core.Models.Acts/Hive.cs sha256:085d95a7ea0418ada9e8544efdc97afc01c4bada90eca76fd65d3755c62c784e
 - MegaCrit.Sts2.Core.Rewards/SpecialCardReward.cs sha256:f7725f7dfd09478b85327e512451ac9f9119e172607908bea0c134dadd4e03ae
-- MegaCrit.Sts2.Core.Commands/CreatureCmd.cs sha256:f52882086d141dea85b8de65b8e526db5418e390d3f5ba3f2191d3d7f8a6420b
-- MegaCrit.Sts2.Core.Models/EncounterModel.cs sha256:6eaa2f804db14af9d8c90b75ee0762c9b807fcf9d0cfb093b3f217501da89f90
+- MegaCrit.Sts2.Core.Commands/CreatureCmd.cs sha256:3e11f255f18296998511d03ee952a7b16974f5999de7db8941e35a3ef4e92768
+- MegaCrit.Sts2.Core.Models/EncounterModel.cs sha256:6f7dc7376bbc794d54bb090acc1e2e805bdbb81642762901cf0ec90ca7ceca90
 - MegaCrit.Sts2.Core.ValueProps/ValuePropExtensions.cs sha256:369c8cdfa3d7e60d43f78823a7dfae28dc737d0bc1d1a2686dcce0c66bfc47c3
 ---
 # 폴짝이 도적 (THIEVING_HOPPER)

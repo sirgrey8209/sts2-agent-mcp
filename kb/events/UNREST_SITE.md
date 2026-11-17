@@ -1,7 +1,7 @@
 ---
 id: EVENT.UNREST_SITE
 name: 불안한 휴식 장소
-game_version: v0.107.1
+game_version: v0.111.1
 sources:
 - MegaCrit.Sts2.Core.Models.Events/UnrestSite.cs sha256:9d86af0cf155f27fbe3c7093cad2893af563267c409429df03a5da8c9d4add62
 - MegaCrit.Sts2.Core.Models.Cards/PoorSleep.cs sha256:59d992c87cc20ef898eb6fc9202e7e76354ff057a6136e18bcdf0ae649b65328

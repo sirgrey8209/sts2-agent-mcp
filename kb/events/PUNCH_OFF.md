@@ -1,9 +1,9 @@
 ---
 id: EVENT.PUNCH_OFF
 name: 난타전
-game_version: v0.107.1
+game_version: v0.111.1
 sources:
-- MegaCrit.Sts2.Core.Models.Events/PunchOff.cs sha256:18846e81c9d180471c943d3449693db5414c9af9dd4603eaa455a41391a37ec2
+- MegaCrit.Sts2.Core.Models.Events/PunchOff.cs sha256:fa667c9ec4c642d7da3c297bad46840d33778898a6269a4610ac662be5174bfd
 - MegaCrit.Sts2.Core.Models.Encounters/PunchOffEventEncounter.cs sha256:b299a564e5bceb0e6aecda0eb13b5bb1374ddc75705e37039123ac5b07bd8060
 - MegaCrit.Sts2.Core.Models.Monsters/PunchConstruct.cs sha256:389c64af1b2eb8da881ef51b5f9addf19f5b5f659b706235263c062a2fcc2d7e
 - MegaCrit.Sts2.Core.Models.Cards/Injury.cs sha256:1ee52eb32a79f085cca2178f438ed0936bbd68df50604206111edf0b97c8b87b

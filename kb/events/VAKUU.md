@@ -1,23 +1,23 @@
 ---
 id: EVENT.VAKUU
 name: Vakuu
-game_version: v0.107.1
+game_version: v0.111.1
 sources:
-- MegaCrit.Sts2.Core.Models.Events/Vakuu.cs sha256:79cccc5976bccd788138433d1e3f16a59260bc468dcd373dc3baf3c1b6d56cf0
+- MegaCrit.Sts2.Core.Models.Events/Vakuu.cs sha256:7187cc5d11ed7f9c5aa06fd35a498c17bfbce335122777f861f3c3137c0c5717
 - MegaCrit.Sts2.Core.Models/AncientEventModel.cs sha256:1e721b13dc512b05d2d0e8cb208701a5ca902026f59b645f16aaff5a37725105
 - MegaCrit.Sts2.Core.Models/ActModel.cs sha256:55f3a43c7e055aff1e35985c0cd229f22a271698a82b0d0a24a3f01320dcab0b
 - MegaCrit.Sts2.Core.Models.Acts/Glory.cs sha256:d70575f5ac62dda4c1e80d424955c412eb00248e127caaa2751a2775db4b03d0
 - MegaCrit.Sts2.Core.Models.Relics/BloodSoakedRose.cs sha256:af608a0c48bdfaa8f77518efe70066e4d583dce2d9d3221f93ba21adfeb8c642
 - MegaCrit.Sts2.Core.Models.Relics/WhisperingEarring.cs sha256:03095decbb2a557c2d0edf2cae5418dc899fb49bf45ff2190c85d5ded854e57b
 - MegaCrit.Sts2.Core.Models.Relics/VakuuCardSelector.cs sha256:e1b95ab8374ce9613f9f8167d67af99d996ed5b85a2a345814b66f3a7728ef91
-- MegaCrit.Sts2.Core.Models.Relics/Fiddle.cs sha256:25c81448c3022a3326c720199033045f99b7d2ae10dc57fc432a745d31ed2d15
+- MegaCrit.Sts2.Core.Models.Relics/Fiddle.cs sha256:98896cb323237c389ff9bf26da65a60b3d1b561ea41d22ab570dfd8fc674c85d
 - MegaCrit.Sts2.Core.Models.Relics/PreservedFog.cs sha256:6d9ebf8110fd55ec6e258ffa0a56b007185df3db80157d6e5a75e448a4638ba3
-- MegaCrit.Sts2.Core.Models.Relics/SereTalon.cs sha256:7da5f7020726ae3c961dec0fc70df3d0a98b5ab94073fac6f32ccf4039837b51
-- MegaCrit.Sts2.Core.Models.Relics/DistinguishedCape.cs sha256:53c4b3a2993ae9c05d93d3b9c00ef63b9396ae73ebc51ce390db3a1f838a018c
+- MegaCrit.Sts2.Core.Models.Relics/SereTalon.cs sha256:afe0bfaf8c7a5eeec9f1d573b36dd1929e9366400e4da5d6c9f91aa87635cb90
+- MegaCrit.Sts2.Core.Models.Relics/DistinguishedCape.cs sha256:a140781c71cfe8a6cafcff19df1aef0478db29d3c20019d246b59b5f56138253
 - MegaCrit.Sts2.Core.Models.Relics/ChoicesParadox.cs sha256:348908ceee13245d09f08a3811273e45b35b91562a4bb65efd2cfe155426c85b
-- MegaCrit.Sts2.Core.Models.Relics/MusicBox.cs sha256:2d8c255e081979c6f2a634c99be8c621ab1b4a380b094233c0110c142c494942
-- MegaCrit.Sts2.Core.Models.Relics/LordsParasol.cs sha256:70a71afe9eecf1e3c2ae38b2eada99d79f283fb6594311aca87161caf230bb00
-- MegaCrit.Sts2.Core.Models.Relics/JeweledMask.cs sha256:4644779aa6c0d91b9af7e622255334784ea2d4f244bea283edbb87d75987f190
+- MegaCrit.Sts2.Core.Models.Relics/MusicBox.cs sha256:011eb9b629513f6eabd52a2de418c56d74ca7f475033557413ff011502e80f5e
+- MegaCrit.Sts2.Core.Models.Relics/LordsParasol.cs sha256:a179f832fb2e3fcff6f1e263ae72500a9c4b5829defc970f8aa759102af3936b
+- MegaCrit.Sts2.Core.Models.Relics/JeweledMask.cs sha256:207d434ad09e6a21623fb933c0eaba48a40e8cd775210bad83f30bc73ae4c548
 - MegaCrit.Sts2.Core.Models.Cards/Enthralled.cs sha256:6f6e17ea1dc154aeabee91a65659440228e5c1f3e676eebe053b474d7c212e86
 - MegaCrit.Sts2.Core.Models.Cards/Folly.cs sha256:271ebb531b636946ad8f69ba21a061cdcc48fe0405dd7d739d865c316bdbf603
 - MegaCrit.Sts2.Core.Models.Cards/Wish.cs sha256:a867f9e38fb5a13b409c5babc5543badc35badc67fe33fdeb079636dff7755c5
@@ -42,19 +42,19 @@ sources:
 | 1 | `WhisperingEarring` | 최대 에너지 +1. 각 전투 1턴째에 손패를 자동으로 사용(아래 참고) |
 | 1 | `Fiddle` | 턴 시작 시 뽑는 카드 +2. 대신 내 턴 중에는 그 외의 카드 뽑기가 전부 무효 |
 | 2 | `PreservedFog` | 얻을 때 덱에서 카드 3장 제거 → 저주 `Folly` 추가 |
-| 2 | `SereTalon` | 얻을 때 서로 다른 무작위 저주 2장 + `Wish` 3장을 덱에 추가 |
-| 2 | `DistinguishedCape` | 얻을 때 최대 체력 9 감소 → `Apparition` 3장을 덱에 추가 |
+| 2 | `SereTalon` | 얻을 때 최대 체력 9 감소 → `Wish` 3장을 덱에 추가 |
+| 2 | `DistinguishedCape` | 얻을 때 서로 다른 무작위 저주 2장 + `Apparition` 3장을 덱에 추가 |
 | 3 | `ChoicesParadox` | 각 전투 1턴 시작 시 자기 캐릭터 카드 5장(보존 부여) 중 1장을 골라 손에 추가 |
 | 3 | `MusicBox` | 매 턴 처음 사용한 공격 카드의 휘발성 복제본을 손에 추가 |
 | 3 | `LordsParasol` | 상점에 들어가면 진열된 카드·무색 카드·유물·포션을 전부 무료로 자동 구매하고, 카드 제거도 무료로 1회(취소 불가) |
-| 3 | `JeweledMask` | 각 전투 1턴 손패를 뽑기 전에 뽑을 더미의 무작위 파워 카드 1장을 손으로 가져오고 이번 턴 비용 0 |
+| 3 | `JeweledMask` | 각 전투 1턴 손패를 뽑기 전에 뽑을 더미의 무작위 파워 카드 1장(선천성이 아닌 파워가 있으면 그중에서)을 손으로 가져오고 이번 턴 비용 0 |
 
 ## 결과 상세
 - `WhisperingEarring` 자동 사용: 전투 1턴째에 손에서 사용 가능한 가장 왼쪽 카드를 에너지를 소모해 반복 자동 사용한다(최대 13장). 사용 가능한 카드가 없거나, 턴 종료 준비/턴 변경/전투 종료 시 멈춘다. 적 대상 카드는 가장 왼쪽의 공격 가능한 적을, 아군 대상은 무작위 다른 플레이어를 노린다. 카드 선택 화면은 앞에서부터 필요한 수만큼, 카드 보상은 첫 번째 카드를 자동으로 고른다.
 - `Fiddle`: 내 턴이 아닐 때의 뽑기는 막지 않는다.
 - `Enthralled`(저주): 비용 2, 영원(Eternal, 제거 불가). 이 카드가 손에 있으면 다른 카드를 직접 사용할 수 없다(자동 사용은 가능). 먼저 2 에너지를 내고 이 카드를 사용해야 한다.
 - `Folly`(저주): 사용 불가, 영원, 선천성(Innate), 휘발성(Ethereal). 매 전투 첫 손패에 들어와 손 한 칸을 차지하고 턴 끝에 소멸한다.
-- `SereTalon`의 저주는 저주 풀(해금분, 효과로 생성 가능한 것)에서 서로 다르게 2장. `Wish`: 비용 0 스킬, 소멸. 뽑을 더미에서 카드 1장을 골라 손으로 가져온다. 강화 시 보존 추가.
+- `DistinguishedCape`의 저주는 저주 풀(해금분, 효과로 생성 가능한 것)에서 서로 다르게 2장. `Wish`: 비용 0 스킬, 소멸. 뽑을 더미에서 카드 1장을 골라 손으로 가져온다. 강화 시 보존 추가.
 - `Apparition`: 비용 1 스킬, 휘발성·소멸. `IntangiblePower` 1 획득. 강화 시 휘발성 제거.
 - 선택지 구성에서 이미 가진 유물을 거르는 처리는 없다.
 - 한국어 이름·대사는 `ancients` 로컬라이즈 테이블에 있어 이 문서에는 반영되지 않았다.

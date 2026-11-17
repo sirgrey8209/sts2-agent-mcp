@@ -1,7 +1,7 @@
 ---
 id: EVENT.TABLET_OF_TRUTH
 name: 진리의 석판
-game_version: v0.107.1
+game_version: v0.111.1
 sources:
 - MegaCrit.Sts2.Core.Models.Events/TabletOfTruth.cs sha256:9771d5cb6f7c76ba38b4f343160c0e113ac13a067403164fba54992da5d20dee
 - MegaCrit.Sts2.Core.Models.Acts/Overgrowth.cs sha256:61ff9d71f9b17f2f6a2f7f51f64bbfaa6752ec8cf7e75b4d291f2b0f89dc232b

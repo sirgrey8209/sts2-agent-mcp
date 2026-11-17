@@ -1,10 +1,10 @@
 ---
 id: MONSTER.OWL_MAGISTRATE
 name: 올빼미 판관
-game_version: v0.107.1
+game_version: v0.111.1
 sources:
 - MegaCrit.Sts2.Core.Models.Monsters/OwlMagistrate.cs sha256:159fa2cd43f15f52db2dcd0b0cb8e49b9f347ac362e3ea90b8ce4a6133599480
-- MegaCrit.Sts2.Core.Models.Powers/SoarPower.cs sha256:191880c34e5cd6a8f9d3fa2f939915abea12a27cd5a1cc48f6c28ad41993c1d4
+- MegaCrit.Sts2.Core.Models.Powers/SoarPower.cs sha256:bc208b33f6e360dfa9601b43f330a6856127ca7eecc6c8ab739cd05eec18adbb
 - MegaCrit.Sts2.Core.Models.Encounters/OwlMagistrateNormal.cs sha256:7d5b86b240f933ced98332eaa50e3e3eee5483ce12176e31a9e6c9ea8908b571
 - MegaCrit.Sts2.Core.Models.Acts/Glory.cs sha256:d70575f5ac62dda4c1e80d424955c412eb00248e127caaa2751a2775db4b03d0
 ---

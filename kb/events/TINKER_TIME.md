@@ -1,10 +1,10 @@
 ---
 id: EVENT.TINKER_TIME
 name: 땜질 시간
-game_version: v0.107.1
+game_version: v0.111.1
 sources:
 - MegaCrit.Sts2.Core.Models.Events/TinkerTime.cs sha256:8deed294ff2ccd7b452379ba78df190e7c8c1eef563d845b9bebe5a5a2c40dde
-- MegaCrit.Sts2.Core.Models.Cards/MadScience.cs sha256:fbaba47a2a7e8a53dfcc57b253104546f520af02e097aebc9aee0e4de7ce325c
+- MegaCrit.Sts2.Core.Models.Cards/MadScience.cs sha256:c7383e536896b853256317cb183e878abef7173ece1571ed2e94dc6697c808de
 - MegaCrit.Sts2.Core.Models.Powers/StranglePower.cs sha256:b62b0cee78456da85e0ceec4b478106c5a5d510217cc81975fb4f4cdc796c0b3
 - MegaCrit.Sts2.Core.Models.Powers/CuriousPower.cs sha256:29761d0618952415c9776f192ff2cba09a13b023409a774666db9d1a313a72e7
 - MegaCrit.Sts2.Core.Models.Powers/ImprovementPower.cs sha256:e6e1cf00387038223cae65477192d63ce0f4ba09c8b59bc435ffc9f0653dea33

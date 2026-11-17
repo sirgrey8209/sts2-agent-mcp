@@ -1,11 +1,11 @@
 ---
 id: MONSTER.BIG_DUMMY
 name: 대형 더미 인형
-game_version: v0.107.1
+game_version: v0.111.1
 sources:
 - MegaCrit.Sts2.Core.Models.Monsters/BigDummy.cs sha256:1917319a8eeed429b7f413acde7feda8b36d62d39e25c4508c8944454e3cac8d
-- MegaCrit.Sts2.Core.Models.Encounters.Mocks/MockMonsterEncounter.cs sha256:555ce536dc7965478787c27c833a05751d63678b1388aa08f2a952bd8f8c5e7b
-- MegaCrit.Sts2.Core.Models.Monsters.Mocks/MockAttackAndSummonMinionMonster.cs sha256:992ad2536c805265bfce67e17d1c532a55b87733ed06cf0239a0becee777aff7
+- MegaCrit.Sts2.Core.Models.Encounters.Mocks/MockMonsterEncounter.cs sha256:e77fd6fbad5b9bc7ba5e4ce33837410fb476849b0790aa5a4c295f0c837fa150
+- MegaCrit.Sts2.Core.Models.Monsters.Mocks/MockAttackAndSummonMinionMonster.cs sha256:83e0da47fc07811318a09bb8023948313cc1ba9b1e379cce07f1b487025c53b8
 ---
 # 대형 더미 인형 (BIG_DUMMY)
 

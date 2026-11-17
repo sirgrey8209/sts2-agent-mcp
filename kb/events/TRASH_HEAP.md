@@ -1,15 +1,16 @@
 ---
 id: EVENT.TRASH_HEAP
 name: 쓰레기 더미
-game_version: v0.107.1
+game_version: v0.111.1
 sources:
-- MegaCrit.Sts2.Core.Models.Events/TrashHeap.cs sha256:e6c2c2fe15e46192a509ce3b4c6f2f7930effff532d77df01f994a3ae29bd226
+- MegaCrit.Sts2.Core.Models.Events/TrashHeap.cs sha256:cccbf83cbcf62f352d7bf4bf940e270fda64219bacb20a8d96fdcc8eb7dfd2a3
 - MegaCrit.Sts2.Core.Models.Acts/Underdocks.cs sha256:b5f91ba221afa5ca83ca92290f481c8bef88c28f1ff8272f780f2540700964fb
 - MegaCrit.Sts2.Core.Timeline.Epochs/Event1Epoch.cs sha256:0c766a17589bec04fada0bbd42a302c5c477d338d7466f91121ba227a6596de0
 - MegaCrit.Sts2.Core.Models/ActModel.cs sha256:55f3a43c7e055aff1e35985c0cd229f22a271698a82b0d0a24a3f01320dcab0b
 - MegaCrit.Sts2.Core.Models.Relics/DarkstonePeriapt.cs sha256:5665d04871e816f3d265677dba2f8c2db67e1ca75f664eaa308262e51b9ed690
 - MegaCrit.Sts2.Core.Models.Relics/DreamCatcher.cs sha256:0fd6aa6000854137c24ea7cf2dbfd7f21ce6e479767752808a7f42cbeef2cb08
-- MegaCrit.Sts2.Core.Models.Relics/HandDrill.cs sha256:fc1490c4487a1d9e1e3664b276f32030ac101ddefb4087f1432d378bd3d9196f
+- MegaCrit.Sts2.Core.Models.Relics/HandDrill.cs sha256:0b64a8b3369d8ca15216d98e712985786210d4c3ff693d610cfa7b86a53bda9a
+- MegaCrit.Sts2.Core.Models.Cards/Expose.cs sha256:7058ee0ce84c962487eb54b179119a5dcb628df7964b19851b07d0f3b19d267b
 - MegaCrit.Sts2.Core.Models.Relics/MawBank.cs sha256:e5e1730c5bd76a6da7c058a923c8862dff9ab9faf2bc077c36bf8bffb2b18530
 - MegaCrit.Sts2.Core.Models.Relics/TheBoot.cs sha256:29950f1eab051c52efd4ca5daaa157e390d397a660dd88560339aeb90615fc86
 ---
@@ -35,7 +36,7 @@ sources:
 |---|---|
 | `DarkstonePeriapt` | 저주 카드가 덱에 들어올 때마다 최대 체력 +6 |
 | `DreamCatcher` | 휴식처에서 휴식하면 카드 보상(3장, 일반 전투 기준)을 추가로 받음 |
-| `HandDrill` | 내가(또는 내 소환수가) 적의 방어도를 깨뜨리면 그 적에게 취약 2 |
+| `HandDrill` | 내가(또는 내 소환수가) 적의 방어도를 깨뜨리면(피해로 깨뜨린 경우와, 내 카드가 적의 방어도를 직접 없앤 경우. 예: 들춰내기(`Expose`)) 그 적에게 취약 2 |
 | `MawBank` | 방에 들어갈 때마다 골드 12. 상점에서 골드를 써서 무언가를 사면 영구히 비활성화 |
 | `TheBoot` | 내가(또는 Osty가) 적에게 주는 공격 피해의 체력 손실이 1~4이면 5로 올림 |
 
@@ -51,6 +52,7 @@ sources:
 - `DarkstonePeriapt`: 흑옥 부적 (relic)
 - `DreamCatcher`: 드림캐처 (relic)
 - `HandDrill`: 핸드 드릴 (relic)
+- `Expose`: 들춰내기 (card)
 - `MawBank`: 아귀 저금통 (relic)
 - `TheBoot`: 장화 (relic)
 - `Caltrops`: 마름쇠 (card)

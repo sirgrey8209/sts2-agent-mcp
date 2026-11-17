@@ -1,16 +1,16 @@
 ---
 id: MONSTER.ZAPBOT
 name: 파지직봇
-game_version: v0.107.1
+game_version: v0.111.1
 sources:
 - MegaCrit.Sts2.Core.Models.Monsters/Zapbot.cs sha256:0bd56b1111c8fbd3acdc7592e83d7f4e9a7dfe6338ffd2f490862c2603a2ab32
 - MegaCrit.Sts2.Core.Models.Powers/HighVoltagePower.cs sha256:87c5dbf1b4bdfc5a6a0666fdb8ad8b663f20972ff6cf454b9dbb1a2c458614ad
-- MegaCrit.Sts2.Core.Models.Monsters/Fabricator.cs sha256:7a78bc8f844f4c92eb877957510dd8d3f1450d9b8eb3bf3f59ebb5bf47678c75
+- MegaCrit.Sts2.Core.Models.Monsters/Fabricator.cs sha256:40884c0143d009329348770c8642aa689af379ccb0131fab3c096553613c17fe
 - MegaCrit.Sts2.Core.Models.Encounters/FabricatorNormal.cs sha256:0390ef0151a229f5b827b4ad77bed3feb39bd9331e9f06a916c6cae86de0966d
 - MegaCrit.Sts2.Core.Models.Powers/MinionPower.cs sha256:8acbaf43969b256e0777bed2371830f7399e8c32fc45c8c35a3de7cde8b8c392
 - MegaCrit.Sts2.Core.Models.Acts/Glory.cs sha256:d70575f5ac62dda4c1e80d424955c412eb00248e127caaa2751a2775db4b03d0
-- MegaCrit.Sts2.Core.Combat/CombatManager.cs sha256:7ae1b7259e72befa07f4aceaa9ab0e23783fc55876bcde6090b9b2cfae65a43e
-- MegaCrit.Sts2.Core.Commands/CreatureCmd.cs sha256:f52882086d141dea85b8de65b8e526db5418e390d3f5ba3f2191d3d7f8a6420b
+- MegaCrit.Sts2.Core.Combat/CombatManager.cs sha256:8b1e0a22403cd8f9bd647ae640de30467dd70319d860a0527549ff800d2b97f3
+- MegaCrit.Sts2.Core.Commands/CreatureCmd.cs sha256:3e11f255f18296998511d03ee952a7b16974f5999de7db8941e35a3ef4e92768
 ---
 # 파지직봇 (ZAPBOT)
 

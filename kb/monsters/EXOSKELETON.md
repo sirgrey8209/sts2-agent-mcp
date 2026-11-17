@@ -1,10 +1,10 @@
 ---
 id: MONSTER.EXOSKELETON
 name: 갑각충
-game_version: v0.107.1
+game_version: v0.111.1
 sources:
-- MegaCrit.Sts2.Core.Models.Monsters/Exoskeleton.cs sha256:e0f2e7828c3d0f22cbe176112dfd95ec7dc29f9617db9d37052561c49a007d1d
-- MegaCrit.Sts2.Core.Models.Powers/HardToKillPower.cs sha256:83489b8cfa6b18aeaf70e4de1c0980d5110d5cc3ab6af59301383b8f9d50f612
+- MegaCrit.Sts2.Core.Models.Monsters/Exoskeleton.cs sha256:d97c1305f63024a4e4f0d2da1641c1e644cd940214aa36596d48a563c8f4ac03
+- MegaCrit.Sts2.Core.Models.Powers/HardToKillPower.cs sha256:20c98d27d3a5b3086ceee80cb74a1396ccd812a80ed2d0fb0ba662ccceb212e3
 - MegaCrit.Sts2.Core.Models.Encounters/ExoskeletonsWeak.cs sha256:3c804d173bd5305f335dc8903987b792ff189ed91267d7938a6ee1ff169f7b7f
 - MegaCrit.Sts2.Core.Models.Encounters/ExoskeletonsNormal.cs sha256:edc6c4b778ec0f53e4bfbcec77c65929feebd7cf911ad37f1b015032320b9e23
 - MegaCrit.Sts2.Core.Models.Acts/Hive.cs sha256:085d95a7ea0418ada9e8544efdc97afc01c4bada90eca76fd65d3755c62c784e
@@ -15,7 +15,7 @@ sources:
 **요약**: 2막에서 3~4마리 무리로 나오는 작은 벌레. 한 번에 받는 피해가 9로 제한되고(`HardToKillPower`), 자리(슬롯)에 따라 첫 행동이 정해져 무리가 서로 다른 행동으로 시작한다.
 
 ## 기본
-- HP: 24~28 (A8+ 25~29)
+- HP: 24~28 (A8+ 26~30)
 - 등장: 2막(`HIVE`) 일반 전투
   - `ENCOUNTER.EXOSKELETONS_WEAK` (막 초반 약한 전투): 3마리 (슬롯 first, second, third)
   - `ENCOUNTER.EXOSKELETONS_NORMAL`: 4마리 (슬롯 first, second, third, fourth)

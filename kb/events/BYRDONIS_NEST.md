@@ -1,17 +1,17 @@
 ---
 id: EVENT.BYRDONIS_NEST
 name: 섀도니스 둥지
-game_version: v0.107.1
+game_version: v0.111.1
 sources:
 - MegaCrit.Sts2.Core.Models.Events/ByrdonisNest.cs sha256:408c80d0f97fd369e56b9209a65a24da66992e1c2259937b5a152631eac6d40e
 - MegaCrit.Sts2.Core.Models.Acts/Overgrowth.cs sha256:61ff9d71f9b17f2f6a2f7f51f64bbfaa6752ec8cf7e75b4d291f2b0f89dc232b
 - MegaCrit.Sts2.Core.Models.Cards/ByrdonisEgg.cs sha256:a67ffe2dee74f31811e7f18f515a89e84cafe9b24ed47fb5e3d4f315ce2ee533
 - MegaCrit.Sts2.Core.Entities.RestSite/HatchRestSiteOption.cs sha256:484d0df3bc0dcaf5690b16982fb9fc3b8f2e18dcc4ccf63d2a5c4f8ea5a13b11
-- MegaCrit.Sts2.Core.Models.Relics/Byrdpip.cs sha256:d409ee6c9a01726692451583f64935790da7a336aef881cd54a77a3b2a77001c
-- MegaCrit.Sts2.Core.Models.Cards/ByrdSwoop.cs sha256:ceca1dceac7cebdfb20f46bffdc19a7433ffade275e5bad054de6003634a1b62
+- MegaCrit.Sts2.Core.Models.Relics/Byrdpip.cs sha256:7294b63acf1a136a0100df21ceff1101967131231a8d83c4b1ff6f6d373e3978
+- MegaCrit.Sts2.Core.Models.Cards/ByrdSwoop.cs sha256:81743cd8fe69ccee5fb8ce1dd024c2e6b8f5118106996490ec03caa71f344882
 - MegaCrit.Sts2.Core.Models.Monsters/Byrdpip.cs sha256:4eccc5691dfbe9dc5c0f0d4ba3f544db2370cb3efe396753f94628be36fa31a9
-- MegaCrit.Sts2.Core.Entities.Players/Player.cs sha256:4672a42656cec2b61d7f720000a462648b12d303d92af92d21c0ac3325d156db
-- MegaCrit.Sts2.Core.Commands/CreatureCmd.cs sha256:f52882086d141dea85b8de65b8e526db5418e390d3f5ba3f2191d3d7f8a6420b
+- MegaCrit.Sts2.Core.Entities.Players/Player.cs sha256:6bb4db73a40fce98c353ea9c3a15bb40f221cfb7a6153f11a9c98f7999d6b5b3
+- MegaCrit.Sts2.Core.Commands/CreatureCmd.cs sha256:3e11f255f18296998511d03ee952a7b16974f5999de7db8941e35a3ef4e92768
 ---
 # 섀도니스 둥지 (BYRDONIS_NEST)
 

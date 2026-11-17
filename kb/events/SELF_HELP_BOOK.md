@@ -1,15 +1,15 @@
 ---
 id: EVENT.SELF_HELP_BOOK
 name: 자기계발서
-game_version: v0.107.1
+game_version: v0.111.1
 sources:
 - MegaCrit.Sts2.Core.Models.Events/SelfHelpBook.cs sha256:efaa3eeaf96fb3ca30477b12e1598bdb8374d58b87880f8129efa888ee6ed46e
-- MegaCrit.Sts2.Core.Models/ModelDb.cs sha256:7144c6e265fc4484e40860f4ec7cb288c677a63256675222010f66ab628d6e4f
+- MegaCrit.Sts2.Core.Models/ModelDb.cs sha256:2f7bdb25b700a1725266c720525542b660056bbc86f357852239b39b8fbf14f8
 - MegaCrit.Sts2.Core.Models.Enchantments/Sharp.cs sha256:1de8537303cbb6860d4f55b117c0a8cd6179f3c455456b87393c0a7d135339c5
 - MegaCrit.Sts2.Core.Models.Enchantments/Nimble.cs sha256:5b1e5a9075e3f0cff0e39b644dae1a749cc6460721a13423c62231ec93f75142
-- MegaCrit.Sts2.Core.Models.Enchantments/Swift.cs sha256:fe26a7f3c0d452121e4234ca5e0280d1285baff834b403aba7ea3e176f5995f7
-- MegaCrit.Sts2.Core.Models/EnchantmentModel.cs sha256:3bb36197749db36c0776b52fe2b1c1a0faaec2b66f623277c48427906784210c
-- MegaCrit.Sts2.Core.Entities.Players/Player.cs sha256:4672a42656cec2b61d7f720000a462648b12d303d92af92d21c0ac3325d156db
+- MegaCrit.Sts2.Core.Models.Enchantments/Swift.cs sha256:d8fd0ca9b8a13b21c409f2a281633b04f97cb6d303a48457e44d768c83ca1ad5
+- MegaCrit.Sts2.Core.Models/EnchantmentModel.cs sha256:74deff3aabe7b7564d91299c49eb1c222b8aa6b987900e9fc1f19cf29e778006
+- MegaCrit.Sts2.Core.Entities.Players/Player.cs sha256:6bb4db73a40fce98c353ea9c3a15bb40f221cfb7a6153f11a9c98f7999d6b5b3
 ---
 # 자기계발서 (SELF_HELP_BOOK)
 
@@ -31,7 +31,7 @@ sources:
 - 공통 대상 조건: 덱에서 사용불가가 아니고 아직 인챈트가 없는 카드.
 - `Sharp` 2: 공격 피해(힘 등이 적용되는 카드 공격)에 +2. 매번 적용.
 - `Nimble` 2: 방어도를 얻는 스킬만 대상. 카드가 주는 방어도 +2. 매번 적용.
-- `Swift` 2: 카드를 사용하면 카드 2장을 뽑고 그 전투 동안은 비활성화된다. 전투마다 다시 작동.
+- `Swift` 2: 카드를 사용하면 먼저 그 전투 동안 비활성화된 뒤 카드 2장을 뽑는다(뽑는 도중 같은 카드가 다시 사용돼도 재발동하지 않는다). 전투마다 다시 작동.
 - 선택은 정확히 1장이며, 고른 뒤 바로 이벤트가 끝난다.
 
 ## 플레이 메모

@@ -1,10 +1,10 @@
 ---
 id: EVENT.TRIAL
 name: 재판
-game_version: v0.107.1
+game_version: v0.111.1
 sources:
 - MegaCrit.Sts2.Core.Models.Events/Trial.cs sha256:46c716d2e077dfc10e0decdaba192880c34d12fbf5102815c1730f76b1bbe716
-- MegaCrit.Sts2.Core.Models.Cards/Regret.cs sha256:ea8405d6cc3872aae3f8afa488d4b555100bcf314d25be5ecda123e816ee380e
+- MegaCrit.Sts2.Core.Models.Cards/Regret.cs sha256:241873001d0c5135d41c97204fd2f83e14570c2a0cf259804374e5c6605713a4
 - MegaCrit.Sts2.Core.Models.Cards/Shame.cs sha256:1cc217782a947fbf45d4f2938c39ea19fe977b79ec0c34b0f7d957282582f4c1
 - MegaCrit.Sts2.Core.Models.Cards/Doubt.cs sha256:6e3184762798b81592fdd2f18b951eba0b7e669454349be62809fa4bb9168238
 - MegaCrit.Sts2.Core.Factories/RelicFactory.cs sha256:4fbe5ca84342cef115aabdd016b55be18bfe7b66cf0ff96e2e41c8a87da3f0dd

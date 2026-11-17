@@ -1,14 +1,14 @@
 ---
 id: MONSTER.CRUSHER
 name: 분쇄자
-game_version: v0.107.1
+game_version: v0.111.1
 sources:
-- MegaCrit.Sts2.Core.Models.Monsters/Crusher.cs sha256:0d3ad00edf1156840ef0709f00fb8a8452e1056b3aed34bbb67e20588df7c7ca
+- MegaCrit.Sts2.Core.Models.Monsters/Crusher.cs sha256:4d87fcda1fe3440e4a5e3b64602a7903673c8c304e7b56de324921537b0e8c6f
 - MegaCrit.Sts2.Core.Models.Powers/BackAttackLeftPower.cs sha256:82ab43de2361ab56a790f203d079f446062a4a6cba25fddd38a64e02eb4acd44
 - MegaCrit.Sts2.Core.Models.Powers/BackAttackRightPower.cs sha256:b36b013710f34b4feb8f8e13103607d1a0d34295204b2616d114642cc6d26339
-- MegaCrit.Sts2.Core.Models.Powers/SurroundedPower.cs sha256:4fc7a5ced6a6058ea6c9c2bd624fe16b00e9aa8edd014d6924810091396a2db4
+- MegaCrit.Sts2.Core.Models.Powers/SurroundedPower.cs sha256:628adca125046c8793b059b0a5c06d1c239e34b7cafec9c29ec409eaa5e876f6
 - MegaCrit.Sts2.Core.Models.Powers/CrabRagePower.cs sha256:c4665003b762626b27cdd46690ba789390261bb685699f4406b893607dcb812a
-- MegaCrit.Sts2.Core.Models.Monsters/Rocket.cs sha256:3b9b3ff7a6c28b59ed11933348793b2de59d0b912cf37cc347219e0ebba166aa
+- MegaCrit.Sts2.Core.Models.Monsters/Rocket.cs sha256:6d30f856a69aced54375a482e120aefca91e7ff24794770fdbc2ce4f3a081a22
 - MegaCrit.Sts2.Core.Models.Encounters/KaiserCrabBoss.cs sha256:07c9dfac1e3d99521efc9d55550e3aa089259f28a677ff71b5d456f632117e55
 - MegaCrit.Sts2.Core.Models.Acts/Hive.cs sha256:085d95a7ea0418ada9e8544efdc97afc01c4bada90eca76fd65d3755c62c784e
 ---

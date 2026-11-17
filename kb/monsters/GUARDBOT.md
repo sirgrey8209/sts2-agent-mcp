@@ -1,13 +1,13 @@
 ---
 id: MONSTER.GUARDBOT
 name: 막아봇
-game_version: v0.107.1
+game_version: v0.111.1
 sources:
-- MegaCrit.Sts2.Core.Models.Monsters/Guardbot.cs sha256:6efc28480ec4ca9f43b190d703ac18c961209a765940db652a999d974d9e1753
-- MegaCrit.Sts2.Core.Models.Monsters/Fabricator.cs sha256:7a78bc8f844f4c92eb877957510dd8d3f1450d9b8eb3bf3f59ebb5bf47678c75
+- MegaCrit.Sts2.Core.Models.Monsters/Guardbot.cs sha256:7ed4cb2c21534b5cba97f1344035f5c94b40129f3bfc66786de7ce16a609f2f6
+- MegaCrit.Sts2.Core.Models.Monsters/Fabricator.cs sha256:40884c0143d009329348770c8642aa689af379ccb0131fab3c096553613c17fe
 - MegaCrit.Sts2.Core.Models.Encounters/FabricatorNormal.cs sha256:0390ef0151a229f5b827b4ad77bed3feb39bd9331e9f06a916c6cae86de0966d
 - MegaCrit.Sts2.Core.Models.Powers/MinionPower.cs sha256:8acbaf43969b256e0777bed2371830f7399e8c32fc45c8c35a3de7cde8b8c392
-- MegaCrit.Sts2.Core.Commands/CreatureCmd.cs sha256:f52882086d141dea85b8de65b8e526db5418e390d3f5ba3f2191d3d7f8a6420b
+- MegaCrit.Sts2.Core.Commands/CreatureCmd.cs sha256:3e11f255f18296998511d03ee952a7b16974f5999de7db8941e35a3ef4e92768
 ---
 # 막아봇 (GUARDBOT)
 

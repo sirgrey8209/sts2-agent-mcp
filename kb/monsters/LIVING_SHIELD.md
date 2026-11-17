@@ -1,9 +1,9 @@
 ---
 id: MONSTER.LIVING_SHIELD
 name: 살아있는 방패
-game_version: v0.107.1
+game_version: v0.111.1
 sources:
-- MegaCrit.Sts2.Core.Models.Monsters/LivingShield.cs sha256:e6d281e37d81061832d54cd2b42052a4c4898eba5699da7aceed9a66396553e7
+- MegaCrit.Sts2.Core.Models.Monsters/LivingShield.cs sha256:968e52262722fa514287fb4d031d7166fb9139ec567dd7596692d3670ff509f4
 - MegaCrit.Sts2.Core.Models.Powers/RampartPower.cs sha256:8fa6e74049e1c66a8b286852f7503ea00cf2e24c1333cabaf59f6d2172d21509
 - MegaCrit.Sts2.Core.Models.Monsters/TurretOperator.cs sha256:049648efa3b3c7b7aa80d6e9fe225c9002b63fef6cdf96b9e086858f3eb2a2f5
 - MegaCrit.Sts2.Core.Models.Encounters/TurretOperatorWeak.cs sha256:83b3a97a251256242c6b49ca6a64972c21eacd49e7969f5036feb8b0ec241a62

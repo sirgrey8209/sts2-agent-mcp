@@ -1,14 +1,14 @@
 ---
 id: EVENT.DARV
 name: 다브
-game_version: v0.107.1
+game_version: v0.111.1
 sources:
-- MegaCrit.Sts2.Core.Models.Events/Darv.cs sha256:fee7ae46423e58b75f81b8af4fe4967ae28bafbc12e7665e90fe96589f43c451
+- MegaCrit.Sts2.Core.Models.Events/Darv.cs sha256:6d723632ea4bab226855a8fcb28d67384c0f738834ec1369c185b58be709b22e
 - MegaCrit.Sts2.Core.Models/AncientEventModel.cs sha256:1e721b13dc512b05d2d0e8cb208701a5ca902026f59b645f16aaff5a37725105
-- MegaCrit.Sts2.Core.Models/ModelDb.cs sha256:7144c6e265fc4484e40860f4ec7cb288c677a63256675222010f66ab628d6e4f
+- MegaCrit.Sts2.Core.Models/ModelDb.cs sha256:2f7bdb25b700a1725266c720525542b660056bbc86f357852239b39b8fbf14f8
 - MegaCrit.Sts2.Core.Models/ActModel.cs sha256:55f3a43c7e055aff1e35985c0cd229f22a271698a82b0d0a24a3f01320dcab0b
-- MegaCrit.Sts2.Core.Runs/RunManager.cs sha256:1c4d11b1b2261f2e5a0e7338866d0ca8c219152567700c9608d23f46a15258e1
-- MegaCrit.Sts2.Core.Unlocks/UnlockState.cs sha256:1fdd00d0734f78f98edefea81c58b288d0ff6a21da714f2a6cb63e1b9341cc62
+- MegaCrit.Sts2.Core.Runs/RunManager.cs sha256:db8f6c79a7ae1d1932028af1b9f4d2b01092e6294251f4eab40f7e67a03ee8bd
+- MegaCrit.Sts2.Core.Unlocks/UnlockState.cs sha256:62496bc9a2d68f5a7e9bc95df5ff592104f2070b8f03cdc7fc6966eb84ff389e
 - MegaCrit.Sts2.Core.Models.Acts/Hive.cs sha256:085d95a7ea0418ada9e8544efdc97afc01c4bada90eca76fd65d3755c62c784e
 - MegaCrit.Sts2.Core.Models.Acts/Glory.cs sha256:d70575f5ac62dda4c1e80d424955c412eb00248e127caaa2751a2775db4b03d0
 - MegaCrit.Sts2.Core.Models.Relics/DustyTome.cs sha256:5827f26305687d17a79b79d8764684b80c433f123acd0baee796f8effb18b213
@@ -34,7 +34,7 @@ sources:
 - 후보가 된 막에서는 그 막의 해금된 고대 존재들(군락(`Hive`): `Orobas`·`Pael`·`Tezcatara`, 영광(`Glory`): `Nonupeipe`·`Tanx`·`Vakuu`)과 함께 균등 확률로 하나가 그 막의 고대 존재로 뽑힌다.
 
 ## 선택지
-유물 묶음 9개 중 현재 조건을 만족하는 묶음마다 유물 1개씩 뽑아 섞은 뒤:
+유물 묶음 11개 중 현재 조건을 만족하는 묶음마다 유물 1개씩 뽑아 섞은 뒤:
 - 50%: 앞의 2개 + `DustyTome`
 - 50%: 앞의 3개
 
@@ -47,8 +47,10 @@ sources:
 | 판도라의 상자(`PandorasBox`) | 덱을 비우는 런 수정자가 없을 때 | 제거 가능한 기본 타격·수비 전부를 무작위 카드로 변화 |
 | 룬 피라미드(`RunicPyramid`) | 항상 | 턴 종료 시 손패를 버리지 않음 |
 | 스네코의 눈(`SneckoEye`) | 항상 | 매 턴 드로우 +2, 전투 시작 시 혼란(`ConfusedPower`) 1 |
-| 외형질(`Ectoplasm`) 또는 시시오도시(`Sozu`) (둘 중 무작위) | 2막(`CurrentActIndex == 1`) | 최대 에너지 +1. `Ectoplasm`: 골드 획득 불가 / `Sozu`: 포션 획득 불가 |
-| 현자의 돌(`PhilosophersStone`) 또는 벨벳 초커(`VelvetChoker`) (둘 중 무작위) | 3막(`CurrentActIndex == 2`) | 최대 에너지 +1. `PhilosophersStone`: 모든 적이 힘 1을 얻음 / `VelvetChoker`: 한 턴에 카드 6장까지만 사용 가능 |
+| 외형질(`Ectoplasm`) | 2막(`CurrentActIndex == 1`) | 최대 에너지 +1, 골드 획득 불가 |
+| 시시오도시(`Sozu`) | 2막(`CurrentActIndex == 1`) | 최대 에너지 +1, 포션 획득 불가 |
+| 현자의 돌(`PhilosophersStone`) | 2막 이후(`CurrentActIndex >= 1`) | 최대 에너지 +1, 모든 적이 힘 1을 얻음 |
+| 벨벳 초커(`VelvetChoker`) | 2막 이후(`CurrentActIndex >= 1`) | 최대 에너지 +1, 한 턴에 카드 6장까지만 사용 가능 |
 
 | 추가 선택지 | 효과 |
 |---|---|
@@ -57,7 +59,7 @@ sources:
 유물을 고르면 바로 획득하고 이벤트 종료. 거절 선택지는 없다.
 
 ## 결과 상세
-- 2막과 3막에는 각각 에너지 묶음 하나만 유효하므로, 후보 묶음은 항상 8개(덱 비우기 수정자가 있으면 7개)다.
+- 각 묶음은 유물 1개짜리다. 2막에는 에너지 유물 4개(`Ectoplasm`·`Sozu`·`PhilosophersStone`·`VelvetChoker`)가 모두 유효해 후보 묶음이 11개(덱 비우기 수정자가 있으면 10개), 3막에는 `PhilosophersStone`·`VelvetChoker`만 유효해 9개(8개)다. 에너지 유물이 선택지에 2개 이상 함께 나올 수 있다.
 - 에너지 유물(`Ectoplasm`/`Sozu`/`PhilosophersStone`/`VelvetChoker`)은 모두 최대 에너지 +1과 각자의 제약을 가진다.
 
 ## 플레이 메모

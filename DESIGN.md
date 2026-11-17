@@ -1,6 +1,6 @@
 # STS2 Agent MCP — 설계
 
-기준 게임 버전: Slay the Spire 2 v0.107.1 (commit 59260271)
+기준 게임 버전: Slay the Spire 2 v0.111.1 (처음 설계와 P0·P1 검증은 v0.107.1에서 했다)
 게임 동작은 디컴파일한 `sts2.dll`로 확인했다(디컴파일 결과는 저장소에 포함하지 않는다).
 이 문서의 "기존 모드"는 출발점으로 참고한 [STS2MCP](https://github.com/Gennadiyev/STS2MCP)를 가리킨다.
 
@@ -368,7 +368,7 @@ interface IResourceProvider { bool Applies(PlayerCtx p); IEnumerable<ResourceVie
 게임 문구에 나오지 않는 몬스터·이벤트 동작(정확한 수치, 승천별 변화, 행동 패턴, 선택지 결과)은 런타임 코드 대신 문서로 관리한다.
 
 - 기준: 로컬에서 디컴파일한 게임 코드(저장소 밖, 공개하지 않음). 문서에는 코드를 넣지 않고 동작만 요약한다.
-- 위치: `kb/monsters/<ENTRY>.md`, `kb/events/<ENTRY>.md`. `ENTRY`는 게임 `ModelId.Entry`와 같다. v0.107.1 기준 몬스터 121개, 이벤트 68개.
+- 위치: `kb/monsters/<ENTRY>.md`, `kb/events/<ENTRY>.md`. `ENTRY`는 게임 `ModelId.Entry`와 같다. v0.111.1 기준 몬스터 121개, 이벤트 68개(v0.107.1에서 쓰고 v0.111.1 변경을 반영).
 - 머리말: `game_version`과 근거 원본 파일 목록(`sources`, 파일별 sha256). `info`는 게임 버전이 다르면 문서 앞에 안내를 붙인다.
 - 업데이트: 새 버전을 디컴파일 → `kb-check`가 원본이 바뀐 문서와 문서가 없는 몬스터·이벤트를 나열 → 원본 diff를 보고 고쳐 씀 → `kb-glossary`로 게임 용어 확인 → `kb-stamp`로 해시 기록. 형식과 작성 규칙은 `kb/README.md`.
 - 문서 안의 이름은 게임 현지화 문구와 같아야 한다. `kb-glossary`가 문서별 용어 목록을 만들고, 게임 이름과 다른 이름을 보고한다.

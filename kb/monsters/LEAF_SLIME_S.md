@@ -1,13 +1,13 @@
 ---
 id: MONSTER.LEAF_SLIME_S
 name: 나뭇잎 슬라임 (소)
-game_version: v0.107.1
+game_version: v0.111.1
 sources:
 - MegaCrit.Sts2.Core.Models.Monsters/LeafSlimeS.cs sha256:6db6f1ccc681f86ca48584827b4276c9881297e3c5cb07ddf7516735d9779815
 - MegaCrit.Sts2.Core.Models.Cards/Slimed.cs sha256:024372f85032a09464fa15bc5b2113f79e4b89a6f4f415182007901ebd4d37a8
 - MegaCrit.Sts2.Core.Models.Encounters/SlimesNormal.cs sha256:0c53efaaf3053551c55be100f69cfe3dfe5f32f6fac03f57db77d85c54db1c74
 - MegaCrit.Sts2.Core.Models.Encounters/SlimesWeak.cs sha256:e28277926221eb06799873115b096e9b48a8672446754da75c5ae902beede7ec
-- MegaCrit.Sts2.Core.Models.Encounters/SlitheringStranglerNormal.cs sha256:6303054f9e6b1809fe058179f5fe0a5a2b834255e300dd1e1b065c4ad37ccae3
+- MegaCrit.Sts2.Core.Models.Encounters/SlitheringStranglerNormal.cs sha256:23ed70bec8d661aafeaf1d5daa8f75fa85daa31df660e6f70ad34fbe29594554
 - MegaCrit.Sts2.Core.MonsterMoves.MonsterMoveStateMachine/RandomBranchState.cs sha256:a21f4174e001da5a0d34c23d07f52da61735618462e407ea1181ebd89469e9bb
 ---
 # 나뭇잎 슬라임 (소) (LEAF_SLIME_S)

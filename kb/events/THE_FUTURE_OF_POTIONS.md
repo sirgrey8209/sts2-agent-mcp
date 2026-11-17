@@ -1,10 +1,10 @@
 ---
 id: EVENT.THE_FUTURE_OF_POTIONS
 name: 포션의 미래?
-game_version: v0.107.1
+game_version: v0.111.1
 sources:
-- MegaCrit.Sts2.Core.Models.Events/TheFutureOfPotions.cs sha256:78f9d366a76996b8cb2e3b44a6bda61991adeea879d2f89f8202af45524d7388
-- MegaCrit.Sts2.Core.Models/ModelDb.cs sha256:7144c6e265fc4484e40860f4ec7cb288c677a63256675222010f66ab628d6e4f
+- MegaCrit.Sts2.Core.Models.Events/TheFutureOfPotions.cs sha256:29476d44a49abe759cea9431480601c11310e63ba5e8fce7d666c8ff88a9b83a
+- MegaCrit.Sts2.Core.Models/ModelDb.cs sha256:2f7bdb25b700a1725266c720525542b660056bbc86f357852239b39b8fbf14f8
 ---
 # 포션의 미래? (THE_FUTURE_OF_POTIONS)
 
@@ -14,7 +14,7 @@ sources:
 - 막 공용 이벤트(`ModelDb.AllSharedEvents`): 모든 막의 이벤트 후보에 들어간다.
 - 모든 플레이어가 포션을 2개 이상 가지고 있어야 등장한다.
 - 개별 이벤트(공유 아님).
-- 이벤트 진행 중에는 포션을 버릴 수 없다(`CanRemovePotions = false`, 이벤트가 끝나면 복구).
+- 이벤트 진행 중에는 포션을 사용하거나 버릴 수 없다(`CanUseOrRemovePotions = false`, 이벤트가 끝나면 복구).
 
 ## 선택지
 보유 포션 앞에서부터 최대 3개에 대해 각각 하나씩 선택지가 생긴다. 다른 선택지(떠나기 등)는 없다.

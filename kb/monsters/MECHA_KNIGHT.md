@@ -1,17 +1,17 @@
 ---
 id: MONSTER.MECHA_KNIGHT
 name: 기계 기사
-game_version: v0.107.1
+game_version: v0.111.1
 sources:
-- MegaCrit.Sts2.Core.Models.Monsters/MechaKnight.cs sha256:b542bb93962c858258ec1a10980cf17412ddb394ba79d4e0c11c364053bbfdd0
+- MegaCrit.Sts2.Core.Models.Monsters/MechaKnight.cs sha256:cfe07ba71137d26498ac124569a700fa3eba181f45116e99036b5efa8d552908
 - MegaCrit.Sts2.Core.Models.Encounters/MechaKnightElite.cs sha256:7a2b8bceaeaa640c49ead31fafa282da09b7727ffd14aacbfe5e81adad44bae8
 - MegaCrit.Sts2.Core.Models.Acts/Glory.cs sha256:d70575f5ac62dda4c1e80d424955c412eb00248e127caaa2751a2775db4b03d0
 - MegaCrit.Sts2.Core.Models.Powers/ArtifactPower.cs sha256:d2b7f2c1bfc36466e5ab0bd4e4581697c8299ce579c6f978a4fe7a1535c9eb3a
-- MegaCrit.Sts2.Core.Models.Cards/Burn.cs sha256:2254a3b91589159c83bf53e1f5e96b145aba0a2ef729350621dbd098b0345742
+- MegaCrit.Sts2.Core.Models.Cards/Burn.cs sha256:d2241e625c4024be53b340401ae63cbf90a4ce2ed37c90438703116c3020e403
 ---
 # 기계 기사 (MECHA_KNIGHT)
 
-**요약**: 3막 엘리트. 인공물 3으로 디버프를 막고 시작하며, 돌진 후 화염 방사(화상 4장) → 태엽 감기(방어 15, 힘 +5) → 묵직한 절단을 고정 순환한다. 순환마다 힘이 5씩 쌓인다.
+**요약**: 3막 엘리트. 인공물 3으로 디버프를 막고 시작하며, 돌진 후 화염 방사(피해 8 + 화상 4장) → 태엽 감기(방어 15, 힘 +5) → 묵직한 절단을 고정 순환한다. 순환마다 힘이 5씩 쌓인다.
 
 ## 기본
 - HP: 300 (A8+ 320), 고정
@@ -22,7 +22,7 @@ sources:
 | 행동 | 의도 | 효과 |
 |---|---|---|
 | 돌진 (`CHARGE_MOVE`) | 공격 | 피해 25 (A9+ 30) |
-| 화염 방사 (`FLAMETHROWER_MOVE`) | 상태이상 (4) | 각 플레이어 손패에 화상(`Burn`) 4장 추가 |
+| 화염 방사 (`FLAMETHROWER_MOVE`) | 공격 + 상태이상 (4) | 피해 8 (A9+ 12) → 각 플레이어 손패에 화상(`Burn`) 4장 추가 |
 | 태엽 감기 (`WINDUP_MOVE`) | 방어 + 버프 | 자신 방어도 15, 힘 +5 |
 | 묵직한 절단 (`HEAVY_CLEAVE_MOVE`) | 공격 | 피해 35 (A9+ 40) |
 
@@ -34,9 +34,10 @@ sources:
 ## 특수 규칙
 - **인공물(`ArtifactPower`)**: 보이는 디버프가 걸릴 때마다 1 소모하고 그 디버프를 무효화한다. 3번의 디버프를 막은 뒤부터 디버프가 들어간다.
 - **화상(`Burn`)**: 사용 불가 상태이상 카드. 턴 종료 시 손에 있으면 그 플레이어가 피해 2를 받는다(방어도로 막을 수 있음).
-- 태엽 감기의 힘 +5는 영구 누적이라 순환할 때마다 묵직한 절단이 5씩 강해진다(첫 절단 40, A9+ 45).
+- 태엽 감기의 힘 +5는 영구 누적이라 순환할 때마다 묵직한 절단이 5씩 강해진다(첫 절단 40, A9+ 45). 화염 방사도 두 번째부터 힘이 붙는다(두 번째 13, A9+ 17).
 
 ## 플레이 메모
+- 화염 방사 턴에는 공격(8, A9+ 12, 이후 힘만큼 증가)도 오므로 방어도가 필요하다. 의도가 공격 아닌 턴은 태엽 감기뿐이다.
 - 화상 4장이 손에 들어오므로 화염 방사 다음 턴은 손패가 막히고, 턴 종료 시 손에 남은 화상 하나당 2 피해를 받는다.
 - 태엽 감기 턴(공격 없음)은 방어도 15를 깎으며 공격할 수 있는 턴이다. 다음 턴 묵직한 절단(힘 포함 40+)에 대비해 방어를 남겨 둔다.
 - 약화 등 디버프로 절단을 줄이려면 인공물 3을 먼저 벗겨야 한다.

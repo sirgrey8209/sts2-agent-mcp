@@ -1,14 +1,14 @@
 ---
 id: MONSTER.OSTY
 name: 골골이
-game_version: v0.107.1
+game_version: v0.111.1
 sources:
 - MegaCrit.Sts2.Core.Models.Monsters/Osty.cs sha256:5817a0bc9532f5bc91d93f893b8eb125ba23f5e8333f6dc31df6ee12d26d483c
-- MegaCrit.Sts2.Core.Commands/OstyCmd.cs sha256:5ccce0d24d3be80cec8457b5d7bf4976d7a74fbd1b99e5d2811399385be65c69
+- MegaCrit.Sts2.Core.Commands/OstyCmd.cs sha256:00808cac38b7bf06e1ee55210493efaa257c5b3acf6cce88e4c42effbaa8ea06
 - MegaCrit.Sts2.Core.Models.Powers/DieForYouPower.cs sha256:86c72f94ab4828a22d03b7f33e77dd174298f88cfd9881e0fda3786b5871ed6b
 - MegaCrit.Sts2.Core.Models.Relics/BoundPhylactery.cs sha256:2f43f01ffdaa9f22cbe884a9dfa6d3095017ce18a6d3359291dc93af96ea5eac
-- MegaCrit.Sts2.Core.Commands/CreatureCmd.cs sha256:f52882086d141dea85b8de65b8e526db5418e390d3f5ba3f2191d3d7f8a6420b
-- MegaCrit.Sts2.Core.Entities.Players/Player.cs sha256:4672a42656cec2b61d7f720000a462648b12d303d92af92d21c0ac3325d156db
+- MegaCrit.Sts2.Core.Commands/CreatureCmd.cs sha256:3e11f255f18296998511d03ee952a7b16974f5999de7db8941e35a3ef4e92768
+- MegaCrit.Sts2.Core.Entities.Players/Player.cs sha256:6bb4db73a40fce98c353ea9c3a15bb40f221cfb7a6153f11a9c98f7999d6b5b3
 ---
 # 골골이 (OSTY)
 

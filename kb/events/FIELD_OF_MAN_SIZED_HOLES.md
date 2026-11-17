@@ -1,12 +1,12 @@
 ---
 id: EVENT.FIELD_OF_MAN_SIZED_HOLES
 name: 사람 크기 구멍의 들판
-game_version: v0.107.1
+game_version: v0.111.1
 sources:
 - MegaCrit.Sts2.Core.Models.Events/FieldOfManSizedHoles.cs sha256:32e713203454c923b43f45a6f9d34ee95beadb9ab0f64e40928ae91a5febd590
-- MegaCrit.Sts2.Core.Models.Cards/Normality.cs sha256:177e12660baab850601af1f06d27857b8add259f11444fff36957e1448eea545
+- MegaCrit.Sts2.Core.Models.Cards/Normality.cs sha256:8cd87d55cfe001eba4b919841716ddc028b16560ea61c506efafd9c0d058df90
 - MegaCrit.Sts2.Core.Models.Enchantments/PerfectFit.cs sha256:d78b98df8693c9527f9536c3a3376ea322ce0750cbbdab2d31a8deca0f3caa33
-- MegaCrit.Sts2.Core.Models/EnchantmentModel.cs sha256:3bb36197749db36c0776b52fe2b1c1a0faaec2b66f623277c48427906784210c
+- MegaCrit.Sts2.Core.Models/EnchantmentModel.cs sha256:74deff3aabe7b7564d91299c49eb1c222b8aa6b987900e9fc1f19cf29e778006
 - MegaCrit.Sts2.Core.Models.Acts/Hive.cs sha256:085d95a7ea0418ada9e8544efdc97afc01c4bada90eca76fd65d3755c62c784e
 ---
 # 사람 크기 구멍의 들판 (FIELD_OF_MAN_SIZED_HOLES)

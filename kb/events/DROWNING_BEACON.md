@@ -1,11 +1,11 @@
 ---
 id: EVENT.DROWNING_BEACON
 name: 가라앉는 등대
-game_version: v0.107.1
+game_version: v0.111.1
 sources:
 - MegaCrit.Sts2.Core.Models.Events/DrowningBeacon.cs sha256:90cd88f0f9b8966dc68d3fa31d970fd1ecd2e8cb921d75ce210722494cb5b485
 - MegaCrit.Sts2.Core.Models.Acts/Underdocks.cs sha256:b5f91ba221afa5ca83ca92290f481c8bef88c28f1ff8272f780f2540700964fb
-- MegaCrit.Sts2.Core.Models.Potions/GlowwaterPotion.cs sha256:a6e57832f2a75ba3a679901908d7112df84a4e602c18a2cabcb47f228335b2a7
+- MegaCrit.Sts2.Core.Models.Potions/GlowwaterPotion.cs sha256:294daa496398a8d5658194e5b18b6d41acdf7afba7a1268f76c940ec870e6fa5
 - MegaCrit.Sts2.Core.Models.Relics/FresnelLens.cs sha256:d5d1047c713d3f9a7aa90e2c059be75d2b98c490515604e03368070c8c51ca29
 - MegaCrit.Sts2.Core.Models.Enchantments/Nimble.cs sha256:5b1e5a9075e3f0cff0e39b644dae1a749cc6460721a13423c62231ec93f75142
 ---
@@ -24,7 +24,7 @@ sources:
 | 올라간다 (`CLIMB`) | 최대 체력 13 잃음 → `FresnelLens` 획득. 이벤트 종료 |
 
 ## 결과 상세
-- `GlowwaterPotion` (이벤트 포션, 전투 중에만 사용): 손에 있는 카드를 모두 소멸시키고 카드 10장을 뽑는다. 즉시 지급이 아니라 보상 화면으로 제시된다.
+- `GlowwaterPotion` (이벤트 포션, 전투 중에만 사용): 대상 플레이어 1명(자신 또는 멀티플레이의 다른 플레이어)을 골라, 그 플레이어의 손에 있는 카드를 모두 소멸시키고 그 플레이어가 카드 10장을 뽑는다. 즉시 지급이 아니라 보상 화면으로 제시된다.
 - `FresnelLens` (이벤트 유물): 방어도를 얻는 카드에 마법부여 기민함(`Nimble`) 2(카드의 방어도 +2)를 붙인다.
   - 적용 시점: 카드 보상에 나온 카드, 상점 카드, 그 밖에 덱에 추가되는 모든 카드(이벤트·변화 등).
   - 이미 덱에 있던 카드에는 소급 적용되지 않는다.

@@ -1,12 +1,12 @@
 ---
 id: EVENT.BUGSLAYER
 name: 벌레 학살자
-game_version: v0.107.1
+game_version: v0.111.1
 sources:
 - MegaCrit.Sts2.Core.Models.Events/Bugslayer.cs sha256:772fd742b0fefeb21a2f849a9d78524e5b7291bf99306cc71c9cd71fe34ce11b
 - MegaCrit.Sts2.Core.Models.Acts/Hive.cs sha256:085d95a7ea0418ada9e8544efdc97afc01c4bada90eca76fd65d3755c62c784e
-- MegaCrit.Sts2.Core.Models.Cards/Exterminate.cs sha256:9897141a5ba69815c18f4612ed86d5b4d6ff1418a5dbf465c72f38e81a896bcc
-- MegaCrit.Sts2.Core.Models.Cards/Squash.cs sha256:4623ba476a114bc69f4dfe187a29cf33166fd7a8d40d1f56d5c7c7ea24fb7650
+- MegaCrit.Sts2.Core.Models.Cards/Exterminate.cs sha256:307cf98977f462c7d7dc66f0f9fbd2275b7bd108f2aa37ca3f0b43ed1c9ba3d9
+- MegaCrit.Sts2.Core.Models.Cards/Squash.cs sha256:9cb71457028fd46cb215b872850fe3f3178e84867467f6546e69ef9bca024d0d
 ---
 # 벌레 학살자 (BUGSLAYER)
 

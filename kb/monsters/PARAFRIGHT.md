@@ -1,15 +1,15 @@
 ---
 id: MONSTER.PARAFRIGHT
 name: 투사된 공포
-game_version: v0.107.1
+game_version: v0.111.1
 sources:
 - MegaCrit.Sts2.Core.Models.Monsters/Parafright.cs sha256:09efc24ace885927654f414fa5386a353f6fc6fc0f3934b965db22ba8da65b0c
 - MegaCrit.Sts2.Core.Models.Powers/IllusionPower.cs sha256:8cd53d7562a2182d4a32dd3eb92c0ace57b20bfbee5c40de32c4079308f9772c
 - MegaCrit.Sts2.Core.Models.Powers/MinionPower.cs sha256:8acbaf43969b256e0777bed2371830f7399e8c32fc45c8c35a3de7cde8b8c392
-- MegaCrit.Sts2.Core.Models.Monsters/TheObscura.cs sha256:3e71a7c73c4b5f79c19dbc1effee11421684c80a903e43c9d18032395c4f1b34
+- MegaCrit.Sts2.Core.Models.Monsters/TheObscura.cs sha256:e367833c127e12f8cca183d834002d4276aa932443794ec8e665dba0eae530b3
 - MegaCrit.Sts2.Core.Models.Encounters/TheObscuraNormal.cs sha256:e3ef94c067e79aaed8465490e070397481e75a40150ee0405eb4581d5de71d92
 - MegaCrit.Sts2.Core.Models.Acts/Hive.cs sha256:085d95a7ea0418ada9e8544efdc97afc01c4bada90eca76fd65d3755c62c784e
-- MegaCrit.Sts2.Core.Commands/CreatureCmd.cs sha256:f52882086d141dea85b8de65b8e526db5418e390d3f5ba3f2191d3d7f8a6420b
+- MegaCrit.Sts2.Core.Commands/CreatureCmd.cs sha256:3e11f255f18296998511d03ee952a7b16974f5999de7db8941e35a3ef4e92768
 ---
 # 투사된 공포 (PARAFRIGHT)
 

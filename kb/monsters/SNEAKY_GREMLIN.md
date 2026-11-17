@@ -1,14 +1,14 @@
 ---
 id: MONSTER.SNEAKY_GREMLIN
 name: 교활한 그렘린
-game_version: v0.107.1
+game_version: v0.111.1
 sources:
 - MegaCrit.Sts2.Core.Models.Monsters/SneakyGremlin.cs sha256:ad35c5bfcd96bad7cedd5e616340ea399653705fd88c205bacfc4cb817215725
-- MegaCrit.Sts2.Core.Models.Powers/SurprisePower.cs sha256:fb21c38261dc713279719feacbb628053fa5a1e9c9f361957d6c1dd8e20ebe2e
-- MegaCrit.Sts2.Core.Models.Monsters/GremlinMerc.cs sha256:c797fc8dff23fb3a2d6366ac257ee044f66d0bac6bfddc3f5b9f4bd302ddcf9c
+- MegaCrit.Sts2.Core.Models.Powers/SurprisePower.cs sha256:4cf7a79109a1a824b8e6a577dd82d838e12daefa5687f039c183efe977fee06b
+- MegaCrit.Sts2.Core.Models.Monsters/GremlinMerc.cs sha256:cdb0f5d81f2d73ab7f31a61e19959e2c7eb450226d4d74db6fd0d4a88703a11a
 - MegaCrit.Sts2.Core.Models.Encounters/GremlinMercNormal.cs sha256:0d68c699af2cd9778313d5707cfa5afe5c4b9bb4203fd392c2a2e9e52b1319ee
 - MegaCrit.Sts2.Core.Models.Acts/Underdocks.cs sha256:b5f91ba221afa5ca83ca92290f481c8bef88c28f1ff8272f780f2540700964fb
-- MegaCrit.Sts2.Core.Combat/CombatManager.cs sha256:7ae1b7259e72befa07f4aceaa9ab0e23783fc55876bcde6090b9b2cfae65a43e
+- MegaCrit.Sts2.Core.Combat/CombatManager.cs sha256:8b1e0a22403cd8f9bd647ae640de30467dd70319d860a0527549ff800d2b97f3
 ---
 # 교활한 그렘린 (SNEAKY_GREMLIN)
 

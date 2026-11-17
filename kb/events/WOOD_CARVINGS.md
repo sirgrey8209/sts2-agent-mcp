@@ -1,14 +1,14 @@
 ---
 id: EVENT.WOOD_CARVINGS
 name: 나무 조각
-game_version: v0.107.1
+game_version: v0.111.1
 sources:
 - MegaCrit.Sts2.Core.Models.Events/WoodCarvings.cs sha256:55912c1de946e15f2259d69f69333e8831f8fa4ae75cc760ff386186fcc03dfa
-- MegaCrit.Sts2.Core.Models.Cards/Peck.cs sha256:8146822ab09bb6fd4a32d9280478f4d2366f5e87c4e190d3f2e0200104b3812d
+- MegaCrit.Sts2.Core.Models.Cards/Peck.cs sha256:24b55a65128d7530e594467088f82358f073eddf243c7044e30b332a03baff32
 - MegaCrit.Sts2.Core.Models.Cards/ToricToughness.cs sha256:5886ac4138c2f28dcd347d1edd7ed2bc60f88645cba9f0d09d3a7c58fd25e8a3
 - MegaCrit.Sts2.Core.Models.Powers/ToricToughnessPower.cs sha256:43c92a2c1b54633d5a9023bf861f3c831555ce1274f913adf620bcc4ad904400
 - MegaCrit.Sts2.Core.Models.Enchantments/Slither.cs sha256:5a8d07070b85e1857f02b54e0274fa219a98298996f6415fd3edd61f9789e995
-- MegaCrit.Sts2.Core.Models/EnchantmentModel.cs sha256:3bb36197749db36c0776b52fe2b1c1a0faaec2b66f623277c48427906784210c
+- MegaCrit.Sts2.Core.Models/EnchantmentModel.cs sha256:74deff3aabe7b7564d91299c49eb1c222b8aa6b987900e9fc1f19cf29e778006
 - MegaCrit.Sts2.Core.Models.Acts/Overgrowth.cs sha256:61ff9d71f9b17f2f6a2f7f51f64bbfaa6752ec8cf7e75b4d291f2b0f89dc232b
 ---
 # 나무 조각 (WOOD_CARVINGS)

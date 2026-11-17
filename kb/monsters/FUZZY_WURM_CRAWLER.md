@@ -1,7 +1,7 @@
 ---
 id: MONSTER.FUZZY_WURM_CRAWLER
 name: 복슬지렁이
-game_version: v0.107.1
+game_version: v0.111.1
 sources:
 - MegaCrit.Sts2.Core.Models.Monsters/FuzzyWurmCrawler.cs sha256:1b985c2625c86375a377bb8f124e339cba9af66ce4c6b7d0d5f4548662ce8bb8
 - MegaCrit.Sts2.Core.Models.Encounters/FuzzyWurmCrawlerWeak.cs sha256:306bae08ec4ffc05936242ab7749bfe24e8facf79cbdbe4e3d4bc84d9a25bd0e

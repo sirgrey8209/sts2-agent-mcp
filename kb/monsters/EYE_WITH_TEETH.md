@@ -1,7 +1,7 @@
 ---
 id: MONSTER.EYE_WITH_TEETH
 name: 톱니눈
-game_version: v0.107.1
+game_version: v0.111.1
 sources:
 - MegaCrit.Sts2.Core.Models.Monsters/EyeWithTeeth.cs sha256:19add9828268c055d7549e4784fd7c6157b45cb030888cf6e6b8e990e8797d29
 - MegaCrit.Sts2.Core.Models.Powers/IllusionPower.cs sha256:8cd53d7562a2182d4a32dd3eb92c0ace57b20bfbee5c40de32c4079308f9772c
@@ -9,7 +9,7 @@ sources:
 - MegaCrit.Sts2.Core.Models.Cards/Dazed.cs sha256:41ef3c48ad9459d39d364f2f38863bbd15827e01fe2b48a243b40444cec0a28b
 - MegaCrit.Sts2.Core.Models.Monsters/Fogmog.cs sha256:2ad0311f9f2c369c90fb0838e03c23609a760bce167cfed4f9f35028ba2bd037
 - MegaCrit.Sts2.Core.Models.Encounters/FogmogNormal.cs sha256:a998845b7f23e2492eb26e21b8bbfc202da5fc94d444cba0c5545605f462a3f3
-- MegaCrit.Sts2.Core.Commands/CreatureCmd.cs sha256:f52882086d141dea85b8de65b8e526db5418e390d3f5ba3f2191d3d7f8a6420b
+- MegaCrit.Sts2.Core.Commands/CreatureCmd.cs sha256:3e11f255f18296998511d03ee952a7b16974f5999de7db8941e35a3ef4e92768
 ---
 # 톱니눈 (EYE_WITH_TEETH)
 

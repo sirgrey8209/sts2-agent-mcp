@@ -1,7 +1,7 @@
 ---
 id: EVENT.SPIRIT_GRAFTER
 name: 정령 접합자
-game_version: v0.107.1
+game_version: v0.111.1
 sources:
 - MegaCrit.Sts2.Core.Models.Events/SpiritGrafter.cs sha256:8581027042de5886e930d3c92ca1ac813a50b767f1f404c6e19252a73677eb84
 - MegaCrit.Sts2.Core.Models.Acts/Hive.cs sha256:085d95a7ea0418ada9e8544efdc97afc01c4bada90eca76fd65d3755c62c784e

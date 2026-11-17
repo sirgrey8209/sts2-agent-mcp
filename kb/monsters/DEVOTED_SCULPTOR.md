@@ -1,7 +1,7 @@
 ---
 id: MONSTER.DEVOTED_SCULPTOR
 name: 열정적인 조각가
-game_version: v0.107.1
+game_version: v0.111.1
 sources:
 - MegaCrit.Sts2.Core.Models.Monsters/DevotedSculptor.cs sha256:3a3149c0c5ab743d7d2c18b9d302c61d94b5d3bf4ebdb0851dd446689b3c5217
 - MegaCrit.Sts2.Core.Models.Powers/RitualPower.cs sha256:68fb6b795725dfc7c771dcce7b93d6d12b04871289d9d1cf2b5767a8b8a397c4

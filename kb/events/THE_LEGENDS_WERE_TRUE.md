@@ -1,13 +1,13 @@
 ---
 id: EVENT.THE_LEGENDS_WERE_TRUE
 name: 전설은 사실이었어
-game_version: v0.107.1
+game_version: v0.111.1
 sources:
-- MegaCrit.Sts2.Core.Models.Events/TheLegendsWereTrue.cs sha256:2e7d7f499ef8639f7b1dee099c29947b705878267121be25822ee8906d003ab5
+- MegaCrit.Sts2.Core.Models.Events/TheLegendsWereTrue.cs sha256:a1dd9b37e6d882bdcf2e3ea06672ced16d95792e15b5d7b296e86705b6943c00
 - MegaCrit.Sts2.Core.Models.Cards/SpoilsMap.cs sha256:ec2d0e8018a9b3a05915af3d2e68175d1fc3d03abfe71c47d2427010231b49a5
 - MegaCrit.Sts2.Core.Map/SpoilsActMap.cs sha256:bcae2a636d1f966c101e46be3721b3c3b94e2a3c294509691b95ad8d815556e3
 - MegaCrit.Sts2.Core.Multiplayer.Game/OneOffSynchronizer.cs sha256:0959ad26bd89a78c8a6903e189fd50f4816065fd61acaef8848040214f3dc795
-- MegaCrit.Sts2.Core.Models/ModelDb.cs sha256:7144c6e265fc4484e40860f4ec7cb288c677a63256675222010f66ab628d6e4f
+- MegaCrit.Sts2.Core.Models/ModelDb.cs sha256:2f7bdb25b700a1725266c720525542b660056bbc86f357852239b39b8fbf14f8
 ---
 # 전설은 사실이었어 (THE_LEGENDS_WERE_TRUE)
 

@@ -1,10 +1,10 @@
 ---
 id: MONSTER.SPINY_TOAD
 name: 가시두꺼비
-game_version: v0.107.1
+game_version: v0.111.1
 sources:
-- MegaCrit.Sts2.Core.Models.Monsters/SpinyToad.cs sha256:7001b793bebd741f17e9a78ca564d17600d34c65f82da53c580e0c981fbcdfbc
-- MegaCrit.Sts2.Core.Models.Powers/ThornsPower.cs sha256:96167a3d1513ad6da621861e3f64fc2d8ddc7cad618b54131c0955297c22912c
+- MegaCrit.Sts2.Core.Models.Monsters/SpinyToad.cs sha256:e760745695a7bafc43b181b4b8dfdada41945b98e037875d07ddfa6c1a4dfc2b
+- MegaCrit.Sts2.Core.Models.Powers/ThornsPower.cs sha256:851d217876c36be8ba65b093986fa6aaa7ae6046f219ee27ef0eb2964af6a741
 - MegaCrit.Sts2.Core.Models.Encounters/SpinyToadNormal.cs sha256:bdc0df997f8ac1628e4d722ad9f73ff72cf053f93b64d9d649fe5770d1327ed5
 - MegaCrit.Sts2.Core.Models.Acts/Hive.cs sha256:085d95a7ea0418ada9e8544efdc97afc01c4bada90eca76fd65d3755c62c784e
 ---

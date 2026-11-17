@@ -1,13 +1,13 @@
 ---
 id: MONSTER.TERROR_EEL
 name: 공포 장어
-game_version: v0.107.1
+game_version: v0.111.1
 sources:
 - MegaCrit.Sts2.Core.Models.Monsters/TerrorEel.cs sha256:17c0ed7405e6656600b6d0afbc116751759172ca2dfaa881fed9800ff95cfe6c
 - MegaCrit.Sts2.Core.Models.Powers/ShriekPower.cs sha256:86c99c98810147015a31f6bbfededd6c1d12b6b782ced705583acf6624d00971
-- MegaCrit.Sts2.Core.Models.Powers/VigorPower.cs sha256:9b10573ada4e2e70ecb78ccaa761869480b974ee0b9ad4d09cdb1b240ca58ca2
-- MegaCrit.Sts2.Core.Commands/CreatureCmd.cs sha256:f52882086d141dea85b8de65b8e526db5418e390d3f5ba3f2191d3d7f8a6420b
-- MegaCrit.Sts2.Core.Commands.Builders/AttackCommand.cs sha256:97b89ff8492addaa398a6f8c59022a173052fc529677c3270d43e0184a6b8e66
+- MegaCrit.Sts2.Core.Models.Powers/VigorPower.cs sha256:1d9e4672db6a1c3af416c8170e5e96a29be1a1a274cf4ca0f49a3e7d6cfb4207
+- MegaCrit.Sts2.Core.Commands/CreatureCmd.cs sha256:3e11f255f18296998511d03ee952a7b16974f5999de7db8941e35a3ef4e92768
+- MegaCrit.Sts2.Core.Commands.Builders/AttackCommand.cs sha256:4d7dc3612b138b1d3f40ffbc4493e249e60696d8b76a55cea7d2ce54a4242552
 - MegaCrit.Sts2.Core.Models.Encounters/TerrorEelElite.cs sha256:5800407b7b8f6220ff37f73dda4d4add466bbc9db1c5c20f807d97ae057becf1
 - MegaCrit.Sts2.Core.Models.Acts/Underdocks.cs sha256:b5f91ba221afa5ca83ca92290f481c8bef88c28f1ff8272f780f2540700964fb
 ---

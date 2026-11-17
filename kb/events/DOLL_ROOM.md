@@ -1,10 +1,10 @@
 ---
 id: EVENT.DOLL_ROOM
 name: 인형의 방
-game_version: v0.107.1
+game_version: v0.111.1
 sources:
-- MegaCrit.Sts2.Core.Models.Events/DollRoom.cs sha256:290dd18e3e975420cd5ff1a94750e6980e0420ff442a4cb220f5de4be783989c
-- MegaCrit.Sts2.Core.Models/ModelDb.cs sha256:7144c6e265fc4484e40860f4ec7cb288c677a63256675222010f66ab628d6e4f
+- MegaCrit.Sts2.Core.Models.Events/DollRoom.cs sha256:80b8b75c154d06f3f8d06013a94edc6ad1cc36ee54f4af38eea8b3957f7da24b
+- MegaCrit.Sts2.Core.Models/ModelDb.cs sha256:2f7bdb25b700a1725266c720525542b660056bbc86f357852239b39b8fbf14f8
 - MegaCrit.Sts2.Core.Models.Relics/DaughterOfTheWind.cs sha256:eaa60675beccf94e4fb250c39311e6bc2ec4eed8a280503f51d8739ba63f7312
 - MegaCrit.Sts2.Core.Models.Relics/MrStruggles.cs sha256:8d1944ef8a94433c1251f9e9c5af24aacfd2db1a883ff21445095892083e58ab
 - MegaCrit.Sts2.Core.Models.Relics/BingBong.cs sha256:7446cda65ad33bbd45bfc8af8188360ae5c5944996beb3788cb147054e0e3673

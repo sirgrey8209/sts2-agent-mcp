@@ -1,10 +1,10 @@
 ---
 id: MONSTER.SHRINKER_BEETLE
 name: 압축벌레
-game_version: v0.107.1
+game_version: v0.111.1
 sources:
 - MegaCrit.Sts2.Core.Models.Monsters/ShrinkerBeetle.cs sha256:91969dc1ad9b68ece0dc42cf84461e6988724b3438091bfd007a288534d686ab
-- MegaCrit.Sts2.Core.Models.Powers/ShrinkPower.cs sha256:d9ca7fb61a812764570a9673bd2223e97d1c34ef98c6b4088ca528cb91a78b16
+- MegaCrit.Sts2.Core.Models.Powers/ShrinkPower.cs sha256:aab850470229a8b5d41387128dc4ea69925ebbd62df93b6ebbb7859fcf291a75
 - MegaCrit.Sts2.Core.Models.Encounters/ShrinkerBeetleWeak.cs sha256:188392adb5585394338ce8ffd4be9bfb1f84fd15f66a7f3f07447e04b7731b98
 - MegaCrit.Sts2.Core.Models.Encounters/OvergrowthCrawlers.cs sha256:19522315b75732f6b94cc09b63c2916edf626c226ee8efdb82be7af33ca8ff5f
 - MegaCrit.Sts2.Core.Models.Acts/Overgrowth.cs sha256:61ff9d71f9b17f2f6a2f7f51f64bbfaa6752ec8cf7e75b4d291f2b0f89dc232b

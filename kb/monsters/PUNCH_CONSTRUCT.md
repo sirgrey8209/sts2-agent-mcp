@@ -1,14 +1,14 @@
 ---
 id: MONSTER.PUNCH_CONSTRUCT
 name: 권투형 구조체
-game_version: v0.107.1
+game_version: v0.111.1
 sources:
 - MegaCrit.Sts2.Core.Models.Monsters/PunchConstruct.cs sha256:389c64af1b2eb8da881ef51b5f9addf19f5b5f659b706235263c062a2fcc2d7e
 - MegaCrit.Sts2.Core.Models.Powers/ArtifactPower.cs sha256:d2b7f2c1bfc36466e5ab0bd4e4581697c8299ce579c6f978a4fe7a1535c9eb3a
 - MegaCrit.Sts2.Core.Models.Encounters/PunchConstructNormal.cs sha256:0d920c1c446333d1a39b16a9814baa5f95a09a70a13e01900b36047907f406fa
 - MegaCrit.Sts2.Core.Models.Encounters/ConstructMenagerieNormal.cs sha256:287f31b8fdf6c8b429f9b35e668aa59dad2cef65cfa7142d7e576c416870fcb3
 - MegaCrit.Sts2.Core.Models.Encounters/PunchOffEventEncounter.cs sha256:b299a564e5bceb0e6aecda0eb13b5bb1374ddc75705e37039123ac5b07bd8060
-- MegaCrit.Sts2.Core.Models.Events/PunchOff.cs sha256:18846e81c9d180471c943d3449693db5414c9af9dd4603eaa455a41391a37ec2
+- MegaCrit.Sts2.Core.Models.Events/PunchOff.cs sha256:fa667c9ec4c642d7da3c297bad46840d33778898a6269a4610ac662be5174bfd
 - MegaCrit.Sts2.Core.Models.Acts/Underdocks.cs sha256:b5f91ba221afa5ca83ca92290f481c8bef88c28f1ff8272f780f2540700964fb
 - MegaCrit.Sts2.Core.Models.Acts/Glory.cs sha256:d70575f5ac62dda4c1e80d424955c412eb00248e127caaa2751a2775db4b03d0
 ---

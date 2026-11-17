@@ -1,15 +1,15 @@
 ---
 id: MONSTER.NOISEBOT
 name: 소음봇
-game_version: v0.107.1
+game_version: v0.111.1
 sources:
-- MegaCrit.Sts2.Core.Models.Monsters/Noisebot.cs sha256:61948818ecc06fd4b0d5200f249efb0787a26836680ac99bfe526b6ffc1cfaf4
-- MegaCrit.Sts2.Core.Models.Monsters/Fabricator.cs sha256:7a78bc8f844f4c92eb877957510dd8d3f1450d9b8eb3bf3f59ebb5bf47678c75
+- MegaCrit.Sts2.Core.Models.Monsters/Noisebot.cs sha256:519ab3fa8de21705e5078f948dddd6f4b5a29ad7900a7b88a89a3c58f2433d70
+- MegaCrit.Sts2.Core.Models.Monsters/Fabricator.cs sha256:40884c0143d009329348770c8642aa689af379ccb0131fab3c096553613c17fe
 - MegaCrit.Sts2.Core.Models.Encounters/FabricatorNormal.cs sha256:0390ef0151a229f5b827b4ad77bed3feb39bd9331e9f06a916c6cae86de0966d
 - MegaCrit.Sts2.Core.Models.Acts/Glory.cs sha256:d70575f5ac62dda4c1e80d424955c412eb00248e127caaa2751a2775db4b03d0
 - MegaCrit.Sts2.Core.Models.Powers/MinionPower.cs sha256:8acbaf43969b256e0777bed2371830f7399e8c32fc45c8c35a3de7cde8b8c392
 - MegaCrit.Sts2.Core.Models.Cards/Dazed.cs sha256:41ef3c48ad9459d39d364f2f38863bbd15827e01fe2b48a243b40444cec0a28b
-- MegaCrit.Sts2.Core.Commands/CreatureCmd.cs sha256:f52882086d141dea85b8de65b8e526db5418e390d3f5ba3f2191d3d7f8a6420b
+- MegaCrit.Sts2.Core.Commands/CreatureCmd.cs sha256:3e11f255f18296998511d03ee952a7b16974f5999de7db8941e35a3ef4e92768
 ---
 # 소음봇 (NOISEBOT)
 

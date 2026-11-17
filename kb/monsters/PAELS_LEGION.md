@@ -1,10 +1,10 @@
 ---
 id: MONSTER.PAELS_LEGION
 name: 파엘의 군체
-game_version: v0.107.1
+game_version: v0.111.1
 sources:
 - MegaCrit.Sts2.Core.Models.Monsters/PaelsLegion.cs sha256:21e4f6a74f7b357eacbaea1d754ed004913c55d4c80ecac96f01830a63adcd3b
-- MegaCrit.Sts2.Core.Models.Relics/PaelsLegion.cs sha256:3abab827243cb26b1f6ddf5d67e17f503559dca582c19b02bebdcdcf363bbbb1
+- MegaCrit.Sts2.Core.Models.Relics/PaelsLegion.cs sha256:6c21a5e0c9f3b4879d9218aed1b13439ab5fd5356417c684b2eedd2a716863a8
 - MegaCrit.Sts2.Core.Models.Events/Pael.cs sha256:54008fb185c0b04760b5b2896111827dc48d173dd1683f10afc695782d8c50b3
 ---
 # 파엘의 군체 (PAELS_LEGION)

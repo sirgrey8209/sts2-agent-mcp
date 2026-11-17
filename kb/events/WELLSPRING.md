@@ -1,7 +1,7 @@
 ---
 id: EVENT.WELLSPRING
 name: 샘터
-game_version: v0.107.1
+game_version: v0.111.1
 sources:
 - MegaCrit.Sts2.Core.Models.Events/Wellspring.cs sha256:c57cfe5da7bc023f4758c518741d61f205eebd0da6d3b4d501cd8d599428d0d9
 - MegaCrit.Sts2.Core.Models.Cards/Guilty.cs sha256:1125b97547539071dcf980d39d57d46944e134792410c9800c3ad9394af2677c

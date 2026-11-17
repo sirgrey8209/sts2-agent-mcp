@@ -1,14 +1,14 @@
 ---
 id: MONSTER.TUNNELER
 name: 땅굴충
-game_version: v0.107.1
+game_version: v0.111.1
 sources:
-- MegaCrit.Sts2.Core.Models.Monsters/Tunneler.cs sha256:8cbe1bd6864c9b38af0e81fdfeb7a5660fd5e60edc54f8d93917a8ee876d2221
-- MegaCrit.Sts2.Core.Models.Powers/BurrowedPower.cs sha256:26b2428c3e323b6a620a959a43c4aebcfb518f8daa660b4ec128263bad25ff97
+- MegaCrit.Sts2.Core.Models.Monsters/Tunneler.cs sha256:245dab403cc227f43ce2264ce114ee045d1630ea87952882182e0a6cf1bf818b
+- MegaCrit.Sts2.Core.Models.Powers/BurrowedPower.cs sha256:2b4417a61d26becdcdc0c0d2dd03458d9becd0fd5db716eb78cd97ec0aadd286
 - MegaCrit.Sts2.Core.Models.Encounters/TunnelerWeak.cs sha256:013ac46c54b228d412a28c18294b5a65d3623a28fa28388e5a856d24ca1e0fae
 - MegaCrit.Sts2.Core.Models.Encounters/TunnelerNormal.cs sha256:8be8c5e02ab738d2cfd931953916bc9146596b3c901fb9e6759c25f0c2a780ae
 - MegaCrit.Sts2.Core.Models.Acts/Hive.cs sha256:085d95a7ea0418ada9e8544efdc97afc01c4bada90eca76fd65d3755c62c784e
-- MegaCrit.Sts2.Core.Commands/CreatureCmd.cs sha256:f52882086d141dea85b8de65b8e526db5418e390d3f5ba3f2191d3d7f8a6420b
+- MegaCrit.Sts2.Core.Commands/CreatureCmd.cs sha256:3e11f255f18296998511d03ee952a7b16974f5999de7db8941e35a3ef4e92768
 ---
 # 땅굴충 (TUNNELER)
 

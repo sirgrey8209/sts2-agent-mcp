@@ -1,14 +1,14 @@
 ---
 id: MONSTER.SLUMBERING_BEETLE
 name: 잠자는 딱정벌레
-game_version: v0.107.1
+game_version: v0.111.1
 sources:
-- MegaCrit.Sts2.Core.Models.Monsters/SlumberingBeetle.cs sha256:40b3f4868e894c67552be9e74ce8e0fa81d10373c8dd163f519c73202482ad2e
+- MegaCrit.Sts2.Core.Models.Monsters/SlumberingBeetle.cs sha256:61e6903b13b442b89bedba1e32e4ceff28a1a057cf05c315d6e5d6fff4898944
 - MegaCrit.Sts2.Core.Models.Powers/SlumberPower.cs sha256:ba48005a7937de1de66c412dcaf903cbd7e92a584952d5d7ead966e20259ca0e
 - MegaCrit.Sts2.Core.Models.Powers/PlatingPower.cs sha256:f8e6f35b5df38ec5d79234ccc25a8e6e51f65ef01db10043be23c5bee64c377a
 - MegaCrit.Sts2.Core.Models.Encounters/SlumberingBeetleNormal.cs sha256:0ae40808e8c225cbcc724dc14b4439c44a9dbdbd0c849d64d58e10cf90cc0932
 - MegaCrit.Sts2.Core.Models.Acts/Hive.cs sha256:085d95a7ea0418ada9e8544efdc97afc01c4bada90eca76fd65d3755c62c784e
-- MegaCrit.Sts2.Core.Entities.Creatures/Creature.cs sha256:d65cb7c1be3b3f7730f5844b5bac113e0097d8a6b5af08787073177832aa49fa
+- MegaCrit.Sts2.Core.Entities.Creatures/Creature.cs sha256:c6a998d46ad143990aa69a320a584497e303cb101f875bafd83b94382991931d
 ---
 # 잠자는 딱정벌레 (SLUMBERING_BEETLE)
 

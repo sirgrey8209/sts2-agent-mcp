@@ -1,9 +1,9 @@
 ---
 id: MONSTER.DECIMILLIPEDE_SEGMENT_BACK
 name: 만각지네
-game_version: v0.107.1
+game_version: v0.111.1
 sources:
-- MegaCrit.Sts2.Core.Models.Monsters/DecimillipedeSegment.cs sha256:f5b988e3fc11345f615946e195711eb9e19b135fae309488758d2cde532f613d
+- MegaCrit.Sts2.Core.Models.Monsters/DecimillipedeSegment.cs sha256:34e9264ddf5708ab3c1f1554048c1ff4f36b814cba777b7a84cadaafa975e152
 - MegaCrit.Sts2.Core.Models.Monsters/DecimillipedeSegmentFront.cs sha256:7ed4e0d788273e19ab3ba0d012c5df83ee995b99948aea8eb36f931f32dfb3b0
 - MegaCrit.Sts2.Core.Models.Monsters/DecimillipedeSegmentMiddle.cs sha256:2c0726b24bb74447ba184ebfaac719d48c2bdd9be36a08afdcb7f5a2460c7aaa
 - MegaCrit.Sts2.Core.Models.Monsters/DecimillipedeSegmentBack.cs sha256:09870ee18413e3b0640f3b150877716044b1d6e6c5749f813707d5da236ccc0d

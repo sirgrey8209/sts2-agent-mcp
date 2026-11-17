@@ -1,14 +1,14 @@
 ---
 id: EVENT.WELCOME_TO_WONGOS
 name: 웡고스에 오신 것을 환영합니다
-game_version: v0.107.1
+game_version: v0.111.1
 sources:
 - MegaCrit.Sts2.Core.Models.Events/WelcomeToWongos.cs sha256:60f6e916e718960d1d5c117ccd134337e725c9fffd114cd4765d4ca96c7f23b8
 - MegaCrit.Sts2.Core.Models.Relics/WongosMysteryTicket.cs sha256:005a872b116ceefb7c43c6ab99549b10b1c0e380767903cc8de6787dd1a8ed1e
 - MegaCrit.Sts2.Core.Models.Relics/WongoCustomerAppreciationBadge.cs sha256:96367b0126f15cff0536f7aebc330ff8e591db165bd981de1b29cf3f1611f2a6
 - MegaCrit.Sts2.Core.Factories/RelicFactory.cs sha256:4fbe5ca84342cef115aabdd016b55be18bfe7b66cf0ff96e2e41c8a87da3f0dd
-- MegaCrit.Sts2.Core.Saves.Managers/ProgressSaveManager.cs sha256:52e1db6417e67754fe26c10f8748f4f5da780efd7db4b9605ca06db8dc397ec4
-- MegaCrit.Sts2.Core.Models/ModelDb.cs sha256:7144c6e265fc4484e40860f4ec7cb288c677a63256675222010f66ab628d6e4f
+- MegaCrit.Sts2.Core.Saves.Managers/ProgressSaveManager.cs sha256:17f34b78e1bb9b1145c6c26c6de3d4f1036759149cccadefaf6a84b92340bde5
+- MegaCrit.Sts2.Core.Models/ModelDb.cs sha256:2f7bdb25b700a1725266c720525542b660056bbc86f357852239b39b8fbf14f8
 ---
 # 웡고스에 오신 것을 환영합니다 (WELCOME_TO_WONGOS)
 

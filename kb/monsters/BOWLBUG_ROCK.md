@@ -1,12 +1,12 @@
 ---
 id: MONSTER.BOWLBUG_ROCK
 name: 그릇벌레 (바위)
-game_version: v0.107.1
+game_version: v0.111.1
 sources:
 - MegaCrit.Sts2.Core.Models.Monsters/BowlbugRock.cs sha256:ce3a0d2019b8422bf3b4b98bbd8f99299a8483c702dc8336321834abcc5d8ffd
 - MegaCrit.Sts2.Core.Models.Powers/ImbalancedPower.cs sha256:387473388009d7ed5b47aca9ae0eeb305cc331e001471ba3ce3395849184a19d
-- MegaCrit.Sts2.Core.Commands/CreatureCmd.cs sha256:f52882086d141dea85b8de65b8e526db5418e390d3f5ba3f2191d3d7f8a6420b
-- MegaCrit.Sts2.Core.Entities.Creatures/Creature.cs sha256:d65cb7c1be3b3f7730f5844b5bac113e0097d8a6b5af08787073177832aa49fa
+- MegaCrit.Sts2.Core.Commands/CreatureCmd.cs sha256:3e11f255f18296998511d03ee952a7b16974f5999de7db8941e35a3ef4e92768
+- MegaCrit.Sts2.Core.Entities.Creatures/Creature.cs sha256:c6a998d46ad143990aa69a320a584497e303cb101f875bafd83b94382991931d
 - MegaCrit.Sts2.Core.Models.Encounters/BowlbugsWeak.cs sha256:7507c76268d014e7cb13ec1e4342aaf1efb5831317324a612f7fd62c1777ebfc
 - MegaCrit.Sts2.Core.Models.Encounters/BowlbugsNormal.cs sha256:9825e8ed31f14a2ca08e5b0e2cc790962362bf59f682b9bf62d9354ad831f0e4
 - MegaCrit.Sts2.Core.Models.Encounters/SlumberingBeetleNormal.cs sha256:0ae40808e8c225cbcc724dc14b4439c44a9dbdbd0c849d64d58e10cf90cc0932

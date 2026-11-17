@@ -1,7 +1,7 @@
 ---
 id: MONSTER.HAUNTED_SHIP
 name: 유령선
-game_version: v0.107.1
+game_version: v0.111.1
 sources:
 - MegaCrit.Sts2.Core.Models.Monsters/HauntedShip.cs sha256:156a0dba14b61c567084d9beda14455cb0bbbf0bebfe3d56a4581c41891ab89e
 - MegaCrit.Sts2.Core.Models.Cards/Dazed.cs sha256:41ef3c48ad9459d39d364f2f38863bbd15827e01fe2b48a243b40444cec0a28b

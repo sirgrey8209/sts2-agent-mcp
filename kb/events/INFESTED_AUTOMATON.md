@@ -1,7 +1,7 @@
 ---
 id: EVENT.INFESTED_AUTOMATON
 name: 감염된 자동인형
-game_version: v0.107.1
+game_version: v0.111.1
 sources:
 - MegaCrit.Sts2.Core.Models.Events/InfestedAutomaton.cs sha256:e6bebde83ee0efbd36afb0411ec75816efac07095848e3cb75f61bb0a77403b3
 - MegaCrit.Sts2.Core.Models.Acts/Hive.cs sha256:085d95a7ea0418ada9e8544efdc97afc01c4bada90eca76fd65d3755c62c784e

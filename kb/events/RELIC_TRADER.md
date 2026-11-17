@@ -1,10 +1,10 @@
 ---
 id: EVENT.RELIC_TRADER
 name: 유물 상인
-game_version: v0.107.1
+game_version: v0.111.1
 sources:
 - MegaCrit.Sts2.Core.Models.Events/RelicTrader.cs sha256:5419dab9b0224633381e754fd78157e352c77e8a79f2ebd0281ada39dbffc28c
-- MegaCrit.Sts2.Core.Models/ModelDb.cs sha256:7144c6e265fc4484e40860f4ec7cb288c677a63256675222010f66ab628d6e4f
+- MegaCrit.Sts2.Core.Models/ModelDb.cs sha256:2f7bdb25b700a1725266c720525542b660056bbc86f357852239b39b8fbf14f8
 - MegaCrit.Sts2.Core.Models/RelicModel.cs sha256:7fd67b3aa8c84e325aeb207e3375c98b1ad301ee68d64841523fdb01ee7c9eb6
 - MegaCrit.Sts2.Core.Factories/RelicFactory.cs sha256:4fbe5ca84342cef115aabdd016b55be18bfe7b66cf0ff96e2e41c8a87da3f0dd
 ---

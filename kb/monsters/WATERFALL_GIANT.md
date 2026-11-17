@@ -1,11 +1,11 @@
 ---
 id: MONSTER.WATERFALL_GIANT
 name: 폭포 거인
-game_version: v0.107.1
+game_version: v0.111.1
 sources:
-- MegaCrit.Sts2.Core.Models.Monsters/WaterfallGiant.cs sha256:957bcde9afeec1ee7cd414a3d69296990942dd2c1161b02c18a833975103c80f
+- MegaCrit.Sts2.Core.Models.Monsters/WaterfallGiant.cs sha256:257fa4f563fb89930b0543489034ae2726f33b9d64f3c09267cca3ce7ba79272
 - MegaCrit.Sts2.Core.Models.Powers/SteamEruptionPower.cs sha256:30d9a85e43722e337b23c8b12fbafe9b7dbf5cef0dbb883d3bba04f34de0a852
-- MegaCrit.Sts2.Core.Models.Powers/WeakPower.cs sha256:b33ac1a44ff5edb75d6e5776627259b2bac2b4e6ab1905cab3d60b0cfa32a426
+- MegaCrit.Sts2.Core.Models.Powers/WeakPower.cs sha256:6837912329f1c723a52362d87a0ba64a1eb03a27cd6d1e26ae707393145a5d4a
 - MegaCrit.Sts2.Core.Models.Encounters/WaterfallGiantBoss.cs sha256:a45cdecd5a82caf08df5377c3c0375a9f56267515382f0155570cdda0e5e3297
 - MegaCrit.Sts2.Core.Models.Acts/Underdocks.cs sha256:b5f91ba221afa5ca83ca92290f481c8bef88c28f1ff8272f780f2540700964fb
 - MegaCrit.Sts2.Core.MonsterMoves.MonsterMoveStateMachine/MoveState.cs sha256:eb97c7cfbab265e45af201283c4daedb66686f8a5ed197de22fc78ef93c26838

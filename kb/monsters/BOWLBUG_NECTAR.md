@@ -1,7 +1,7 @@
 ---
 id: MONSTER.BOWLBUG_NECTAR
 name: 그릇벌레 (꿀)
-game_version: v0.107.1
+game_version: v0.111.1
 sources:
 - MegaCrit.Sts2.Core.Models.Monsters/BowlbugNectar.cs sha256:961b69c0d4dcb4426ce4f4240a8235c95009d89f5852e8686b812b24ec6054ee
 - MegaCrit.Sts2.Core.Models.Encounters/BowlbugsWeak.cs sha256:7507c76268d014e7cb13ec1e4342aaf1efb5831317324a612f7fd62c1777ebfc

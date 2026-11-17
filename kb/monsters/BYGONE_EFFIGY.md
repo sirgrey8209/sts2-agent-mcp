@@ -1,10 +1,10 @@
 ---
 id: MONSTER.BYGONE_EFFIGY
 name: 옛 시대의 우상
-game_version: v0.107.1
+game_version: v0.111.1
 sources:
-- MegaCrit.Sts2.Core.Models.Monsters/BygoneEffigy.cs sha256:8fedd470cb6d997997e4144dc289b7ff40b1acfaeaa5dc660b61bc71ef18cd72
-- MegaCrit.Sts2.Core.Models.Powers/SlowPower.cs sha256:fc83ae0948dac34e1f7faa79df9b91219d9051e1787daebe49615b3f78eb0713
+- MegaCrit.Sts2.Core.Models.Monsters/BygoneEffigy.cs sha256:d4417f1a9f7251e5a51082674f0241fc718f49ce6423512594b2f7eefdc7b6f9
+- MegaCrit.Sts2.Core.Models.Powers/SlowPower.cs sha256:daccfbbe91436b4e943a5114dfaa89729b208c9d1d7d34a337bed81b9fac4919
 - MegaCrit.Sts2.Core.Models.Encounters/BygoneEffigyElite.cs sha256:f7437870dfd57c72bd6f51220775759cb5598a0f342ee28cb6c22adcf29a8331
 - MegaCrit.Sts2.Core.Models.Acts/Overgrowth.cs sha256:61ff9d71f9b17f2f6a2f7f51f64bbfaa6752ec8cf7e75b4d291f2b0f89dc232b
 ---

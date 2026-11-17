@@ -1,11 +1,11 @@
 ---
 id: EVENT.AMALGAMATOR
 name: 융합자
-game_version: v0.107.1
+game_version: v0.111.1
 sources:
 - MegaCrit.Sts2.Core.Models.Events/Amalgamator.cs sha256:3fe52907ba8957a1782348dc840aaec7536e51e8c4c63378c26237df7585060d
 - MegaCrit.Sts2.Core.Models.Acts/Hive.cs sha256:085d95a7ea0418ada9e8544efdc97afc01c4bada90eca76fd65d3755c62c784e
-- MegaCrit.Sts2.Core.Models.Cards/UltimateStrike.cs sha256:69145457f0797e77f629422dc6d1a5a74a4fbe350f29f19234afef8191ca23ca
+- MegaCrit.Sts2.Core.Models.Cards/UltimateStrike.cs sha256:21400679e529c5265d69eed80c15aeca8a2e96a83a52f1209797b4b504ab9097
 - MegaCrit.Sts2.Core.Models.Cards/UltimateDefend.cs sha256:acc4506e2154e01f069412c7220e708efba32b7c01d3d563c0cc34c72866d019
 ---
 # 융합자 (AMALGAMATOR)

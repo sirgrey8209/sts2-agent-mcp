@@ -1,7 +1,7 @@
 ---
 id: EVENT.LUMINOUS_CHOIR
 name: 빛나는 합창단
-game_version: v0.107.1
+game_version: v0.111.1
 sources:
 - MegaCrit.Sts2.Core.Models.Events/LuminousChoir.cs sha256:c680ab0135aadf18e00e8e757e47e9b915f691887f153b996b4a6886c2c56b01
 - MegaCrit.Sts2.Core.Models.Cards/SporeMind.cs sha256:0a124fb84322075b31df6df5703d00907abf285979fbb54d5e67ca2a32d4cab1

@@ -1,7 +1,7 @@
 ---
 id: MONSTER.ASSASSIN_RUBY_RAIDER
 name: 암살 습격자
-game_version: v0.107.1
+game_version: v0.111.1
 sources:
 - MegaCrit.Sts2.Core.Models.Monsters/AssassinRubyRaider.cs sha256:1ded70b4d0a355ab0d0b14e5cdafb3576df1c0504b88aaa837c66fa6744b6564
 - MegaCrit.Sts2.Core.Models.Encounters/RubyRaidersNormal.cs sha256:ce3789a28fb2c5f2e6645473ef806f6bcce236b47fb476f3c092db1b262a5f19

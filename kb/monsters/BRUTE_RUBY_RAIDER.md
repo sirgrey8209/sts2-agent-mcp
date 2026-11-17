@@ -1,7 +1,7 @@
 ---
 id: MONSTER.BRUTE_RUBY_RAIDER
 name: 난폭한 습격자
-game_version: v0.107.1
+game_version: v0.111.1
 sources:
 - MegaCrit.Sts2.Core.Models.Monsters/BruteRubyRaider.cs sha256:3b99a34ef4bf1eb2a1acb2d7ce8adaf5c722e594ac6842a3c2d028cf2a74b4f9
 - MegaCrit.Sts2.Core.Models.Encounters/RubyRaidersNormal.cs sha256:ce3789a28fb2c5f2e6645473ef806f6bcce236b47fb476f3c092db1b262a5f19

@@ -1,10 +1,10 @@
 ---
 id: MONSTER.TOADPOLE
 name: 올챙이
-game_version: v0.107.1
+game_version: v0.111.1
 sources:
 - MegaCrit.Sts2.Core.Models.Monsters/Toadpole.cs sha256:b19b55f6fae0431eb30a2aaa14b6fc98288f6f2d288638d3972731f09f2725c9
-- MegaCrit.Sts2.Core.Models.Powers/ThornsPower.cs sha256:96167a3d1513ad6da621861e3f64fc2d8ddc7cad618b54131c0955297c22912c
+- MegaCrit.Sts2.Core.Models.Powers/ThornsPower.cs sha256:851d217876c36be8ba65b093986fa6aaa7ae6046f219ee27ef0eb2964af6a741
 - MegaCrit.Sts2.Core.Models.Encounters/ToadpolesWeak.cs sha256:f88dc5d5d31aa51c13e6f754b9a2d2d0a831476366ef0e331e2bee8c862fa112
 - MegaCrit.Sts2.Core.Models.Acts/Underdocks.cs sha256:b5f91ba221afa5ca83ca92290f481c8bef88c28f1ff8272f780f2540700964fb
 - MegaCrit.Sts2.Core.ValueProps/ValuePropExtensions.cs sha256:369c8cdfa3d7e60d43f78823a7dfae28dc737d0bc1d1a2686dcce0c66bfc47c3

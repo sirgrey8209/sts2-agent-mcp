@@ -1,7 +1,7 @@
 ---
 id: MONSTER.SKULKING_COLONY
 name: 잠행 군체
-game_version: v0.107.1
+game_version: v0.111.1
 sources:
 - MegaCrit.Sts2.Core.Models.Monsters/SkulkingColony.cs sha256:b0ee03b9a2a8f3d436a5c4d16a35f037b1f7ed20d3d01fb288e8418c8e86f0e0
 - MegaCrit.Sts2.Core.Models.Powers/HardenedShellPower.cs sha256:330eff68db3dc0ac9b8552ee4bd9d520b6c00d9d4eff34d4d50821fec333bf5b

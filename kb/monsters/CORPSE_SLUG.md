@@ -1,15 +1,15 @@
 ---
 id: MONSTER.CORPSE_SLUG
 name: 시체 민달팽이
-game_version: v0.107.1
+game_version: v0.111.1
 sources:
 - MegaCrit.Sts2.Core.Models.Monsters/CorpseSlug.cs sha256:9751c826847380eac6c74ac0eaa9806d3bc0a8997d8f3ea1cbc1a695aeaef71d
 - MegaCrit.Sts2.Core.Models.Powers/RavenousPower.cs sha256:a30a7510c09c20596699801d31139e1146a2eed9122d62653b05414a36a2e7fd
 - MegaCrit.Sts2.Core.Models.Encounters/CorpseSlugsNormal.cs sha256:2544670a94e60b0034c616cb99a368f0068347267372f2f57dfc9de09b682c3e
 - MegaCrit.Sts2.Core.Models.Encounters/CorpseSlugsWeak.cs sha256:8b63878122e5b09a96510dabe2546ad9aa9e4a796d6df144d464a54994bba0f2
 - MegaCrit.Sts2.Core.Models.Acts/Underdocks.cs sha256:b5f91ba221afa5ca83ca92290f481c8bef88c28f1ff8272f780f2540700964fb
-- MegaCrit.Sts2.Core.Commands/CreatureCmd.cs sha256:f52882086d141dea85b8de65b8e526db5418e390d3f5ba3f2191d3d7f8a6420b
-- MegaCrit.Sts2.Core.Entities.Creatures/Creature.cs sha256:d65cb7c1be3b3f7730f5844b5bac113e0097d8a6b5af08787073177832aa49fa
+- MegaCrit.Sts2.Core.Commands/CreatureCmd.cs sha256:3e11f255f18296998511d03ee952a7b16974f5999de7db8941e35a3ef4e92768
+- MegaCrit.Sts2.Core.Entities.Creatures/Creature.cs sha256:c6a998d46ad143990aa69a320a584497e303cb101f875bafd83b94382991931d
 ---
 # 시체 민달팽이 (CORPSE_SLUG)
 

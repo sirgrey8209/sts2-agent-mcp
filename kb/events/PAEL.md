@@ -1,16 +1,16 @@
 ---
 id: EVENT.PAEL
 name: 파엘
-game_version: v0.107.1
+game_version: v0.111.1
 sources:
 - MegaCrit.Sts2.Core.Models.Events/Pael.cs sha256:54008fb185c0b04760b5b2896111827dc48d173dd1683f10afc695782d8c50b3
 - MegaCrit.Sts2.Core.Models/AncientEventModel.cs sha256:1e721b13dc512b05d2d0e8cb208701a5ca902026f59b645f16aaff5a37725105
 - MegaCrit.Sts2.Core.Models.Enchantments/Goopy.cs sha256:19d2be6a8583c65d161a15b99e09b68532c5031ddb7b21266d2f7bcee97b3989
-- MegaCrit.Sts2.Core.Models/EnchantmentModel.cs sha256:3bb36197749db36c0776b52fe2b1c1a0faaec2b66f623277c48427906784210c
-- MegaCrit.Sts2.Core.Entities.Players/Player.cs sha256:4672a42656cec2b61d7f720000a462648b12d303d92af92d21c0ac3325d156db
+- MegaCrit.Sts2.Core.Models/EnchantmentModel.cs sha256:74deff3aabe7b7564d91299c49eb1c222b8aa6b987900e9fc1f19cf29e778006
+- MegaCrit.Sts2.Core.Entities.Players/Player.cs sha256:6bb4db73a40fce98c353ea9c3a15bb40f221cfb7a6153f11a9c98f7999d6b5b3
 - MegaCrit.Sts2.Core.Models.Acts/Hive.cs sha256:085d95a7ea0418ada9e8544efdc97afc01c4bada90eca76fd65d3755c62c784e
 - MegaCrit.Sts2.Core.Models/ActModel.cs sha256:55f3a43c7e055aff1e35985c0cd229f22a271698a82b0d0a24a3f01320dcab0b
-- MegaCrit.Sts2.Core.Runs/RunManager.cs sha256:1c4d11b1b2261f2e5a0e7338866d0ca8c219152567700c9608d23f46a15258e1
+- MegaCrit.Sts2.Core.Runs/RunManager.cs sha256:db8f6c79a7ae1d1932028af1b9f4d2b01092e6294251f4eab40f7e67a03ee8bd
 - MegaCrit.Sts2.Core.Map/SpoilsActMap.cs sha256:bcae2a636d1f966c101e46be3721b3c3b94e2a3c294509691b95ad8d815556e3
 - MegaCrit.Sts2.Core.Entities.Ascension/AscensionLevel.cs sha256:be085612a3e08058582bf045f1e8808ad5a3032d9212438f4b295ceb7ffce5ef
 ---

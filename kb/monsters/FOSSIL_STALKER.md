@@ -1,7 +1,7 @@
 ---
 id: MONSTER.FOSSIL_STALKER
 name: 화석 매복자
-game_version: v0.107.1
+game_version: v0.111.1
 sources:
 - MegaCrit.Sts2.Core.Models.Monsters/FossilStalker.cs sha256:7600f67781749d7bc48567d9e319481ed2f8afbd1abce031100bec9c5fba4ad4
 - MegaCrit.Sts2.Core.Models.Powers/SuckPower.cs sha256:a506c8e188ddff174b75b3906b6dc3c69bdc8d043529204466f1a7a791abb8ef

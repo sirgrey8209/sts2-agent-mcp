@@ -1,9 +1,9 @@
 ---
 id: MONSTER.INKLET
 name: 잉클릿
-game_version: v0.107.1
+game_version: v0.111.1
 sources:
-- MegaCrit.Sts2.Core.Models.Monsters/Inklet.cs sha256:04bf5f68788f176f946872688364898b698b7d69139954d6bd4b2dd3c8bad475
+- MegaCrit.Sts2.Core.Models.Monsters/Inklet.cs sha256:0484e452e8f24d3450ce52992e908cbc1c510dc188088a90f56a8c182237c511
 - MegaCrit.Sts2.Core.Models.Powers/SlipperyPower.cs sha256:fcdb8aea24e7e7b6b898305b0e03abead53fd28d0e9a4b9a11a91aa8c91e7528
 - MegaCrit.Sts2.Core.Models.Encounters/InkletsNormal.cs sha256:701493790cfac154a8f7a49e82c455654b384757818e3b5b5dd50650607e5139
 - MegaCrit.Sts2.Core.MonsterMoves.MonsterMoveStateMachine/RandomBranchState.cs sha256:a21f4174e001da5a0d34c23d07f52da61735618462e407ea1181ebd89469e9bb

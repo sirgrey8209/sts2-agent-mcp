@@ -1,12 +1,12 @@
 ---
 id: MONSTER.ARCHITECT
 name: 아키텍트
-game_version: v0.107.1
+game_version: v0.111.1
 sources:
 - MegaCrit.Sts2.Core.Models.Monsters/Architect.cs sha256:04d50610fd0f35299f122a7b3b5c622dcd4e6d4fc3533687a8f239f2a4864871
 - MegaCrit.Sts2.Core.Models.Encounters/TheArchitectEventEncounter.cs sha256:8cf57b6ee54884b1e7e4143d2d0aa09d03865b2d5ad8acc37d0d304f19e94d14
-- MegaCrit.Sts2.Core.Models.Events/TheArchitect.cs sha256:6b34fcf78030dd6ee727e34ffd97b5cb83b187d746593d56e41d2f475ac82703
-- MegaCrit.Sts2.Core.Runs/RunManager.cs sha256:1c4d11b1b2261f2e5a0e7338866d0ca8c219152567700c9608d23f46a15258e1
+- MegaCrit.Sts2.Core.Models.Events/TheArchitect.cs sha256:bcd6bbbd0041c895b80b4381cc4bfcfe64692e8e26bdf37938df952cb2a131ce
+- MegaCrit.Sts2.Core.Runs/RunManager.cs sha256:db8f6c79a7ae1d1932028af1b9f4d2b01092e6294251f4eab40f7e67a03ee8bd
 ---
 # 아키텍트 (ARCHITECT)
 

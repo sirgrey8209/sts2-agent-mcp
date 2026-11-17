@@ -1,7 +1,7 @@
 ---
 id: EVENT.DENSE_VEGETATION
 name: 울창한 초목
-game_version: v0.107.1
+game_version: v0.111.1
 sources:
 - MegaCrit.Sts2.Core.Models.Events/DenseVegetation.cs sha256:30111c5079d078af1d77fab3c0f1a412e9f9dc2bf046ab101eb7ab77af07d9e9
 - MegaCrit.Sts2.Core.Models.Encounters/DenseVegetationEventEncounter.cs sha256:275c12c3e1ca00a1cc4cf176518973ea5b967558f4a53d00acc7264116fa6bdf

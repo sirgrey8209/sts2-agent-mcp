@@ -1,7 +1,7 @@
 ---
 id: EVENT.AROMA_OF_CHAOS
 name: 혼돈의 향기
-game_version: v0.107.1
+game_version: v0.111.1
 sources:
 - MegaCrit.Sts2.Core.Models.Events/AromaOfChaos.cs sha256:bebbe67ed13d94fb5546c87d92262ace605c52f5c88ab5a6b01f970581fc2dfb
 - MegaCrit.Sts2.Core.Models.Acts/Overgrowth.cs sha256:61ff9d71f9b17f2f6a2f7f51f64bbfaa6752ec8cf7e75b4d291f2b0f89dc232b

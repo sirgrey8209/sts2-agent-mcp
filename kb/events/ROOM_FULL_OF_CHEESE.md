@@ -1,13 +1,13 @@
 ---
 id: EVENT.ROOM_FULL_OF_CHEESE
 name: 치즈로 가득한 방
-game_version: v0.107.1
+game_version: v0.111.1
 sources:
-- MegaCrit.Sts2.Core.Models.Events/RoomFullOfCheese.cs sha256:66ab46a17577db79d2b070c858b2f491225cd45119bd34733705585249d96c72
-- MegaCrit.Sts2.Core.Models/ModelDb.cs sha256:7144c6e265fc4484e40860f4ec7cb288c677a63256675222010f66ab628d6e4f
+- MegaCrit.Sts2.Core.Models.Events/RoomFullOfCheese.cs sha256:c3988dd9110666b53507081e4ea19e0b63fec43bafbe702855758bf820c9d72c
+- MegaCrit.Sts2.Core.Models/ModelDb.cs sha256:2f7bdb25b700a1725266c720525542b660056bbc86f357852239b39b8fbf14f8
 - MegaCrit.Sts2.Core.Models.Relics/ChosenCheese.cs sha256:c871eafc231db7cd82b6f7e01a52ed6ef4d4f061f83278f5d32af0abe5177083
 - MegaCrit.Sts2.Core.Factories/CardFactory.cs sha256:05ae21c288e6a68d64d8d43c42866579432b72ec30791153b0e11d29cf799f83
-- MegaCrit.Sts2.Core.Runs/CardCreationOptions.cs sha256:91978cac8409d832d3cfd61fbaf4ff52adacb5e2fcb4c19e23d553ef633159ff
+- MegaCrit.Sts2.Core.Runs/CardCreationOptions.cs sha256:a4794eac58d44fd6536f16033bd2e469d331be1ede1e7c4d808865b363d6e598
 ---
 # 치즈로 가득한 방 (ROOM_FULL_OF_CHEESE)
 

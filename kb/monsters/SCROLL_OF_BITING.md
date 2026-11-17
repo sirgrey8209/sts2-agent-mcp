@@ -1,7 +1,7 @@
 ---
 id: MONSTER.SCROLL_OF_BITING
 name: 물어뜯는 두루마리
-game_version: v0.107.1
+game_version: v0.111.1
 sources:
 - MegaCrit.Sts2.Core.Models.Monsters/ScrollOfBiting.cs sha256:8e52d930a32782aad93be2eef6f87199e1b320dc969813cdfc5f384292a489bc
 - MegaCrit.Sts2.Core.Models.Powers/PaperCutsPower.cs sha256:35dad1ac863dd37db0014259e7e3788f876dc99ac65636c9375af3f5d372c199

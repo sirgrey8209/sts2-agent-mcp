@@ -1,12 +1,12 @@
 ---
 id: EVENT.THIS_OR_THAT
 name: 이거 아님 저거?
-game_version: v0.107.1
+game_version: v0.111.1
 sources:
-- MegaCrit.Sts2.Core.Models.Events/ThisOrThat.cs sha256:222702a8da5b83ef92c80212d8a55025391ad16b288772e565a7fb3179fbdbf1
+- MegaCrit.Sts2.Core.Models.Events/ThisOrThat.cs sha256:4402a2f72326ffecc103ea1f2bd246cd86f07bb63df929bd362f44dc12dc70d3
 - MegaCrit.Sts2.Core.Models.Cards/Clumsy.cs sha256:0fe828ebf5f551cbb24c1fc4f085ef36ad63dd6a816461494b5adff3cbf847f7
 - MegaCrit.Sts2.Core.Factories/RelicFactory.cs sha256:4fbe5ca84342cef115aabdd016b55be18bfe7b66cf0ff96e2e41c8a87da3f0dd
-- MegaCrit.Sts2.Core.Models/ModelDb.cs sha256:7144c6e265fc4484e40860f4ec7cb288c677a63256675222010f66ab628d6e4f
+- MegaCrit.Sts2.Core.Models/ModelDb.cs sha256:2f7bdb25b700a1725266c720525542b660056bbc86f357852239b39b8fbf14f8
 ---
 # 이거 아님 저거? (THIS_OR_THAT)
 

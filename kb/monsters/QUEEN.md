@@ -1,16 +1,16 @@
 ---
 id: MONSTER.QUEEN
 name: 여왕
-game_version: v0.107.1
+game_version: v0.111.1
 sources:
-- MegaCrit.Sts2.Core.Models.Monsters/Queen.cs sha256:24b3a50000378f84d41d96076bd68a1fafffb665757ab143f9382477ab61944a
-- MegaCrit.Sts2.Core.Models.Monsters/TorchHeadAmalgam.cs sha256:56f5d1a740e75656d09165db7ff85aca88ad86b5ff9ef3234efdca24cd918915
+- MegaCrit.Sts2.Core.Models.Monsters/Queen.cs sha256:03a0dc65b042e5e309588bd67233f35b50b33ae5365d7a7e1dc332aa03d574c0
+- MegaCrit.Sts2.Core.Models.Monsters/TorchHeadAmalgam.cs sha256:4860b71e43c10c5d149fb59bff18dcfc77e94ead8433d1fb2270d352438a754f
 - MegaCrit.Sts2.Core.Models.Powers/ChainsOfBindingPower.cs sha256:24cd416a187757169fef5b1c444da83b2a35b17841948c031bec1a195aea61c4
 - MegaCrit.Sts2.Core.Models.Afflictions/Bound.cs sha256:18a6fc6dc4a89156f6862611145e5abc0d57e10ae2d3c32edcb661bf6c68e5ea
 - MegaCrit.Sts2.Core.Models.Powers/MinionPower.cs sha256:8acbaf43969b256e0777bed2371830f7399e8c32fc45c8c35a3de7cde8b8c392
 - MegaCrit.Sts2.Core.Models.Encounters/QueenBoss.cs sha256:a951d1d566e97cd332ddb614b084bcfde242e8d5ca31839ec2a411943e76bc55
 - MegaCrit.Sts2.Core.Models.Acts/Glory.cs sha256:d70575f5ac62dda4c1e80d424955c412eb00248e127caaa2751a2775db4b03d0
-- MegaCrit.Sts2.Core.Commands/CreatureCmd.cs sha256:f52882086d141dea85b8de65b8e526db5418e390d3f5ba3f2191d3d7f8a6420b
+- MegaCrit.Sts2.Core.Commands/CreatureCmd.cs sha256:3e11f255f18296998511d03ee952a7b16974f5999de7db8941e35a3ef4e92768
 ---
 # 여왕 (QUEEN)
 
@@ -20,7 +20,7 @@ sources:
 - HP: 400 (A8+ 419)
 - 등장: 3막(`Glory`) 보스 `ENCOUNTER.QUEEN_BOSS`, 횃불머리 융합체 1마리와 함께
 - 전투 시작 시 특별한 파워 없음.
-- 동반 몬스터 횃불머리 융합체: HP 199 (A8+ 211), 하수인(`MinionPower`)을 가진다. 태클 18 (A9+ 19) → 태클 18 (A9+ 19) → 광선 8 × 3회 → 태클 14 (A9+ 15) → 태클 14 (A9+ 15) → 광선 … 순환(자세한 내용은 해당 문서).
+- 동반 몬스터 횃불머리 융합체: HP 199 (A8+ 211), 하수인(`MinionPower`)을 가진다. 강력 태클 26 (A9+ 32) → 태클 18 (A9+ 22) → 광선 8 × 3회 → 태클 14 (A9+ 16) → 태클 14 (A9+ 16) → 광선 … 순환(자세한 내용은 해당 문서).
 
 ## 행동
 | 행동 | 의도 | 효과 |

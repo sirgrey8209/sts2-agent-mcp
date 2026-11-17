@@ -1,15 +1,15 @@
 ---
 id: EVENT.NONUPEIPE
 name: Nonupeipe
-game_version: v0.107.1
+game_version: v0.111.1
 sources:
 - MegaCrit.Sts2.Core.Models.Events/Nonupeipe.cs sha256:2e20507e3f6b7f16f507feafb0a6860e23bec7a6b602fa5e344f46540655eb31
 - MegaCrit.Sts2.Core.Models/AncientEventModel.cs sha256:1e721b13dc512b05d2d0e8cb208701a5ca902026f59b645f16aaff5a37725105
-- MegaCrit.Sts2.Core.Models.Enchantments/Swift.cs sha256:fe26a7f3c0d452121e4234ca5e0280d1285baff834b403aba7ea3e176f5995f7
-- MegaCrit.Sts2.Core.Models/EnchantmentModel.cs sha256:3bb36197749db36c0776b52fe2b1c1a0faaec2b66f623277c48427906784210c
+- MegaCrit.Sts2.Core.Models.Enchantments/Swift.cs sha256:d8fd0ca9b8a13b21c409f2a281633b04f97cb6d303a48457e44d768c83ca1ad5
+- MegaCrit.Sts2.Core.Models/EnchantmentModel.cs sha256:74deff3aabe7b7564d91299c49eb1c222b8aa6b987900e9fc1f19cf29e778006
 - MegaCrit.Sts2.Core.Models.Acts/Glory.cs sha256:d70575f5ac62dda4c1e80d424955c412eb00248e127caaa2751a2775db4b03d0
 - MegaCrit.Sts2.Core.Models/ActModel.cs sha256:55f3a43c7e055aff1e35985c0cd229f22a271698a82b0d0a24a3f01320dcab0b
-- MegaCrit.Sts2.Core.Runs/RunManager.cs sha256:1c4d11b1b2261f2e5a0e7338866d0ca8c219152567700c9608d23f46a15258e1
+- MegaCrit.Sts2.Core.Runs/RunManager.cs sha256:db8f6c79a7ae1d1932028af1b9f4d2b01092e6294251f4eab40f7e67a03ee8bd
 - MegaCrit.Sts2.Core.Map/SpoilsActMap.cs sha256:bcae2a636d1f966c101e46be3721b3c3b94e2a3c294509691b95ad8d815556e3
 - MegaCrit.Sts2.Core.Entities.Ascension/AscensionLevel.cs sha256:be085612a3e08058582bf045f1e8808ad5a3032d9212438f4b295ceb7ffce5ef
 ---

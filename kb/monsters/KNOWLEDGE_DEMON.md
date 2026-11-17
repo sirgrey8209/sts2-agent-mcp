@@ -1,19 +1,19 @@
 ---
 id: MONSTER.KNOWLEDGE_DEMON
 name: 지식의 악마
-game_version: v0.107.1
+game_version: v0.111.1
 sources:
-- MegaCrit.Sts2.Core.Models.Monsters/KnowledgeDemon.cs sha256:0c5158e000a2b0833b796dfe32a13311266c9f8575e788eb8de88193f68a7643
+- MegaCrit.Sts2.Core.Models.Monsters/KnowledgeDemon.cs sha256:4ca8a2a7bf11194912616c066c96daeeaaa5e3748bd29e2f182e20c487e5d412
 - MegaCrit.Sts2.Core.Models.Cards/Disintegration.cs sha256:0da71e3058c4264e9cf426af54ee45c104d74c1ab8cb926648df9cc03d25622f
 - MegaCrit.Sts2.Core.Models.Cards/MindRot.cs sha256:149192c67b9fd63661c14c07ba060d5a3c195a3ce506069f6895d546a3eb0c7e
 - MegaCrit.Sts2.Core.Models.Cards/Sloth.cs sha256:adaa602017854a7ad2fdb9d20e76c5b6a6c09546d5deae951d31bc21c0f9c736
 - MegaCrit.Sts2.Core.Models.Cards/WasteAway.cs sha256:af1fe139fd4fc8b01c11fe35af2e41ee3e98f28552e9e74014db6977614ed0d1
-- MegaCrit.Sts2.Core.Models.Powers/DisintegrationPower.cs sha256:78cf03d5a7a8110d1dab32fe5114299d1ed4d8d7066ba9e8dc7e685b4241946c
+- MegaCrit.Sts2.Core.Models.Powers/DisintegrationPower.cs sha256:139a43ecc04e79892ec20ce6c9a6315fd3303de361adfcdf52cc318c72d665d1
 - MegaCrit.Sts2.Core.Models.Powers/MindRotPower.cs sha256:cfa6c7cf4b2d9d8e879591fc5003603d03b2c6dec697a7d918c27125e2c98507
 - MegaCrit.Sts2.Core.Models.Powers/SlothPower.cs sha256:7060129f270363ab07dcbea78a2d468c238b0cf3b46729fea11a7fe185331382
 - MegaCrit.Sts2.Core.Models.Powers/WasteAwayPower.cs sha256:6a905f4d91131232d03005e8232d31b4843b9315d51445a46a8e44bf572f9a96
 - MegaCrit.Sts2.Core.Models.Encounters/KnowledgeDemonBoss.cs sha256:7e6f57fd52e38caa7a85f2824a6982049e3cf449cfdfd4864fa101a9b4eb75ad
-- MegaCrit.Sts2.Core.Commands/CardSelectCmd.cs sha256:49b8e03935b0b3f54edfc546ee4fdd3646d36cfef932b62bb429907420506b6c
+- MegaCrit.Sts2.Core.Commands/CardSelectCmd.cs sha256:d35b4b304a83a6bd1e52b97dca76d26673298a7f125c35b1834ff856997fe4e0
 ---
 # 지식의 악마 (KNOWLEDGE_DEMON)
 

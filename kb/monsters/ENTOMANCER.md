@@ -1,9 +1,9 @@
 ---
 id: MONSTER.ENTOMANCER
 name: 곤충술사
-game_version: v0.107.1
+game_version: v0.111.1
 sources:
-- MegaCrit.Sts2.Core.Models.Monsters/Entomancer.cs sha256:6ab2649bb015400c567f84076bdabfa74286e79cc63bcec1cdbb4bc8977d658c
+- MegaCrit.Sts2.Core.Models.Monsters/Entomancer.cs sha256:2629678ac735dd7c72a4a0b709cbd13a062629767ea34de55fee3ea5c2db830b
 - MegaCrit.Sts2.Core.Models.Powers/PersonalHivePower.cs sha256:e7eed9c2a33a0e2a033a67780901064c8be03a0844c8222bd3950dcbc635e62a
 - MegaCrit.Sts2.Core.Models.Cards/Dazed.cs sha256:41ef3c48ad9459d39d364f2f38863bbd15827e01fe2b48a243b40444cec0a28b
 - MegaCrit.Sts2.Core.Models.Encounters/EntomancerElite.cs sha256:50a2390b9328c24aaeec0732864dbf7de583e57007910ab41f42c514b687f736
@@ -14,7 +14,7 @@ sources:
 **요약**: 2막 엘리트. 공격 피해를 받을 때마다 플레이어 뽑을 카드 더미에 어지러움(`Dazed`)을 섞어 넣는 개인 군락(`PersonalHivePower`)을 가지고, 벌떼 → 찌르기 → 페로몬 뱉기의 고정 3턴 순환을 돈다.
 
 ## 기본
-- HP: 145 (A8+ 155)
+- HP: 145 (A8+ 165)
 - 등장: 2막(`HIVE`) 엘리트 (`ENCOUNTER.ENTOMANCER_ELITE`), 단독
 - 전투 시작 시: 개인 군락(`PersonalHivePower`) 1
 
@@ -23,7 +23,7 @@ sources:
 |---|---|---|
 | 버어어얼이다! (`BEES_MOVE`) | 공격 ×7 (A9+ ×8) | 피해 3 × 7회 (A9+ 3 × 8회) |
 | 찌르기! (`SPEAR_MOVE`) | 공격 | 피해 18 (A9+ 20) |
-| 페로몬 뱉기 (`PHEROMONE_SPIT_MOVE`) | 버프 | 개인 군락이 3 미만이면 개인 군락 +1, 힘 +1. 개인 군락이 3 이상이면 힘 +2 |
+| 페로몬 뱉기 (`PHEROMONE_SPIT_MOVE`) | 버프 | 개인 군락이 3 미만이면 개인 군락 +1, 힘 +1. 개인 군락이 3 이상이거나 개인 군락이 없으면 힘 +2 |
 
 ## 패턴
 - 시작: 버어어얼이다!

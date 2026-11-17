@@ -1,7 +1,7 @@
 ---
 id: MONSTER.CROSSBOW_RUBY_RAIDER
 name: 크로스보우 습격자
-game_version: v0.107.1
+game_version: v0.111.1
 sources:
 - MegaCrit.Sts2.Core.Models.Monsters/CrossbowRubyRaider.cs sha256:1e8bc45eea94eb686aa9c29ad3cd7cea6c78ab9358a4da82132664d2df24c116
 - MegaCrit.Sts2.Core.Models.Encounters/RubyRaidersNormal.cs sha256:ce3789a28fb2c5f2e6645473ef806f6bcce236b47fb476f3c092db1b262a5f19

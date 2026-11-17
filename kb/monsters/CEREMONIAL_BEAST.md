@@ -1,16 +1,16 @@
 ---
 id: MONSTER.CEREMONIAL_BEAST
 name: 의식의 신수
-game_version: v0.107.1
+game_version: v0.111.1
 sources:
-- MegaCrit.Sts2.Core.Models.Monsters/CeremonialBeast.cs sha256:cecf869f380e0e67d7d295b3337de1755a6bb0b804ce91b3ccc0644e0caf8a21
+- MegaCrit.Sts2.Core.Models.Monsters/CeremonialBeast.cs sha256:3f799fce5dcad2a1820a5cae2d143da97494bffed23425a448388d16733f9a71
 - MegaCrit.Sts2.Core.Models.Powers/PlowPower.cs sha256:045457b351fa481f884064529dee3d223d25252c74caeda05c0e2e32d0be85ab
-- MegaCrit.Sts2.Core.Models.Powers/RingingPower.cs sha256:538a11b4caaa682cd26705cb27616b6f3e7608b5572d11a46a80170e58563c55
+- MegaCrit.Sts2.Core.Models.Powers/RingingPower.cs sha256:caef7cf5bfa0ae38f8fb850b97f3346816d54aaf4fc4e767618367090031a759
 - MegaCrit.Sts2.Core.Models.Afflictions/Ringing.cs sha256:b0ea2020dbf8045a38e1c83110e04dac7a2c418d3f4a5e66b57e9a27744b978e
 - MegaCrit.Sts2.Core.Models.Encounters/CeremonialBeastBoss.cs sha256:423692a5d8cfdc20af64817ee972c93ca9089da3d6403de7d8e3955a03c3af25
 - MegaCrit.Sts2.Core.Models.Acts/Overgrowth.cs sha256:61ff9d71f9b17f2f6a2f7f51f64bbfaa6752ec8cf7e75b4d291f2b0f89dc232b
-- MegaCrit.Sts2.Core.Commands/CreatureCmd.cs sha256:f52882086d141dea85b8de65b8e526db5418e390d3f5ba3f2191d3d7f8a6420b
-- MegaCrit.Sts2.Core.Entities.Creatures/Creature.cs sha256:d65cb7c1be3b3f7730f5844b5bac113e0097d8a6b5af08787073177832aa49fa
+- MegaCrit.Sts2.Core.Commands/CreatureCmd.cs sha256:3e11f255f18296998511d03ee952a7b16974f5999de7db8941e35a3ef4e92768
+- MegaCrit.Sts2.Core.Entities.Creatures/Creature.cs sha256:c6a998d46ad143990aa69a320a584497e303cb101f875bafd83b94382991931d
 ---
 # 의식의 신수 (CEREMONIAL_BEAST)
 

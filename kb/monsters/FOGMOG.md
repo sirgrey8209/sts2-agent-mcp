@@ -1,7 +1,7 @@
 ---
 id: MONSTER.FOGMOG
 name: 현혹버섯
-game_version: v0.107.1
+game_version: v0.111.1
 sources:
 - MegaCrit.Sts2.Core.Models.Monsters/Fogmog.cs sha256:2ad0311f9f2c369c90fb0838e03c23609a760bce167cfed4f9f35028ba2bd037
 - MegaCrit.Sts2.Core.Models.Monsters/EyeWithTeeth.cs sha256:19add9828268c055d7549e4784fd7c6157b45cb030888cf6e6b8e990e8797d29
@@ -9,7 +9,7 @@ sources:
 - MegaCrit.Sts2.Core.Models.Powers/MinionPower.cs sha256:8acbaf43969b256e0777bed2371830f7399e8c32fc45c8c35a3de7cde8b8c392
 - MegaCrit.Sts2.Core.Models.Encounters/FogmogNormal.cs sha256:a998845b7f23e2492eb26e21b8bbfc202da5fc94d444cba0c5545605f462a3f3
 - MegaCrit.Sts2.Core.Models.Acts/Overgrowth.cs sha256:61ff9d71f9b17f2f6a2f7f51f64bbfaa6752ec8cf7e75b4d291f2b0f89dc232b
-- MegaCrit.Sts2.Core.Commands/CreatureCmd.cs sha256:f52882086d141dea85b8de65b8e526db5418e390d3f5ba3f2191d3d7f8a6420b
+- MegaCrit.Sts2.Core.Commands/CreatureCmd.cs sha256:3e11f255f18296998511d03ee952a7b16974f5999de7db8941e35a3ef4e92768
 - MegaCrit.Sts2.Core.MonsterMoves.MonsterMoveStateMachine/RandomBranchState.cs sha256:a21f4174e001da5a0d34c23d07f52da61735618462e407ea1181ebd89469e9bb
 ---
 # 현혹버섯 (FOGMOG)

@@ -1,15 +1,15 @@
 ---
 id: MONSTER.TWIG_SLIME_M
 name: 가지 슬라임 (중)
-game_version: v0.107.1
+game_version: v0.111.1
 sources:
-- MegaCrit.Sts2.Core.Models.Monsters/TwigSlimeM.cs sha256:c2f054fa762d13e72544ac9b4318295e7c5a9f05db5ae7c33e4950540b020e30
+- MegaCrit.Sts2.Core.Models.Monsters/TwigSlimeM.cs sha256:e47f44a602799d16fde7917d0135502a8c91c3307c03f57bf98b3300c5e996de
 - MegaCrit.Sts2.Core.Models.Cards/Slimed.cs sha256:024372f85032a09464fa15bc5b2113f79e4b89a6f4f415182007901ebd4d37a8
 - MegaCrit.Sts2.Core.MonsterMoves.MonsterMoveStateMachine/RandomBranchState.cs sha256:a21f4174e001da5a0d34c23d07f52da61735618462e407ea1181ebd89469e9bb
 - MegaCrit.Sts2.Core.Models.Encounters/SlimesNormal.cs sha256:0c53efaaf3053551c55be100f69cfe3dfe5f32f6fac03f57db77d85c54db1c74
 - MegaCrit.Sts2.Core.Models.Encounters/SlimesWeak.cs sha256:e28277926221eb06799873115b096e9b48a8672446754da75c5ae902beede7ec
 - MegaCrit.Sts2.Core.Models.Encounters/FlyconidNormal.cs sha256:9c0d5915405eb4f653b55178906290bcd6e797fe5d0cb2e5b7374e2017e4c5eb
-- MegaCrit.Sts2.Core.Models.Encounters/SlitheringStranglerNormal.cs sha256:6303054f9e6b1809fe058179f5fe0a5a2b834255e300dd1e1b065c4ad37ccae3
+- MegaCrit.Sts2.Core.Models.Encounters/SlitheringStranglerNormal.cs sha256:23ed70bec8d661aafeaf1d5daa8f75fa85daa31df660e6f70ad34fbe29594554
 - MegaCrit.Sts2.Core.Models.Acts/Overgrowth.cs sha256:61ff9d71f9b17f2f6a2f7f51f64bbfaa6752ec8cf7e75b4d291f2b0f89dc232b
 ---
 # 가지 슬라임 (중) (TWIG_SLIME_M)

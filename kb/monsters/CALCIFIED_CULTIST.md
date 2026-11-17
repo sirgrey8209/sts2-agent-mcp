@@ -1,7 +1,7 @@
 ---
 id: MONSTER.CALCIFIED_CULTIST
 name: 석회화된 광신자
-game_version: v0.107.1
+game_version: v0.111.1
 sources:
 - MegaCrit.Sts2.Core.Models.Monsters/CalcifiedCultist.cs sha256:9a91ad1f81beacfde0de7457313a67052c1db4c774976ad4b1c37c6f4d2b67ce
 - MegaCrit.Sts2.Core.Models.Powers/RitualPower.cs sha256:68fb6b795725dfc7c771dcce7b93d6d12b04871289d9d1cf2b5767a8b8a397c4

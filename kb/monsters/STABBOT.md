@@ -1,15 +1,15 @@
 ---
 id: MONSTER.STABBOT
 name: 찔러봇
-game_version: v0.107.1
+game_version: v0.111.1
 sources:
-- MegaCrit.Sts2.Core.Models.Monsters/Stabbot.cs sha256:f705f81b577321c520e9349a15c499811a485e9151a241545e33c9efea18a091
-- MegaCrit.Sts2.Core.Models.Monsters/Fabricator.cs sha256:7a78bc8f844f4c92eb877957510dd8d3f1450d9b8eb3bf3f59ebb5bf47678c75
+- MegaCrit.Sts2.Core.Models.Monsters/Stabbot.cs sha256:3a0c9287db893f694937c648f5e4651e6ba8428685a73ab5cc6af6875aac7c30
+- MegaCrit.Sts2.Core.Models.Monsters/Fabricator.cs sha256:40884c0143d009329348770c8642aa689af379ccb0131fab3c096553613c17fe
 - MegaCrit.Sts2.Core.Models.Powers/FrailPower.cs sha256:3334f1dda0a5cff6a1373c71456313fdfd23f200c96512336df29ae8e4246dbe
 - MegaCrit.Sts2.Core.Models.Powers/MinionPower.cs sha256:8acbaf43969b256e0777bed2371830f7399e8c32fc45c8c35a3de7cde8b8c392
 - MegaCrit.Sts2.Core.Models.Encounters/FabricatorNormal.cs sha256:0390ef0151a229f5b827b4ad77bed3feb39bd9331e9f06a916c6cae86de0966d
 - MegaCrit.Sts2.Core.Models.Acts/Glory.cs sha256:d70575f5ac62dda4c1e80d424955c412eb00248e127caaa2751a2775db4b03d0
-- MegaCrit.Sts2.Core.Commands/CreatureCmd.cs sha256:f52882086d141dea85b8de65b8e526db5418e390d3f5ba3f2191d3d7f8a6420b
+- MegaCrit.Sts2.Core.Commands/CreatureCmd.cs sha256:3e11f255f18296998511d03ee952a7b16974f5999de7db8941e35a3ef4e92768
 ---
 # 찔러봇 (STABBOT)
 

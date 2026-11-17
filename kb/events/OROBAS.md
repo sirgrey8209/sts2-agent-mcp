@@ -1,15 +1,15 @@
 ---
 id: EVENT.OROBAS
 name: Orobas
-game_version: v0.107.1
+game_version: v0.111.1
 sources:
-- MegaCrit.Sts2.Core.Models.Events/Orobas.cs sha256:323d5fec032314c04fc51f76ee3eae10b81242589e87cc996397cfd530bd53c6
+- MegaCrit.Sts2.Core.Models.Events/Orobas.cs sha256:164bc6a7dc9ed79fc09d59c99bdf61e2bfcb235f4ae8d835c5620fc1037ddf6f
 - MegaCrit.Sts2.Core.Models/AncientEventModel.cs sha256:1e721b13dc512b05d2d0e8cb208701a5ca902026f59b645f16aaff5a37725105
 - MegaCrit.Sts2.Core.Models.Relics/TouchOfOrobas.cs sha256:48acb77fa4da966d310629db2ff1f36137da3145447b5b65f2c039186f6d3e32
 - MegaCrit.Sts2.Core.Models.Relics/ArchaicTooth.cs sha256:90352ca4f6f728900dc9ea520280d63a491b18cdefec34b0822001ba3b1c8fab
 - MegaCrit.Sts2.Core.Models.Acts/Hive.cs sha256:085d95a7ea0418ada9e8544efdc97afc01c4bada90eca76fd65d3755c62c784e
 - MegaCrit.Sts2.Core.Models/ActModel.cs sha256:55f3a43c7e055aff1e35985c0cd229f22a271698a82b0d0a24a3f01320dcab0b
-- MegaCrit.Sts2.Core.Runs/RunManager.cs sha256:1c4d11b1b2261f2e5a0e7338866d0ca8c219152567700c9608d23f46a15258e1
+- MegaCrit.Sts2.Core.Runs/RunManager.cs sha256:db8f6c79a7ae1d1932028af1b9f4d2b01092e6294251f4eab40f7e67a03ee8bd
 - MegaCrit.Sts2.Core.Map/SpoilsActMap.cs sha256:bcae2a636d1f966c101e46be3721b3c3b94e2a3c294509691b95ad8d815556e3
 - MegaCrit.Sts2.Core.Entities.Ascension/AscensionLevel.cs sha256:be085612a3e08058582bf045f1e8808ad5a3032d9212438f4b295ceb7ffce5ef
 ---
@@ -27,8 +27,8 @@ sources:
 
 | 칸 | 후보 | 뽑는 방식 |
 |---|---|---|
-| 1 | `ElectricShrymp`, `GlassEye`, `SandCastle`, 그리고 특수 1개 | 4개 중 무작위 1개(각 1/4) |
-| 2 | `AlchemicalCoffer`, `Driftwood`, `RadiantPearl` | 3개 중 무작위 1개 |
+| 1 | `ElectricShrymp`, `GlassEye`, 그리고 특수 1개 | 3개 중 무작위 1개(각 1/3) |
+| 2 | `AlchemicalCoffer`, `Driftwood`, `RadiantPearl`, `SandCastle` | 4개 중 무작위 1개 |
 | 3 | `TouchOfOrobas`, `ArchaicTooth` | 조건을 통과한 것 중 무작위 1개 |
 
 ## 결과 상세
@@ -46,10 +46,10 @@ sources:
 ## Glossary (game names)
 - `ElectricShrymp`: 전기 섀우 (relic)
 - `GlassEye`: 유리 눈 (relic)
-- `SandCastle`: 모래성 (relic)
 - `AlchemicalCoffer`: 연금술 궤짝 (relic)
 - `Driftwood`: 유목 (relic)
 - `RadiantPearl`: 빛나는 진주 (relic)
+- `SandCastle`: 모래성 (relic)
 - `TouchOfOrobas`: 오로바스의 손 (relic)
 - `ArchaicTooth`: 고대의 이빨 (relic)
 - `PrismaticGem`: 프리즘 보석 (relic)

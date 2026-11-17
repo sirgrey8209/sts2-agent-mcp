@@ -1,13 +1,13 @@
 ---
 id: MONSTER.FLYCONID
 name: 날개버섯
-game_version: v0.107.1
+game_version: v0.111.1
 sources:
 - MegaCrit.Sts2.Core.Models.Monsters/Flyconid.cs sha256:7757a4fe33cf738c8cc7ee1f20d0065ed8ea802fb64c3237645565557f3df599
-- MegaCrit.Sts2.Core.Models.Powers/VulnerablePower.cs sha256:8fd6a82db0c6dd460a2f1d118628c4ab2600dc97f93a31c672e84ee4a3147126
+- MegaCrit.Sts2.Core.Models.Powers/VulnerablePower.cs sha256:61b6893cdd2c66d71bf99d2ef5ede347865185825f22625e8e6bd9b828c2da5d
 - MegaCrit.Sts2.Core.Models.Powers/FrailPower.cs sha256:3334f1dda0a5cff6a1373c71456313fdfd23f200c96512336df29ae8e4246dbe
 - MegaCrit.Sts2.Core.Models.Encounters/FlyconidNormal.cs sha256:9c0d5915405eb4f653b55178906290bcd6e797fe5d0cb2e5b7374e2017e4c5eb
-- MegaCrit.Sts2.Core.Models.Encounters/SnappingJaxfruitNormal.cs sha256:0a98fdd512aff75b5b1ff5876d7f9770a19cd38ef24e660c42ec9a0efd4a2548
+- MegaCrit.Sts2.Core.Models.Encounters/SnappingJaxfruitNormal.cs sha256:98b2c0081c75abd089feb7819f097aa96870e82e0fbc323cfa830252a758e125
 - MegaCrit.Sts2.Core.Models.Acts/Overgrowth.cs sha256:61ff9d71f9b17f2f6a2f7f51f64bbfaa6752ec8cf7e75b4d291f2b0f89dc232b
 - MegaCrit.Sts2.Core.MonsterMoves.MonsterMoveStateMachine/RandomBranchState.cs sha256:a21f4174e001da5a0d34c23d07f52da61735618462e407ea1181ebd89469e9bb
 ---

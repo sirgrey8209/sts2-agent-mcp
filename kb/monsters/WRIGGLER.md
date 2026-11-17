@@ -1,13 +1,13 @@
 ---
 id: MONSTER.WRIGGLER
 name: 꿈틀벌레
-game_version: v0.107.1
+game_version: v0.111.1
 sources:
 - MegaCrit.Sts2.Core.Models.Monsters/Wriggler.cs sha256:2d008f4cd9cbe791dc96012a137faa6d6fd7c5696b698ea2f6c67e720320e87a
-- MegaCrit.Sts2.Core.Models.Cards/Infection.cs sha256:88d297b6cfd86d987d2129824e0a7c1124a8ecfb3cbc300e202ca93cae449c55
-- MegaCrit.Sts2.Core.Models.Encounters/PhrogParasiteElite.cs sha256:7c886e8ebf7db10427f78cbd958f85132d1311e8fc2b0e6f5c84aef5af4a67d6
+- MegaCrit.Sts2.Core.Models.Cards/Infection.cs sha256:c96cae2714c3507a8fd342425f46d3828a29eb4eb0d2dc37242372a7fcac1f05
+- MegaCrit.Sts2.Core.Models.Encounters/PhrogParasiteElite.cs sha256:f2a2cec1196f080ea935052afdb64ba8dddcaf6c8ab751ddcc971471fa641977
 - MegaCrit.Sts2.Core.Models.Monsters/PhrogParasite.cs sha256:9716e37f502e678a1153d6e946b1a2c6f9b53b217fc1b34784a3a317751b91ef
-- MegaCrit.Sts2.Core.Models.Powers/InfestedPower.cs sha256:4fa2e48adbf754e27359529f42aebaa1511eae8b2e8ade544a6484b79d62757e
+- MegaCrit.Sts2.Core.Models.Powers/InfestedPower.cs sha256:034dc46f54b01b85302b93f95e3347e26697cf083dc9d3cdd70c1babdd4003ee
 - MegaCrit.Sts2.Core.Models.Encounters/DenseVegetationEventEncounter.cs sha256:275c12c3e1ca00a1cc4cf176518973ea5b967558f4a53d00acc7264116fa6bdf
 - MegaCrit.Sts2.Core.Models.Events/DenseVegetation.cs sha256:30111c5079d078af1d77fab3c0f1a412e9f9dc2bf046ab101eb7ab77af07d9e9
 - MegaCrit.Sts2.Core.Models.Acts/Overgrowth.cs sha256:61ff9d71f9b17f2f6a2f7f51f64bbfaa6752ec8cf7e75b4d291f2b0f89dc232b
@@ -39,7 +39,7 @@ sources:
 ## 특수 규칙
 - **`Infection`**: 사용할 수 없는 상태이상 카드. 턴이 끝날 때 손에 있으면 주인에게 피해 3을 준다(방어도로 막을 수 있음).
 - 꿈틀거리기의 힘 +2는 누적되어 이후 불쾌한 물기가 2씩 강해진다.
-- **게구리 기생체의 `InfestedPower`**: 기생체가 죽어도 전투가 끝나지 않고, 죽음 연출 뒤 꿈틀벌레 4마리가 생성된다.
+- **게구리 기생체의 `InfestedPower`**: 기생체가 죽어도 전투가 끝나지 않고, 죽는 즉시 꿈틀벌레 4마리가 생성된다(죽음 연출이 끝날 때까지 화면에만 숨겨져 있다).
 
 ## 플레이 메모
 - 기생체 엘리트에서는 기생체를 죽인 직후의 적 턴에 꿈틀벌레가 아무것도 하지 않으므로, 그 다음 플레이어 턴까지 광역 공격으로 정리할 시간이 있다.

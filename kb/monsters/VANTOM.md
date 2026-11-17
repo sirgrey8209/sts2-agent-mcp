@@ -1,7 +1,7 @@
 ---
 id: MONSTER.VANTOM
 name: 밴텀
-game_version: v0.107.1
+game_version: v0.111.1
 sources:
 - MegaCrit.Sts2.Core.Models.Monsters/Vantom.cs sha256:476c9b05288a7446c25a65d1099490146b8aebe9de0fe1f1dc6b65e44b357469
 - MegaCrit.Sts2.Core.Models.Powers/SlipperyPower.cs sha256:fcdb8aea24e7e7b6b898305b0e03abead53fd28d0e9a4b9a11a91aa8c91e7528

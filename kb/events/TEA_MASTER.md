@@ -1,11 +1,11 @@
 ---
 id: EVENT.TEA_MASTER
 name: 차의 명인
-game_version: v0.107.1
+game_version: v0.111.1
 sources:
 - MegaCrit.Sts2.Core.Models.Events/TeaMaster.cs sha256:fc390aab07ab209f6e9526de52642bf1b5008e60c4e3c5cb5297904cae536198
-- MegaCrit.Sts2.Core.Models/ModelDb.cs sha256:7144c6e265fc4484e40860f4ec7cb288c677a63256675222010f66ab628d6e4f
-- MegaCrit.Sts2.Core.Models.Relics/BoneTea.cs sha256:53d7719be1e78f550de0b38ea64b7fc6030b327debedacd8adbc9da778ed02af
+- MegaCrit.Sts2.Core.Models/ModelDb.cs sha256:2f7bdb25b700a1725266c720525542b660056bbc86f357852239b39b8fbf14f8
+- MegaCrit.Sts2.Core.Models.Relics/BoneTea.cs sha256:03be8b47ccdef812d36c3a0fe3475e74ea43e06dca4077fc4184a61b8dabfc59
 - MegaCrit.Sts2.Core.Models.Relics/EmberTea.cs sha256:659a9fe36eed0030a6b65d660b6b068be1a827557093cbeb2ec6a2a9a59a6a52
 - MegaCrit.Sts2.Core.Models.Relics/TeaOfDiscourtesy.cs sha256:f88dd42ac45c179cafb4a900e0e1d40fdab521b8bac97f48ed50889099b04b6f
 ---

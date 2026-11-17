@@ -1,7 +1,7 @@
 ---
 id: MONSTER.BYRDONIS
 name: 섀도니스
-game_version: v0.107.1
+game_version: v0.111.1
 sources:
 - MegaCrit.Sts2.Core.Models.Monsters/Byrdonis.cs sha256:5d8f5592396162db13f7b7a2978303a20ab32f92e2f3f485add3ab4dbfb0fc69
 - MegaCrit.Sts2.Core.Models.Powers/TerritorialPower.cs sha256:be17aecee5adf974dcaf3d4db1da47d87f2c3a22db800ede40abac5cb59f382f

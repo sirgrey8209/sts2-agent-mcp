@@ -1,9 +1,9 @@
 ---
 id: EVENT.SUNKEN_STATUE
 name: 침몰한 조각상
-game_version: v0.107.1
+game_version: v0.111.1
 sources:
-- MegaCrit.Sts2.Core.Models.Events/SunkenStatue.cs sha256:1d41fb47a50b37eeab6e028d8bfb2cdf084a91293c6caf944b1cda86e68b2acc
+- MegaCrit.Sts2.Core.Models.Events/SunkenStatue.cs sha256:3a0220ca5d9637dc92900f6e2380caf6b0229b7d1f73ee4323c94fd87260ac2c
 - MegaCrit.Sts2.Core.Models.Acts/Overgrowth.cs sha256:61ff9d71f9b17f2f6a2f7f51f64bbfaa6752ec8cf7e75b4d291f2b0f89dc232b
 - MegaCrit.Sts2.Core.Models.Acts/Underdocks.cs sha256:b5f91ba221afa5ca83ca92290f481c8bef88c28f1ff8272f780f2540700964fb
 - MegaCrit.Sts2.Core.Models.Relics/SwordOfStone.cs sha256:a33f24ba9483daab1cd75ac4161efb980236b80ee1dc49c86a5a654fe6d3d196

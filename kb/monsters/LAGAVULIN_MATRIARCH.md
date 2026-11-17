@@ -1,7 +1,7 @@
 ---
 id: MONSTER.LAGAVULIN_MATRIARCH
 name: 라가불린 대모
-game_version: v0.107.1
+game_version: v0.111.1
 sources:
 - MegaCrit.Sts2.Core.Models.Monsters/LagavulinMatriarch.cs sha256:b779e5c08fa421499bedca32e6c9c04b3bb5ee0b0d080bed56778517a4cffd78
 - MegaCrit.Sts2.Core.Models.Powers/AsleepPower.cs sha256:352eba38f33d8167954fb291723704293f89a47e1b2634edf359f1679ad4cfbc

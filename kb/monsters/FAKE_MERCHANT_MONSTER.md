@@ -1,12 +1,12 @@
 ---
 id: MONSTER.FAKE_MERCHANT_MONSTER
 name: 상?인
-game_version: v0.107.1
+game_version: v0.111.1
 sources:
-- MegaCrit.Sts2.Core.Models.Monsters/FakeMerchantMonster.cs sha256:166d54d0a2992dc8cef22ebd81bf90dca1370b99113801471ac8e0cb6e9745f8
+- MegaCrit.Sts2.Core.Models.Monsters/FakeMerchantMonster.cs sha256:8c8e94bbd0ffb4d40c5a686a38eb33e967a53ef904a1492ed59a3ce339e5f975
 - MegaCrit.Sts2.Core.Models.Encounters/FakeMerchantEventEncounter.cs sha256:c89809e8021159cda1abef403fbf4775e136e27341fd5afb71d77d983d344e45
-- MegaCrit.Sts2.Core.Models.Events/FakeMerchant.cs sha256:557635f7534969c62bdcca4d19b9bb19c00c3ec2cfa585932e291037be7b62e0
-- MegaCrit.Sts2.Core.Models.Potions/FoulPotion.cs sha256:5fb3b0fed42e91677b0cb6d49c4a7e6422406c357f61e8cca1c0ca7cc5d5913c
+- MegaCrit.Sts2.Core.Models.Events/FakeMerchant.cs sha256:e594bd7dce1f463964ac35865d4477a06b4fda024dbc0d16d639cf3cd694f2de
+- MegaCrit.Sts2.Core.Models.Potions/FoulPotion.cs sha256:2cb47e1ff8747b41b790026939bf0386f4711526a0d67418246cc36ebe60d98a
 - MegaCrit.Sts2.Core.Models.Powers/FrailPower.cs sha256:3334f1dda0a5cff6a1373c71456313fdfd23f200c96512336df29ae8e4246dbe
 - MegaCrit.Sts2.Core.MonsterMoves.MonsterMoveStateMachine/RandomBranchState.cs sha256:a21f4174e001da5a0d34c23d07f52da61735618462e407ea1181ebd89469e9bb
 ---

@@ -1,14 +1,14 @@
 ---
 id: MONSTER.TWO_TAILED_RAT
 name: 두꼬리쥐
-game_version: v0.107.1
+game_version: v0.111.1
 sources:
-- MegaCrit.Sts2.Core.Models.Monsters/TwoTailedRat.cs sha256:e50556be2187d67a41044f471d7d3270511b2aed9a599f7ef6b33d558b9aa1fb
+- MegaCrit.Sts2.Core.Models.Monsters/TwoTailedRat.cs sha256:c19b91a1dcc1edb305d76b4f47cfdd4eafc25866ca307f2566398a7cc931055f
 - MegaCrit.Sts2.Core.Models.Encounters/TwoTailedRatsNormal.cs sha256:bafd98026caa6f58b946ae0733af47c9757e893fc8d3f73429767b0f91451a05
 - MegaCrit.Sts2.Core.Models.Acts/Underdocks.cs sha256:b5f91ba221afa5ca83ca92290f481c8bef88c28f1ff8272f780f2540700964fb
 - MegaCrit.Sts2.Core.Models.Powers/FrailPower.cs sha256:3334f1dda0a5cff6a1373c71456313fdfd23f200c96512336df29ae8e4246dbe
 - MegaCrit.Sts2.Core.MonsterMoves.MonsterMoveStateMachine/RandomBranchState.cs sha256:a21f4174e001da5a0d34c23d07f52da61735618462e407ea1181ebd89469e9bb
-- MegaCrit.Sts2.Core.Models/EncounterModel.cs sha256:6eaa2f804db14af9d8c90b75ee0762c9b807fcf9d0cfb093b3f217501da89f90
+- MegaCrit.Sts2.Core.Models/EncounterModel.cs sha256:6f7dc7376bbc794d54bb090acc1e2e805bdbb81642762901cf0ec90ca7ceca90
 ---
 # 두꼬리쥐 (TWO_TAILED_RAT)
 

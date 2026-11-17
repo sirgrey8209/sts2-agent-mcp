@@ -1,7 +1,7 @@
 ---
 id: MONSTER.SOUL_NEXUS
 name: 영혼 결합체
-game_version: v0.107.1
+game_version: v0.111.1
 sources:
 - MegaCrit.Sts2.Core.Models.Monsters/SoulNexus.cs sha256:38d213e39424dd2a8218e53f724e8f8c937bfa8403f0f57ccaa36f9bed9f244b
 - MegaCrit.Sts2.Core.Models.Encounters/SoulNexusElite.cs sha256:cd2209ee4d926e810ca322b91a0b9c7e2204ce8fead23e9d0f3c610904ff1c70

@@ -1,18 +1,18 @@
 ---
 id: MONSTER.TORCH_HEAD_AMALGAM
 name: 횃불머리 융합체
-game_version: v0.107.1
+game_version: v0.111.1
 sources:
-- MegaCrit.Sts2.Core.Models.Monsters/TorchHeadAmalgam.cs sha256:56f5d1a740e75656d09165db7ff85aca88ad86b5ff9ef3234efdca24cd918915
+- MegaCrit.Sts2.Core.Models.Monsters/TorchHeadAmalgam.cs sha256:4860b71e43c10c5d149fb59bff18dcfc77e94ead8433d1fb2270d352438a754f
 - MegaCrit.Sts2.Core.Models.Powers/MinionPower.cs sha256:8acbaf43969b256e0777bed2371830f7399e8c32fc45c8c35a3de7cde8b8c392
 - MegaCrit.Sts2.Core.Models.Encounters/QueenBoss.cs sha256:a951d1d566e97cd332ddb614b084bcfde242e8d5ca31839ec2a411943e76bc55
-- MegaCrit.Sts2.Core.Models.Monsters/Queen.cs sha256:24b3a50000378f84d41d96076bd68a1fafffb665757ab143f9382477ab61944a
+- MegaCrit.Sts2.Core.Models.Monsters/Queen.cs sha256:03a0dc65b042e5e309588bd67233f35b50b33ae5365d7a7e1dc332aa03d574c0
 - MegaCrit.Sts2.Core.Models.Acts/Glory.cs sha256:d70575f5ac62dda4c1e80d424955c412eb00248e127caaa2751a2775db4b03d0
-- MegaCrit.Sts2.Core.Commands/CreatureCmd.cs sha256:f52882086d141dea85b8de65b8e526db5418e390d3f5ba3f2191d3d7f8a6420b
+- MegaCrit.Sts2.Core.Commands/CreatureCmd.cs sha256:3e11f255f18296998511d03ee952a7b16974f5999de7db8941e35a3ef4e92768
 ---
 # 횃불머리 융합체 (TORCH_HEAD_AMALGAM)
 
-**요약**: 3막 보스 여왕(`QUEEN`)과 함께 나오는 하수인. 태클 2번 → 광선(3회 타격) → 약한 태클 2번 → 광선 … 순환으로 공격만 한다. 여왕이 살아 있는 동안 여왕에게 매 턴 힘을 받아 점점 세지고, 여왕이 죽으면 함께 죽는다.
+**요약**: 3막 보스 여왕(`QUEEN`)과 함께 나오는 하수인. 강력 태클 → 태클 → 광선(3회 타격) → 약한 태클 2번 → 광선 … 순환으로 공격만 한다. 여왕이 살아 있는 동안 여왕에게 매 턴 힘을 받아 점점 세지고, 여왕이 죽으면 함께 죽는다.
 
 ## 기본
 - HP: 199 (A8+ 211)
@@ -22,13 +22,16 @@ sources:
 ## 행동
 | 행동 | 의도 | 효과 |
 |---|---|---|
-| 태클 (`TACKLE_MOVE`, `TACKLE_2_MOVE`) | 공격 | 피해 18 (A9+ 19) |
+| 강력 태클 (`STRONG_TACKLE_MOVE`) | 공격 | 피해 26 (A9+ 32) |
+| 태클 (`TACKLE_2_MOVE`) | 공격 | 피해 18 (A9+ 22) |
 | 광선 (`BEAM_MOVE`) | 공격 ×3 | 피해 8 × 3회 (승천 변화 없음) |
-| 태클 (`TACKLE_3_MOVE`, `TACKLE_4_MOVE`) | 공격 | 피해 14 (A9+ 15) |
+| 태클 (`TACKLE_3_MOVE`, `TACKLE_4_MOVE`) | 공격 | 피해 14 (A9+ 16) |
+
+`TACKLE_2_MOVE`~`TACKLE_4_MOVE`의 한국어 행동명은 로컬라이즈 파일에 없다('태클'은 id를 옮긴 것).
 
 ## 패턴
-- 고정: 태클(18) → 태클(18) → 광선 → 태클(14) → 태클(14) → 광선 → 태클(14) → 태클(14) → 광선 …
-- 강한 태클(18/19) 2번은 전투 처음에만 나온다. 무작위 요소 없음.
+- 고정: 강력 태클(26) → 태클(18) → 광선 → 태클(14) → 태클(14) → 광선 → 태클(14) → 태클(14) → 광선 …
+- 강력 태클(26/32)과 태클(18/22)은 전투 처음에 1번씩만 나온다. 무작위 요소 없음.
 
 ## 특수 규칙
 - **하수인(`MinionPower`)**: 여왕(주 적)이 죽었을 때 살아 남은 적이 모두 하수인이면 함께 죽는다. 융합체 자신이 죽어도 전투는 끝나지 않는다.

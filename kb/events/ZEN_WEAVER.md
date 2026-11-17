@@ -1,7 +1,7 @@
 ---
 id: EVENT.ZEN_WEAVER
 name: 고요를 짜는 거미
-game_version: v0.107.1
+game_version: v0.111.1
 sources:
 - MegaCrit.Sts2.Core.Models.Events/ZenWeaver.cs sha256:c06fba76f9c342710be0306dddf2df8dcb885802a4b59afd3737940a60de8bf5
 - MegaCrit.Sts2.Core.Models.Cards/Enlightenment.cs sha256:0728fb65a7941754fc7d71dcdd221f25e770ccae922a6531df434ae4e8538d5d

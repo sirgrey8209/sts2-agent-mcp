@@ -1,7 +1,7 @@
 ---
 id: MONSTER.THE_FORGOTTEN
 name: 잊힌 자
-game_version: v0.107.1
+game_version: v0.111.1
 sources:
 - MegaCrit.Sts2.Core.Models.Monsters/TheForgotten.cs sha256:dbcfb89ae0a4298a1da4ee196bed1ae17c48b41e77ea383c1a1333868fd89238
 - MegaCrit.Sts2.Core.Models.Powers/PossessSpeedPower.cs sha256:2d50b16d65f8cff238d24e2ee1dab8697699426e34d75d1fc8befa8d5244e823

@@ -1,13 +1,13 @@
 ---
 id: EVENT.GRAVE_OF_THE_FORGOTTEN
 name: 잊힌 자의 무덤
-game_version: v0.107.1
+game_version: v0.111.1
 sources:
 - MegaCrit.Sts2.Core.Models.Events/GraveOfTheForgotten.cs sha256:651ff2f100b9964313a2d6b23e15104a86e4458509adbbc0c2602aac09481be6
 - MegaCrit.Sts2.Core.Models.Relics/ForgottenSoul.cs sha256:2b8384567b2d2f07405ce88a3c956bdee3e163bc5cc60499a939763fb24789ac
 - MegaCrit.Sts2.Core.Models.Enchantments/SoulsPower.cs sha256:3144f630de831e91c6572f38346b136c51141c79c21bbf0984d5f6b1c4c23aec
-- MegaCrit.Sts2.Core.Models.Cards/Decay.cs sha256:897edb12e9e1dc06bd21ed0cccc6ba71d3ffb2284c366f46f97ac42233dd2b3b
-- MegaCrit.Sts2.Core.Models/EnchantmentModel.cs sha256:3bb36197749db36c0776b52fe2b1c1a0faaec2b66f623277c48427906784210c
+- MegaCrit.Sts2.Core.Models.Cards/Decay.cs sha256:f2476dde7ea542087aa0b78c96251a24be8f08fc701a6268372976e345c54e5f
+- MegaCrit.Sts2.Core.Models/EnchantmentModel.cs sha256:74deff3aabe7b7564d91299c49eb1c222b8aa6b987900e9fc1f19cf29e778006
 - MegaCrit.Sts2.Core.Models.Acts/Glory.cs sha256:d70575f5ac62dda4c1e80d424955c412eb00248e127caaa2751a2775db4b03d0
 ---
 # 잊힌 자의 무덤 (GRAVE_OF_THE_FORGOTTEN)

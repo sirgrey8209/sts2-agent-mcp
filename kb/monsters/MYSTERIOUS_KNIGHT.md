@@ -1,12 +1,12 @@
 ---
 id: MONSTER.MYSTERIOUS_KNIGHT
 name: 수수께끼의 기사
-game_version: v0.107.1
+game_version: v0.111.1
 sources:
 - MegaCrit.Sts2.Core.Models.Monsters/MysteriousKnight.cs sha256:580f6f13e750e948c2bba0cc540d39e99a2c225e80dc17797a6dec73178c9978
 - MegaCrit.Sts2.Core.Models.Monsters/FlailKnight.cs sha256:f5b7c0f3666b0bc1c7033682f96c6d56db0b7b03e249ec82d6c09b265a8a5afb
 - MegaCrit.Sts2.Core.Models.Encounters/MysteriousKnightEventEncounter.cs sha256:f61dace2f57c326e564a5b3ab581addf5a87299c93f6b580af25549df9ceadf1
-- MegaCrit.Sts2.Core.Models.Events/TheLanternKey.cs sha256:0eacfc8fd3911a0f86a64c7231cf8932bebbd6a3fbdc0b7ca41c734f112a4454
+- MegaCrit.Sts2.Core.Models.Events/TheLanternKey.cs sha256:7a0b9d1f3db5a66c29639e25a3924568f720258397dce14ef1ba052c8120d154
 - MegaCrit.Sts2.Core.Models.Acts/Hive.cs sha256:085d95a7ea0418ada9e8544efdc97afc01c4bada90eca76fd65d3755c62c784e
 - MegaCrit.Sts2.Core.Models.Powers/PlatingPower.cs sha256:f8e6f35b5df38ec5d79234ccc25a8e6e51f65ef01db10043be23c5bee64c377a
 - MegaCrit.Sts2.Core.MonsterMoves.MonsterMoveStateMachine/RandomBranchState.cs sha256:a21f4174e001da5a0d34c23d07f52da61735618462e407ea1181ebd89469e9bb

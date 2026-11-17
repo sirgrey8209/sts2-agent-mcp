@@ -1,13 +1,13 @@
 ---
 id: MONSTER.KIN_FOLLOWER
 name: 혈족 추종자
-game_version: v0.107.1
+game_version: v0.111.1
 sources:
-- MegaCrit.Sts2.Core.Models.Monsters/KinFollower.cs sha256:0f67cb923b10b2555efe7b8029b26673b9273430313e4b8784b35aefb5468020
-- MegaCrit.Sts2.Core.Models.Monsters/KinPriest.cs sha256:0abb61a23090075044ad13429f25db1ede66e02ea4d2e193264d1a56cf5148e1
+- MegaCrit.Sts2.Core.Models.Monsters/KinFollower.cs sha256:3dd1b74cfa6962c26a9f8259e6b51b851b04172143e49ac605fcfbb87ab42224
+- MegaCrit.Sts2.Core.Models.Monsters/KinPriest.cs sha256:d9ac91546bf67c944248844ee09d656b28af5c24d7c5232d85cfdc9488a2c5a3
 - MegaCrit.Sts2.Core.Models.Powers/MinionPower.cs sha256:8acbaf43969b256e0777bed2371830f7399e8c32fc45c8c35a3de7cde8b8c392
 - MegaCrit.Sts2.Core.Models.Encounters/TheKinBoss.cs sha256:eae6f5da4e04c1512fdd01f24838f5e659812162088259f4764573d057df076f
-- MegaCrit.Sts2.Core.Commands/CreatureCmd.cs sha256:f52882086d141dea85b8de65b8e526db5418e390d3f5ba3f2191d3d7f8a6420b
+- MegaCrit.Sts2.Core.Commands/CreatureCmd.cs sha256:3e11f255f18296998511d03ee952a7b16974f5999de7db8941e35a3ef4e92768
 ---
 # 혈족 추종자 (KIN_FOLLOWER)
 

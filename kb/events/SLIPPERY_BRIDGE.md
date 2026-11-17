@@ -1,10 +1,10 @@
 ---
 id: EVENT.SLIPPERY_BRIDGE
 name: 미끄러운 다리
-game_version: v0.107.1
+game_version: v0.111.1
 sources:
 - MegaCrit.Sts2.Core.Models.Events/SlipperyBridge.cs sha256:2b1863f7d08b809c55eba455bd8482c71ea85e1c848ae3f71eeedd3283ddc818
-- MegaCrit.Sts2.Core.Models/ModelDb.cs sha256:7144c6e265fc4484e40860f4ec7cb288c677a63256675222010f66ab628d6e4f
+- MegaCrit.Sts2.Core.Models/ModelDb.cs sha256:2f7bdb25b700a1725266c720525542b660056bbc86f357852239b39b8fbf14f8
 ---
 # 미끄러운 다리 (SLIPPERY_BRIDGE)
 

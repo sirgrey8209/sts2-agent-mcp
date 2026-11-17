@@ -1,32 +1,32 @@
 ---
 id: MONSTER.TOUGH_EGG
 name: 튼튼한 알
-game_version: v0.107.1
+game_version: v0.111.1
 sources:
-- MegaCrit.Sts2.Core.Models.Monsters/ToughEgg.cs sha256:69896d188d19e7d89406b5b2420f6f9b9942e20e1eb6f95b1606e894639dacce
+- MegaCrit.Sts2.Core.Models.Monsters/ToughEgg.cs sha256:4ac2a0705e6e8991b016dbe6527b8e1bfa853f02a369cffe0d4b40dafc621262
 - MegaCrit.Sts2.Core.Models.Powers/HatchPower.cs sha256:74404f7ee9cefb090d8ead41acab256149aecb64fe482609a9bbc5f78be59014
 - MegaCrit.Sts2.Core.Models.Powers/MinionPower.cs sha256:8acbaf43969b256e0777bed2371830f7399e8c32fc45c8c35a3de7cde8b8c392
-- MegaCrit.Sts2.Core.Models.Monsters/Ovicopter.cs sha256:70b6714d1dba0b06e69d0c1c9bebd662d917dd43f41ffbbb73d6736fee5b992c
+- MegaCrit.Sts2.Core.Models.Monsters/Ovicopter.cs sha256:e26a2c4dd8e289b46da2560c854720fc72ab43c964827bf695e7b30860823797
 - MegaCrit.Sts2.Core.Models.Encounters/OvicopterNormal.cs sha256:79e1cc10a71566b316b20a23e7b7d447bdbf98896c2aca697d0af01e83422525
 - MegaCrit.Sts2.Core.Models.Acts/Hive.cs sha256:085d95a7ea0418ada9e8544efdc97afc01c4bada90eca76fd65d3755c62c784e
-- MegaCrit.Sts2.Core.Random/Rng.cs sha256:99a404a807dae7b3c786821b3c287e6518b573f58265f98feaa63132748b7f40
-- MegaCrit.Sts2.Core.Combat/CombatManager.cs sha256:7ae1b7259e72befa07f4aceaa9ab0e23783fc55876bcde6090b9b2cfae65a43e
-- MegaCrit.Sts2.Core.Combat/CombatState.cs sha256:6dc71f2ed75e40551749f77a45d4dd39fd2999904c8d84ef36419efc152fe759
-- MegaCrit.Sts2.Core.Commands/CreatureCmd.cs sha256:f52882086d141dea85b8de65b8e526db5418e390d3f5ba3f2191d3d7f8a6420b
+- MegaCrit.Sts2.Core.Random/Rng.cs sha256:0a8fca24479fe57d50e6dd8d16682fb9589372330b4c463bbc4ba5f4dc0ce8d8
+- MegaCrit.Sts2.Core.Combat/CombatManager.cs sha256:8b1e0a22403cd8f9bd647ae640de30467dd70319d860a0527549ff800d2b97f3
+- MegaCrit.Sts2.Core.Combat/CombatState.cs sha256:80e69a82042785f98ddcf05a3393615b88495dd511cc1ea128627da0da94d9cc
+- MegaCrit.Sts2.Core.Commands/CreatureCmd.cs sha256:3e11f255f18296998511d03ee952a7b16974f5999de7db8941e35a3ef4e92768
 ---
 # 튼튼한 알 (TOUGH_EGG)
 
 **요약**: 산란비충(`OVICOPTER`)이 3개씩 낳는 하수인 알. 첫 행동에 부화해서 해츨링(`HATCHLING`)이 되며, 이때 HP가 새로 정해지고 하수인 외의 모든 파워가 지워진다. 이후 매 턴 4 (A9+ 5)씩 문다.
 
 ## 기본
-- HP: 알 14~18 (A8+ 15~19) → 부화 후 해츨링 19~21 (A8+ 20~22)로 최대·현재 HP 재설정 (멀티플레이 인원 보정 적용)
+- HP: 알 14~18 (A8+ 15~19) → 부화 후 해츨링 19~22 (A8+ 20~23)로 최대·현재 HP 재설정 (멀티플레이 인원 보정 적용)
 - 등장: 2막(`Hive`) 일반 전투 `ENCOUNTER.OVICOPTER_NORMAL`. 전투 시작 시에는 없고, 산란비충의 알 낳기(`LAY_EGGS_MOVE`)로 빈 알 슬롯(최대 5칸)에 한 번에 최대 3개 생성된다.
 - 생성 시: 하수인(`MinionPower`, 산란비충이 부여), 부화(`HatchPower`) — 적 턴 중에 생성되면 2, 그 밖에는 1
 
 ## 행동
 | 행동 | 의도 | 효과 |
 |---|---|---|
-| 부화 (`HATCH_MOVE`) | 소환 | `HatchPower` 제거 → 하수인을 제외한 모든 파워 제거 → 해츨링으로 변신, 최대·현재 HP를 19~21 (A8+ 20~22)로 설정 |
+| 부화 (`HATCH_MOVE`) | 소환 | `HatchPower` 제거 → 하수인을 제외한 모든 파워 제거 → 해츨링으로 변신, 최대·현재 HP를 19~22 (A8+ 20~23)로 설정 |
 | 베어물기 (`NIBBLE_MOVE`) | 공격 | 피해 4 (A9+ 5) |
 
 ## 패턴

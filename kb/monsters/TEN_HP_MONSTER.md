@@ -1,7 +1,7 @@
 ---
 id: MONSTER.TEN_HP_MONSTER
 name: 대형 더미 인형
-game_version: v0.107.1
+game_version: v0.111.1
 sources:
 - MegaCrit.Sts2.Core.Models.Monsters/TenHpMonster.cs sha256:ef44faf2987f4b0f32d9f31b369897ea50fbc58baaf591b78633b31e0b71ce9c
 ---

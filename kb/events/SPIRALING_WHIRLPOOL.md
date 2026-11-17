@@ -1,12 +1,12 @@
 ---
 id: EVENT.SPIRALING_WHIRLPOOL
 name: 나선형 소용돌이
-game_version: v0.107.1
+game_version: v0.111.1
 sources:
 - MegaCrit.Sts2.Core.Models.Events/SpiralingWhirlpool.cs sha256:a4b472bc58f0e0884c8873aaec97d8e2e6e0eddbf084413356e3c024e8d08955
 - MegaCrit.Sts2.Core.Models.Acts/Underdocks.cs sha256:b5f91ba221afa5ca83ca92290f481c8bef88c28f1ff8272f780f2540700964fb
 - MegaCrit.Sts2.Core.Models.Enchantments/Spiral.cs sha256:846fafdcc376d712cc2e1313477781055cc938c833c8a7ae2d1516bffc145f4c
-- MegaCrit.Sts2.Core.Models/EnchantmentModel.cs sha256:3bb36197749db36c0776b52fe2b1c1a0faaec2b66f623277c48427906784210c
+- MegaCrit.Sts2.Core.Models/EnchantmentModel.cs sha256:74deff3aabe7b7564d91299c49eb1c222b8aa6b987900e9fc1f19cf29e778006
 ---
 # 나선형 소용돌이 (SPIRALING_WHIRLPOOL)
 

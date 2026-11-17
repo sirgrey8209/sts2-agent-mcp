@@ -1,7 +1,7 @@
 ---
 id: MONSTER.THE_ADVERSARY_MK_ONE
 name: 적대자 Mk 1
-game_version: v0.107.1
+game_version: v0.111.1
 sources:
 - MegaCrit.Sts2.Core.Models.Monsters/TheAdversaryMkOne.cs sha256:6782166eddc8dfdabafd139f52b273d392911bc889a86a536666c7a6734a873c
 ---

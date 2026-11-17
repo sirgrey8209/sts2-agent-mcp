@@ -17,7 +17,7 @@ namespace Sts2AgentMcp.Host;
 public static class ModEntry
 {
     /// <summary>Game version this build was written against (release_info.json "version").</summary>
-    private const string TargetGameVersion = "v0.107.1";
+    private const string TargetGameVersion = "v0.111.1";
 
     private static HttpHost? _host;
 

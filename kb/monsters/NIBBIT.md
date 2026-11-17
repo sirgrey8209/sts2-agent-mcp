@@ -1,9 +1,9 @@
 ---
 id: MONSTER.NIBBIT
 name: 깨작이
-game_version: v0.107.1
+game_version: v0.111.1
 sources:
-- MegaCrit.Sts2.Core.Models.Monsters/Nibbit.cs sha256:5f027dafe55d5be0d4001188ff010cbb087b3c0c9f5b069cd03713b33ea02912
+- MegaCrit.Sts2.Core.Models.Monsters/Nibbit.cs sha256:6403204d2325e7406ee8aef50a80cd5648067212a24a5fa8829c44f56e787eaa
 - MegaCrit.Sts2.Core.Models.Encounters/NibbitsNormal.cs sha256:a5b84e1df56a5e85785ab654b899777db8baee453481de4faf140f7420f2edd9
 - MegaCrit.Sts2.Core.Models.Encounters/NibbitsWeak.cs sha256:fa2354ed95db89c0d43cc2307cf2d6570a0a8c8028d9fd861ca432c52a0727b4
 - MegaCrit.Sts2.Core.Models.Acts/Overgrowth.cs sha256:61ff9d71f9b17f2f6a2f7f51f64bbfaa6752ec8cf7e75b4d291f2b0f89dc232b

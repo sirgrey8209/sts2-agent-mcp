@@ -1,7 +1,7 @@
 ---
 id: MONSTER.THE_ADVERSARY_MK_TWO
 name: 적대자 Mk 2
-game_version: v0.107.1
+game_version: v0.111.1
 sources:
 - MegaCrit.Sts2.Core.Models.Monsters/TheAdversaryMkTwo.cs sha256:24b8765466589165e3e95dc8cb5116e9a284bbe5d54d2f0bf946efe77dcab72f
 ---

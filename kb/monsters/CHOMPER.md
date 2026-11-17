@@ -1,7 +1,7 @@
 ---
 id: MONSTER.CHOMPER
 name: 먹깨비
-game_version: v0.107.1
+game_version: v0.111.1
 sources:
 - MegaCrit.Sts2.Core.Models.Monsters/Chomper.cs sha256:4f30b538b0f8fe1405bd3d73786250066790b50fbaf89ec951f9cb02f5f58b0d
 - MegaCrit.Sts2.Core.Models.Powers/ArtifactPower.cs sha256:d2b7f2c1bfc36466e5ab0bd4e4581697c8299ce579c6f978a4fe7a1535c9eb3a

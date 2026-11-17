@@ -1,11 +1,11 @@
 ---
 id: MONSTER.INFESTED_PRISM
 name: 감염된 프리즘
-game_version: v0.107.1
+game_version: v0.111.1
 sources:
 - MegaCrit.Sts2.Core.Models.Monsters/InfestedPrism.cs sha256:6b7406f9e08509e8bf87b338207d79cf6c7f87991027d7e2b96346238952b690
 - MegaCrit.Sts2.Core.Models.Powers/VitalSparkPower.cs sha256:2d94496d634bb3f41afb05e9ef7bda2ba265da062bc904caf42c78d7b832e30d
-- MegaCrit.Sts2.Core.Models.Powers/TaintedPower.cs sha256:b75eaaedc2769ca6acf717a0d62aa06e9afe839d390c06900d7c0723292eac11
+- MegaCrit.Sts2.Core.Models.Powers/TaintedPower.cs sha256:920a1c497544079907b101948b698b8b8e2f77ec3d244df4d2eba32bbf47eb0c
 - MegaCrit.Sts2.Core.Models.Afflictions/Tainted.cs sha256:59b0122a5747aa649351f1e8c6ef4576dd5d61533e293c798fcda5558bc6f8d2
 - MegaCrit.Sts2.Core.Models.Encounters/InfestedPrismsElite.cs sha256:113529e21714e7eed5756845f2f7ab0ff841b8e3c07a31bccb6b5b841cec7eae
 ---

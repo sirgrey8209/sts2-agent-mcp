@@ -1,7 +1,7 @@
 ---
 id: EVENT.DOORS_OF_LIGHT_AND_DARK
 name: 빛과 어둠의 문
-game_version: v0.107.1
+game_version: v0.111.1
 sources:
 - MegaCrit.Sts2.Core.Models.Events/DoorsOfLightAndDark.cs sha256:dd3d4ffd117c133f5ffb9970517bee466fbf64a62047c05a01cf47891c5bcbb1
 - MegaCrit.Sts2.Core.Models.Acts/Underdocks.cs sha256:b5f91ba221afa5ca83ca92290f481c8bef88c28f1ff8272f780f2540700964fb

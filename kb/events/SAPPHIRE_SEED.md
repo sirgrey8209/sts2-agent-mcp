@@ -1,13 +1,13 @@
 ---
 id: EVENT.SAPPHIRE_SEED
 name: 사파이어 씨앗
-game_version: v0.107.1
+game_version: v0.111.1
 sources:
 - MegaCrit.Sts2.Core.Models.Events/SapphireSeed.cs sha256:746ef166fc1a60c67da2927152d867a52211a1b9d5556cbd4d5e2f87ded95cf8
 - MegaCrit.Sts2.Core.Models.Acts/Overgrowth.cs sha256:61ff9d71f9b17f2f6a2f7f51f64bbfaa6752ec8cf7e75b4d291f2b0f89dc232b
-- MegaCrit.Sts2.Core.Models.Enchantments/Sown.cs sha256:fadb10496fc943c5f094de456eb73a7d64dd58104bd920ee2f9c70d95d502e1c
-- MegaCrit.Sts2.Core.Models/EnchantmentModel.cs sha256:3bb36197749db36c0776b52fe2b1c1a0faaec2b66f623277c48427906784210c
-- MegaCrit.Sts2.Core.Entities.Players/Player.cs sha256:4672a42656cec2b61d7f720000a462648b12d303d92af92d21c0ac3325d156db
+- MegaCrit.Sts2.Core.Models.Enchantments/Sown.cs sha256:f3f8e8cffa02e70827e6f74daa66b5f6c1a76c3b43f68b55ed163b536110d04e
+- MegaCrit.Sts2.Core.Models/EnchantmentModel.cs sha256:74deff3aabe7b7564d91299c49eb1c222b8aa6b987900e9fc1f19cf29e778006
+- MegaCrit.Sts2.Core.Entities.Players/Player.cs sha256:6bb4db73a40fce98c353ea9c3a15bb40f221cfb7a6153f11a9c98f7999d6b5b3
 ---
 # 사파이어 씨앗 (SAPPHIRE_SEED)
 
@@ -24,7 +24,7 @@ sources:
 | 심고 영양을 공급한다 (`PLANT`) | 덱에서 카드 1장을 골라 `Sown` 1 인챈트. 이벤트 종료 |
 
 ## 결과 상세
-- `Sown`(수치 1): 이 카드를 사용하면 에너지를 수치(1)만큼 얻고, 그 전투 동안은 비활성화된다. 전투에 들어갈 때 덱 카드가 새로 복사되므로 다음 전투에서 다시 작동한다.
+- `Sown`(수치 1): 이 카드를 사용하면 먼저 그 전투 동안 비활성화된 뒤 에너지를 수치(1)만큼 얻는다. 전투에 들어갈 때 덱 카드가 새로 복사되므로 다음 전투에서 다시 작동한다.
 - `Sown` 대상: 공격·스킬·파워 카드 중 덱에서 사용불가가 아니고 아직 인챈트가 없는 카드. 상태이상·저주는 불가.
 - 강화할 카드나 인챈트할 카드가 없으면 선택 없이 그대로 종료된다.
 

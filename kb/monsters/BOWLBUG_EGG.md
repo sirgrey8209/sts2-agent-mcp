@@ -1,7 +1,7 @@
 ---
 id: MONSTER.BOWLBUG_EGG
 name: 그릇벌레 (알)
-game_version: v0.107.1
+game_version: v0.111.1
 sources:
 - MegaCrit.Sts2.Core.Models.Monsters/BowlbugEgg.cs sha256:c7bdba96f3ae387cbe6189e5a844d6f05d3fcf0a5aa9e5e06d276ba723c8d1ec
 - MegaCrit.Sts2.Core.Models.Encounters/BowlbugsWeak.cs sha256:7507c76268d014e7cb13ec1e4342aaf1efb5831317324a612f7fd62c1777ebfc

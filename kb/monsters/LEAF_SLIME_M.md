@@ -1,14 +1,14 @@
 ---
 id: MONSTER.LEAF_SLIME_M
 name: 나뭇잎 슬라임 (중)
-game_version: v0.107.1
+game_version: v0.111.1
 sources:
-- MegaCrit.Sts2.Core.Models.Monsters/LeafSlimeM.cs sha256:3a044a8d00944d164be7ea9385500083cb56832bbde64a3ff04679958546d793
+- MegaCrit.Sts2.Core.Models.Monsters/LeafSlimeM.cs sha256:d367b077e4ed71a8179cb9f68bbc614392b049d87f934e9e7186d5d966faabfd
 - MegaCrit.Sts2.Core.Models.Cards/Slimed.cs sha256:024372f85032a09464fa15bc5b2113f79e4b89a6f4f415182007901ebd4d37a8
 - MegaCrit.Sts2.Core.Models.Encounters/SlimesNormal.cs sha256:0c53efaaf3053551c55be100f69cfe3dfe5f32f6fac03f57db77d85c54db1c74
 - MegaCrit.Sts2.Core.Models.Encounters/SlimesWeak.cs sha256:e28277926221eb06799873115b096e9b48a8672446754da75c5ae902beede7ec
 - MegaCrit.Sts2.Core.Models.Encounters/FlyconidNormal.cs sha256:9c0d5915405eb4f653b55178906290bcd6e797fe5d0cb2e5b7374e2017e4c5eb
-- MegaCrit.Sts2.Core.Models.Encounters/SlitheringStranglerNormal.cs sha256:6303054f9e6b1809fe058179f5fe0a5a2b834255e300dd1e1b065c4ad37ccae3
+- MegaCrit.Sts2.Core.Models.Encounters/SlitheringStranglerNormal.cs sha256:23ed70bec8d661aafeaf1d5daa8f75fa85daa31df660e6f70ad34fbe29594554
 ---
 # 나뭇잎 슬라임 (중) (LEAF_SLIME_M)
 

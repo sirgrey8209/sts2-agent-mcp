@@ -1,16 +1,16 @@
 ---
 id: MONSTER.OVICOPTER
 name: 산란비충
-game_version: v0.107.1
+game_version: v0.111.1
 sources:
-- MegaCrit.Sts2.Core.Models.Monsters/Ovicopter.cs sha256:70b6714d1dba0b06e69d0c1c9bebd662d917dd43f41ffbbb73d6736fee5b992c
-- MegaCrit.Sts2.Core.Models.Monsters/ToughEgg.cs sha256:69896d188d19e7d89406b5b2420f6f9b9942e20e1eb6f95b1606e894639dacce
+- MegaCrit.Sts2.Core.Models.Monsters/Ovicopter.cs sha256:e26a2c4dd8e289b46da2560c854720fc72ab43c964827bf695e7b30860823797
+- MegaCrit.Sts2.Core.Models.Monsters/ToughEgg.cs sha256:4ac2a0705e6e8991b016dbe6527b8e1bfa853f02a369cffe0d4b40dafc621262
 - MegaCrit.Sts2.Core.Models.Powers/HatchPower.cs sha256:74404f7ee9cefb090d8ead41acab256149aecb64fe482609a9bbc5f78be59014
 - MegaCrit.Sts2.Core.Models.Powers/MinionPower.cs sha256:8acbaf43969b256e0777bed2371830f7399e8c32fc45c8c35a3de7cde8b8c392
 - MegaCrit.Sts2.Core.Models.Encounters/OvicopterNormal.cs sha256:79e1cc10a71566b316b20a23e7b7d447bdbf98896c2aca697d0af01e83422525
 - MegaCrit.Sts2.Core.Models.Acts/Hive.cs sha256:085d95a7ea0418ada9e8544efdc97afc01c4bada90eca76fd65d3755c62c784e
-- MegaCrit.Sts2.Core.Commands/CreatureCmd.cs sha256:f52882086d141dea85b8de65b8e526db5418e390d3f5ba3f2191d3d7f8a6420b
-- MegaCrit.Sts2.Core.Entities.Creatures/Creature.cs sha256:d65cb7c1be3b3f7730f5844b5bac113e0097d8a6b5af08787073177832aa49fa
+- MegaCrit.Sts2.Core.Commands/CreatureCmd.cs sha256:3e11f255f18296998511d03ee952a7b16974f5999de7db8941e35a3ef4e92768
+- MegaCrit.Sts2.Core.Entities.Creatures/Creature.cs sha256:c6a998d46ad143990aa69a320a584497e303cb101f875bafd83b94382991931d
 ---
 # 산란비충 (OVICOPTER)
 

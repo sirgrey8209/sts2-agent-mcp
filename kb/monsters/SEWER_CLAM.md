@@ -1,7 +1,7 @@
 ---
 id: MONSTER.SEWER_CLAM
 name: 시궁창 조개
-game_version: v0.107.1
+game_version: v0.111.1
 sources:
 - MegaCrit.Sts2.Core.Models.Monsters/SewerClam.cs sha256:ca9f3c24098ca3f783a16c0454d113a1ede94c5cceb833d9e8b1f6efa6717708
 - MegaCrit.Sts2.Core.Models.Powers/PlatingPower.cs sha256:f8e6f35b5df38ec5d79234ccc25a8e6e51f65ef01db10043be23c5bee64c377a

@@ -1,7 +1,7 @@
 ---
 id: MONSTER.DAMP_CULTIST
 name: 흠뻑 젖은 광신자
-game_version: v0.107.1
+game_version: v0.111.1
 sources:
 - MegaCrit.Sts2.Core.Models.Monsters/DampCultist.cs sha256:d0f0da6376a3857c8ff7f39457e81854e09facf0ba496abf5a2f724a5f216ecc
 - MegaCrit.Sts2.Core.Models.Powers/RitualPower.cs sha256:68fb6b795725dfc7c771dcce7b93d6d12b04871289d9d1cf2b5767a8b8a397c4

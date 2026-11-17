@@ -1,7 +1,7 @@
 ---
 id: MONSTER.SLUDGE_SPINNER
 name: 오물팽이
-game_version: v0.107.1
+game_version: v0.111.1
 sources:
 - MegaCrit.Sts2.Core.Models.Monsters/SludgeSpinner.cs sha256:8fe29f4f22d2725e732394828e154800518cfc85c2d85ae680677f7fc356e315
 - MegaCrit.Sts2.Core.Models.Encounters/SludgeSpinnerWeak.cs sha256:c11a81ed470fd487585947411ad589d2d40192befa4d7dd546cd0c35b8f29ff6

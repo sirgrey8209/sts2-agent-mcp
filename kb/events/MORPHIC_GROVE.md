@@ -1,10 +1,10 @@
 ---
 id: EVENT.MORPHIC_GROVE
 name: 변성체의 숲
-game_version: v0.107.1
+game_version: v0.111.1
 sources:
 - MegaCrit.Sts2.Core.Models.Events/MorphicGrove.cs sha256:673f0f585cb8a2c164dde8ec68214b0e156c70d047fbbdd9470d73cb1d74918a
-- MegaCrit.Sts2.Core.Models/CardModel.cs sha256:2e0c6eea66dfc1098c82386fa15838c6d376a83953a895c028b4f2ef60816919
+- MegaCrit.Sts2.Core.Models/CardModel.cs sha256:c28300cd936122f0c567fb058c67987ff2da0eeeb465dec7ff6e8e867f8c852c
 - MegaCrit.Sts2.Core.Models.Acts/Overgrowth.cs sha256:61ff9d71f9b17f2f6a2f7f51f64bbfaa6752ec8cf7e75b4d291f2b0f89dc232b
 ---
 # 변성체의 숲 (MORPHIC_GROVE)

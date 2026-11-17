@@ -1,11 +1,11 @@
 ---
 id: MONSTER.BYRDPIP
 name: 짹짹이
-game_version: v0.107.1
+game_version: v0.111.1
 sources:
 - MegaCrit.Sts2.Core.Models.Monsters/Byrdpip.cs sha256:4eccc5691dfbe9dc5c0f0d4ba3f544db2370cb3efe396753f94628be36fa31a9
-- MegaCrit.Sts2.Core.Models.Relics/Byrdpip.cs sha256:d409ee6c9a01726692451583f64935790da7a336aef881cd54a77a3b2a77001c
-- MegaCrit.Sts2.Core.Models.Cards/ByrdSwoop.cs sha256:ceca1dceac7cebdfb20f46bffdc19a7433ffade275e5bad054de6003634a1b62
+- MegaCrit.Sts2.Core.Models.Relics/Byrdpip.cs sha256:7294b63acf1a136a0100df21ceff1101967131231a8d83c4b1ff6f6d373e3978
+- MegaCrit.Sts2.Core.Models.Cards/ByrdSwoop.cs sha256:81743cd8fe69ccee5fb8ce1dd024c2e6b8f5118106996490ec03caa71f344882
 - MegaCrit.Sts2.Core.Entities.RestSite/HatchRestSiteOption.cs sha256:484d0df3bc0dcaf5690b16982fb9fc3b8f2e18dcc4ccf63d2a5c4f8ea5a13b11
 ---
 # 짹짹이 (BYRDPIP)

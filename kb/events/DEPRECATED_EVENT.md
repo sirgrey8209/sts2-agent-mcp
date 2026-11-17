@@ -1,10 +1,10 @@
 ---
 id: EVENT.DEPRECATED_EVENT
 name: 구식 이벤트
-game_version: v0.107.1
+game_version: v0.111.1
 sources:
 - MegaCrit.Sts2.Core.Models.Events/DeprecatedEvent.cs sha256:bfd92e4b5b4987a9b807565aa43a535fd6ae8a9aa2c09e83ace84590710c42e7
-- MegaCrit.Sts2.Core.Models/ModelDb.cs sha256:7144c6e265fc4484e40860f4ec7cb288c677a63256675222010f66ab628d6e4f
+- MegaCrit.Sts2.Core.Models/ModelDb.cs sha256:2f7bdb25b700a1725266c720525542b660056bbc86f357852239b39b8fbf14f8
 ---
 # 구식 이벤트 (DEPRECATED_EVENT)
 

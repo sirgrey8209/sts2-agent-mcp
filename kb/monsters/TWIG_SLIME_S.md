@@ -1,12 +1,12 @@
 ---
 id: MONSTER.TWIG_SLIME_S
 name: 가지 슬라임 (소)
-game_version: v0.107.1
+game_version: v0.111.1
 sources:
 - MegaCrit.Sts2.Core.Models.Monsters/TwigSlimeS.cs sha256:20df69868780ab61d8fd0e33aaeda150928ab98bc35c5276a2271563c4b46c0b
 - MegaCrit.Sts2.Core.Models.Encounters/SlimesNormal.cs sha256:0c53efaaf3053551c55be100f69cfe3dfe5f32f6fac03f57db77d85c54db1c74
 - MegaCrit.Sts2.Core.Models.Encounters/SlimesWeak.cs sha256:e28277926221eb06799873115b096e9b48a8672446754da75c5ae902beede7ec
-- MegaCrit.Sts2.Core.Models.Encounters/SlitheringStranglerNormal.cs sha256:6303054f9e6b1809fe058179f5fe0a5a2b834255e300dd1e1b065c4ad37ccae3
+- MegaCrit.Sts2.Core.Models.Encounters/SlitheringStranglerNormal.cs sha256:23ed70bec8d661aafeaf1d5daa8f75fa85daa31df660e6f70ad34fbe29594554
 - MegaCrit.Sts2.Core.Models.Acts/Overgrowth.cs sha256:61ff9d71f9b17f2f6a2f7f51f64bbfaa6752ec8cf7e75b4d291f2b0f89dc232b
 ---
 # 가지 슬라임 (소) (TWIG_SLIME_S)

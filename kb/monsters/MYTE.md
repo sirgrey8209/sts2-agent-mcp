@@ -1,12 +1,12 @@
 ---
 id: MONSTER.MYTE
 name: 진듸기
-game_version: v0.107.1
+game_version: v0.111.1
 sources:
 - MegaCrit.Sts2.Core.Models.Monsters/Myte.cs sha256:37e1f1aea3a5ed18312b0cafa85383a9a52f5a2202e628a65276233c87cf8f23
 - MegaCrit.Sts2.Core.Models.Encounters/MytesNormal.cs sha256:19d319a0db7ed7646e3400985394e0a20095ba333e27dc57c44f6fb23d0ad097
 - MegaCrit.Sts2.Core.Models.Acts/Hive.cs sha256:085d95a7ea0418ada9e8544efdc97afc01c4bada90eca76fd65d3755c62c784e
-- MegaCrit.Sts2.Core.Models.Cards/Toxic.cs sha256:063496971d7b28426accbf00049da3f743247dd62d768e584e62e01ced74cd5f
+- MegaCrit.Sts2.Core.Models.Cards/Toxic.cs sha256:2fd0cc7ae2a7927edbb9d5e1c30b84d220e19736d44d9aeeab4b6455da62df74
 ---
 # 진듸기 (MYTE)
 

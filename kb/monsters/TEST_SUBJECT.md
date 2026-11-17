@@ -1,17 +1,17 @@
 ---
 id: MONSTER.TEST_SUBJECT
 name: 실험체
-game_version: v0.107.1
+game_version: v0.111.1
 sources:
-- MegaCrit.Sts2.Core.Models.Monsters/TestSubject.cs sha256:5eca8c4805c68bea0660aa18039cd712d2cd3afbcc2d5186cc044facb60dad08
+- MegaCrit.Sts2.Core.Models.Monsters/TestSubject.cs sha256:41d8e4eb0bd731566108806201318b8bb7ae9c5a746e212705ae34592906bd65
 - MegaCrit.Sts2.Core.Models.Powers/AdaptablePower.cs sha256:723505a7771691849975e9a70c4432b6977346df345260de5d5b5677c16ff5cb
 - MegaCrit.Sts2.Core.Models.Powers/EnragePower.cs sha256:2f25e3f9b2ec859a236dc2a54e3be3d8b9bd0fe5b73d8dd7d4480fb112b45072
 - MegaCrit.Sts2.Core.Models.Powers/PainfulStabsPower.cs sha256:974919dd70325e64566f2de147ea2d25c6c6637f8b29ececb101c99309595452
 - MegaCrit.Sts2.Core.Models.Powers/NemesisPower.cs sha256:b932a083b96fb18b906c132cb6858d28fb7be09d1ba8e6f9ffa8f88d0097a2b1
-- MegaCrit.Sts2.Core.Models.Powers/IntangiblePower.cs sha256:86a2e1989d424b90dd6b35592a9dcaa356454ef3a6eac9bc21f5f76209fe4b87
-- MegaCrit.Sts2.Core.Models.Cards/Burn.cs sha256:2254a3b91589159c83bf53e1f5e96b145aba0a2ef729350621dbd098b0345742
-- MegaCrit.Sts2.Core.Entities.Creatures/Creature.cs sha256:d65cb7c1be3b3f7730f5844b5bac113e0097d8a6b5af08787073177832aa49fa
-- MegaCrit.Sts2.Core.Hooks/Hook.cs sha256:e6a1bbdf2e7b3a2f941b2de5dff283cd2538b220e703e771b53d9042e97111d4
+- MegaCrit.Sts2.Core.Models.Powers/IntangiblePower.cs sha256:762dd2ba60ab484f256c4beaea291080732bd9081f8ae4b28bc4141e371cb4a2
+- MegaCrit.Sts2.Core.Models.Cards/Burn.cs sha256:d2241e625c4024be53b340401ae63cbf90a4ce2ed37c90438703116c3020e403
+- MegaCrit.Sts2.Core.Entities.Creatures/Creature.cs sha256:c6a998d46ad143990aa69a320a584497e303cb101f875bafd83b94382991931d
+- MegaCrit.Sts2.Core.Hooks/Hook.cs sha256:863390330330ed1c72e3994405c8d4dbe90fd3c3837b46b39ec1e1d8924c86c9
 - MegaCrit.Sts2.Core.MonsterMoves.MonsterMoveStateMachine/MoveState.cs sha256:eb97c7cfbab265e45af201283c4daedb66686f8a5ed197de22fc78ef93c26838
 - MegaCrit.Sts2.Core.Models.Encounters/TestSubjectBoss.cs sha256:4b0128135b7281f606ad8142c996e3061c387640f2285854db351945745aa39f
 - MegaCrit.Sts2.Core.Models.Acts/Glory.cs sha256:d70575f5ac62dda4c1e80d424955c412eb00248e127caaa2751a2775db4b03d0

@@ -1,11 +1,11 @@
 ---
 id: MONSTER.TRACKER_RUBY_RAIDER
 name: 추적 습격자
-game_version: v0.107.1
+game_version: v0.111.1
 sources:
 - MegaCrit.Sts2.Core.Models.Monsters/TrackerRubyRaider.cs sha256:d4a177e9a9668f6c185482d4b8ec00746818391f1d9fa86421bfc0569afdc6ad
 - MegaCrit.Sts2.Core.Models.Powers/FrailPower.cs sha256:3334f1dda0a5cff6a1373c71456313fdfd23f200c96512336df29ae8e4246dbe
-- MegaCrit.Sts2.Core.Commands/PowerCmd.cs sha256:0226c79d1a82b30fa1cb5b8cc9642ac3b479a49bcab8381b00da8ecb8a8db225
+- MegaCrit.Sts2.Core.Commands/PowerCmd.cs sha256:9ee742b19c0e000b5016d7638ddb27ad155598be8edd9101d54606d4b8a62680
 - MegaCrit.Sts2.Core.Models.Encounters/RubyRaidersNormal.cs sha256:ce3789a28fb2c5f2e6645473ef806f6bcce236b47fb476f3c092db1b262a5f19
 - MegaCrit.Sts2.Core.Models.Acts/Overgrowth.cs sha256:61ff9d71f9b17f2f6a2f7f51f64bbfaa6752ec8cf7e75b4d291f2b0f89dc232b
 ---

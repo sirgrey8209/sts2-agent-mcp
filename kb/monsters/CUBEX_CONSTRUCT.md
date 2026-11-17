@@ -1,9 +1,9 @@
 ---
 id: MONSTER.CUBEX_CONSTRUCT
 name: 큐브형 구조체
-game_version: v0.107.1
+game_version: v0.111.1
 sources:
-- MegaCrit.Sts2.Core.Models.Monsters/CubexConstruct.cs sha256:179a141152ee7adffe79dbb1f9e30fd8bb7c42ecb13ef1f3a6554ce8dfb058d8
+- MegaCrit.Sts2.Core.Models.Monsters/CubexConstruct.cs sha256:c7d46026531531217e8479e92f82e2e5afa429fe8a3eed1e4bdc0440710e346a
 - MegaCrit.Sts2.Core.Models.Powers/ArtifactPower.cs sha256:d2b7f2c1bfc36466e5ab0bd4e4581697c8299ce579c6f978a4fe7a1535c9eb3a
 - MegaCrit.Sts2.Core.Models.Encounters/CubexConstructNormal.cs sha256:dbea21586a703966af38d642a69beed341be7074d389bd1bbbf3dcf85e797fc9
 - MegaCrit.Sts2.Core.Models.Encounters/ConstructMenagerieNormal.cs sha256:287f31b8fdf6c8b429f9b35e668aa59dad2cef65cfa7142d7e576c416870fcb3

@@ -1,16 +1,16 @@
 ---
 id: MONSTER.LIVING_FOG
 name: 살아있는 안개
-game_version: v0.107.1
+game_version: v0.111.1
 sources:
 - MegaCrit.Sts2.Core.Models.Monsters/LivingFog.cs sha256:ffb31757b0ab5deb508f6b2784227f9fbac7b99691ab1c615fbce2b0176ab0d5
 - MegaCrit.Sts2.Core.Models.Monsters/GasBomb.cs sha256:65089c1e1e51dbeb1151ef54ecc44d3ee24b0ff820092c460d81a8a29a35b7d0
-- MegaCrit.Sts2.Core.Models.Powers/SmoggyPower.cs sha256:52be6a0899d38a310c9fc880e83e833d10cbf43dc3228fc10935d8797ee165e3
+- MegaCrit.Sts2.Core.Models.Powers/SmoggyPower.cs sha256:9ed71ee879dfc92b889f4da6d5514f638fb9538d39dd63867f5d14ec1207c3a6
 - MegaCrit.Sts2.Core.Models.Afflictions/Smog.cs sha256:6095384dad253acd079c9915fffb0bde9f4b311e07b37edd95256e1e5d851af4
 - MegaCrit.Sts2.Core.Models.Powers/MinionPower.cs sha256:8acbaf43969b256e0777bed2371830f7399e8c32fc45c8c35a3de7cde8b8c392
 - MegaCrit.Sts2.Core.Models.Encounters/LivingFogNormal.cs sha256:7ab2f325cd780943141153c3f20c2b46d948c3757364e4d0dad792216d12c669
-- MegaCrit.Sts2.Core.Combat/CombatManager.cs sha256:7ae1b7259e72befa07f4aceaa9ab0e23783fc55876bcde6090b9b2cfae65a43e
-- MegaCrit.Sts2.Core.Commands/CreatureCmd.cs sha256:f52882086d141dea85b8de65b8e526db5418e390d3f5ba3f2191d3d7f8a6420b
+- MegaCrit.Sts2.Core.Combat/CombatManager.cs sha256:8b1e0a22403cd8f9bd647ae640de30467dd70319d860a0527549ff800d2b97f3
+- MegaCrit.Sts2.Core.Commands/CreatureCmd.cs sha256:3e11f255f18296998511d03ee952a7b16974f5999de7db8941e35a3ef4e92768
 ---
 # 살아있는 안개 (LIVING_FOG)
 

@@ -1,12 +1,12 @@
 ---
 id: EVENT.THE_ARCHITECT
 name: 아키텍트
-game_version: v0.107.1
+game_version: v0.111.1
 sources:
-- MegaCrit.Sts2.Core.Models.Events/TheArchitect.cs sha256:6b34fcf78030dd6ee727e34ffd97b5cb83b187d746593d56e41d2f475ac82703
+- MegaCrit.Sts2.Core.Models.Events/TheArchitect.cs sha256:bcd6bbbd0041c895b80b4381cc4bfcfe64692e8e26bdf37938df952cb2a131ce
 - MegaCrit.Sts2.Core.Models.Encounters/TheArchitectEventEncounter.cs sha256:8cf57b6ee54884b1e7e4143d2d0aa09d03865b2d5ad8acc37d0d304f19e94d14
 - MegaCrit.Sts2.Core.Models.Monsters/Architect.cs sha256:04d50610fd0f35299f122a7b3b5c622dcd4e6d4fc3533687a8f239f2a4864871
-- MegaCrit.Sts2.Core.Runs/RunManager.cs sha256:1c4d11b1b2261f2e5a0e7338866d0ca8c219152567700c9608d23f46a15258e1
+- MegaCrit.Sts2.Core.Runs/RunManager.cs sha256:db8f6c79a7ae1d1932028af1b9f4d2b01092e6294251f4eab40f7e67a03ee8bd
 - MegaCrit.Sts2.Core.Rooms/AbstractRoom.cs sha256:3e3d06800ac629cc52d0e85a7a0da72377c5329296c472adea626ae59d5f548b
 ---
 # 아키텍트 (THE_ARCHITECT)
@@ -15,13 +15,13 @@ sources:
 
 ## 조건
 - 이벤트 풀에서 뽑히지 않는다. 마지막 막에서 다음 막으로 넘어가려 할 때(`RunManager.EnterNextAct`) 이 방으로 들어간다.
-- 이 방은 승리 방(`IsVictoryRoom`)으로 취급된다. 이 방에서 다시 다음 막으로 넘어가면 런 승리 처리가 된다.
+- 이 방은 승리 방(`IsVictoryRoom`)으로 취급된다. 이 방에서는 다음 막으로 넘어가지 않고, '진행'이 곧바로 런 승리 처리(`RunManager.WinRun`)를 호출한다.
 
 ## 선택지
 | 선택지 | 효과 |
 |---|---|
 | 대화 넘기기 (`dialogue.N`, 버튼 문구는 `THE_ARCHITECT.CONTINUE` / `THE_ARCHITECT.RESPOND` 또는 대사별 문구) | 다음 대사로. 효과 없음 |
-| 진행 (`PROCEED`) | 마지막 대사에서 나옴. 연출 후 런 승리 처리. 멀티플레이에서는 모든 플레이어가 준비될 때까지 대기 |
+| 진행 (`PROCEED`) | 마지막 대사에서 나옴. 연출 후 바로 런 승리 처리. 멀티플레이에서도 다른 플레이어의 준비를 기다리는 단계가 없다 |
 
 ## 결과 상세
 - 화면의 적은 `아키텍트`(`Architect`): 체력 9999, 행동은 '가만히 있기'(`NOTHING`, 의도 숨김)뿐. 이 방은 이벤트 방(`EventRoom`)이라 전투가 시작되지 않는다.

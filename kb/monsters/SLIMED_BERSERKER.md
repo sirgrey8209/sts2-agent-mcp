@@ -1,7 +1,7 @@
 ---
 id: MONSTER.SLIMED_BERSERKER
 name: 슬라임 광전사
-game_version: v0.107.1
+game_version: v0.111.1
 sources:
 - MegaCrit.Sts2.Core.Models.Monsters/SlimedBerserker.cs sha256:7088ce925bcd227302977998173aded28c5ac33861a51fdff463ebf436a925a5
 - MegaCrit.Sts2.Core.Models.Cards/Slimed.cs sha256:024372f85032a09464fa15bc5b2113f79e4b89a6f4f415182007901ebd4d37a8

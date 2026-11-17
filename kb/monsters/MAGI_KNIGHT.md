@@ -1,9 +1,9 @@
 ---
 id: MONSTER.MAGI_KNIGHT
 name: 마법 기사
-game_version: v0.107.1
+game_version: v0.111.1
 sources:
-- MegaCrit.Sts2.Core.Models.Monsters/MagiKnight.cs sha256:2444b26f50b7dbd88cbbe707bc7aadadb85e2569104a601bd5495f9a9f626fff
+- MegaCrit.Sts2.Core.Models.Monsters/MagiKnight.cs sha256:e0c540b6ecbecdc0b7ce0ca9380082c9080659328d1a49bd6d5b84986a86d6b3
 - MegaCrit.Sts2.Core.Models.Powers/DampenPower.cs sha256:fa9bbe1976184c24cd7c0f504f2aa00dc3efb67bc7a84983200f6b3f0376e136
 - MegaCrit.Sts2.Core.Models.Encounters/KnightsElite.cs sha256:1eed609a722c25e51764424e03707f9828d4ccd7bda8e7ffbd9256bd63ecb166
 ---

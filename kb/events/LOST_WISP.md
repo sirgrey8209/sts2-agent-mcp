@@ -1,11 +1,11 @@
 ---
 id: EVENT.LOST_WISP
 name: 길 잃은 위습
-game_version: v0.107.1
+game_version: v0.111.1
 sources:
 - MegaCrit.Sts2.Core.Models.Events/LostWisp.cs sha256:df8684ee5931787ed00b8dd7e57aaf26309254d63177dc62e83ea43f01ac0306
-- MegaCrit.Sts2.Core.Models.Relics/LostWisp.cs sha256:728b375c3312e5e0d90ba858b47f787f208f2aedd725ee012ac2d10383f5bae3
-- MegaCrit.Sts2.Core.Models.Cards/Decay.cs sha256:897edb12e9e1dc06bd21ed0cccc6ba71d3ffb2284c366f46f97ac42233dd2b3b
+- MegaCrit.Sts2.Core.Models.Relics/LostWisp.cs sha256:b7b96fe524ed011de150bdd995f5eba4f23fdde97f0dcc1b56bc162222d21aae
+- MegaCrit.Sts2.Core.Models.Cards/Decay.cs sha256:f2476dde7ea542087aa0b78c96251a24be8f08fc701a6268372976e345c54e5f
 - MegaCrit.Sts2.Core.Models.Acts/Hive.cs sha256:085d95a7ea0418ada9e8544efdc97afc01c4bada90eca76fd65d3755c62c784e
 ---
 # 길 잃은 위습 (LOST_WISP)

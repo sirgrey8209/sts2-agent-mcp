@@ -1,13 +1,13 @@
 ---
 id: MONSTER.FAT_GREMLIN
 name: 뚱뚱한 그렘린
-game_version: v0.107.1
+game_version: v0.111.1
 sources:
-- MegaCrit.Sts2.Core.Models.Monsters/FatGremlin.cs sha256:838247477921bdbd2d9eab3c05109be1dac8b00033417e4d2cdc15aa15534472
-- MegaCrit.Sts2.Core.Models.Powers/SurprisePower.cs sha256:fb21c38261dc713279719feacbb628053fa5a1e9c9f361957d6c1dd8e20ebe2e
+- MegaCrit.Sts2.Core.Models.Monsters/FatGremlin.cs sha256:819114b154fde3d43e051c0fcf96da2a2b78df54b8322f546d625630f3d5e6eb
+- MegaCrit.Sts2.Core.Models.Powers/SurprisePower.cs sha256:4cf7a79109a1a824b8e6a577dd82d838e12daefa5687f039c183efe977fee06b
 - MegaCrit.Sts2.Core.Models.Powers/HeistPower.cs sha256:0f0259a6b3aacf62e888c92cf628d6f9bdb6f9baa07c53d99b8384e6d9c3a0ae
 - MegaCrit.Sts2.Core.Models.Powers/ThieveryPower.cs sha256:62b6c27e34859003de32552302da65a2c8a7a5d8bf0df51cf3ab0ad79c59090a
-- MegaCrit.Sts2.Core.Models.Monsters/GremlinMerc.cs sha256:c797fc8dff23fb3a2d6366ac257ee044f66d0bac6bfddc3f5b9f4bd302ddcf9c
+- MegaCrit.Sts2.Core.Models.Monsters/GremlinMerc.cs sha256:cdb0f5d81f2d73ab7f31a61e19959e2c7eb450226d4d74db6fd0d4a88703a11a
 - MegaCrit.Sts2.Core.Models.Encounters/GremlinMercNormal.cs sha256:0d68c699af2cd9778313d5707cfa5afe5c4b9bb4203fd392c2a2e9e52b1319ee
 - MegaCrit.Sts2.Core.Models.Acts/Underdocks.cs sha256:b5f91ba221afa5ca83ca92290f481c8bef88c28f1ff8272f780f2540700964fb
 ---
@@ -32,7 +32,7 @@ sources:
 
 ## 특수 규칙
 - **골드 도둑질**: 그렘린 용병은 전투 시작 시 플레이어마다 `ThieveryPower` 20을 얻고, 일부 행동에서 플레이어 골드를 최대 그만큼 훔친다(보유 골드가 적으면 보유량까지).
-- **용병 사망 시 — 서프라이즈(`SurprisePower`)**: 교활한 그렘린과 뚱뚱한 그렘린이 소환되고, 용병이 플레이어별로 훔친 골드가 뚱뚱한 그렘린의 `HeistPower`로 옮겨진다. 용병의 죽음으로는 전투가 끝나지 않는다.
+- **용병 사망 시 — 서프라이즈(`SurprisePower`)**: 용병이 플레이어별로 훔친 골드가 뚱뚱한 그렘린의 `HeistPower`로 옮겨진 뒤, 교활한 그렘린과 뚱뚱한 그렘린이 (이 순서로) 소환된다. 즉 뚱뚱한 그렘린은 처음부터 `HeistPower`를 가진 채 등장한다. 용병의 죽음으로는 전투가 끝나지 않는다.
 - **뚱뚱한 그렘린을 죽이면 — 강도(`HeistPower`)**: 훔친 골드만큼의 골드 보상이 해당 플레이어의 전투 보상에 추가된다.
 - **도주시키면** 이 전투의 기본 골드 보상이 줄어든다:
   - 용병이 골드를 전혀 훔치지 못했으면 기본 골드 보상 50%

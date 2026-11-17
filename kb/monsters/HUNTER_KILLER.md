@@ -1,7 +1,7 @@
 ---
 id: MONSTER.HUNTER_KILLER
 name: 사냥꾼 살해자
-game_version: v0.107.1
+game_version: v0.111.1
 sources:
 - MegaCrit.Sts2.Core.Models.Monsters/HunterKiller.cs sha256:c88493d1f465fd15d927c4fa8e054ecfb8e064e662f937406f8953880c677460
 - MegaCrit.Sts2.Core.Models.Powers/TenderPower.cs sha256:e9447d941f791d35bd5286977052a9413447cf46e946f980e790ce39999a0009

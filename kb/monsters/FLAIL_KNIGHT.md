@@ -1,7 +1,7 @@
 ---
 id: MONSTER.FLAIL_KNIGHT
 name: 철퇴 기사
-game_version: v0.107.1
+game_version: v0.111.1
 sources:
 - MegaCrit.Sts2.Core.Models.Monsters/FlailKnight.cs sha256:f5b7c0f3666b0bc1c7033682f96c6d56db0b7b03e249ec82d6c09b265a8a5afb
 - MegaCrit.Sts2.Core.Models.Monsters/MysteriousKnight.cs sha256:580f6f13e750e948c2bba0cc540d39e99a2c225e80dc17797a6dec73178c9978

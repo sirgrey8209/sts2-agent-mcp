@@ -1,12 +1,12 @@
 ---
 id: EVENT.POTION_COURIER
 name: 포션 배달원
-game_version: v0.107.1
+game_version: v0.111.1
 sources:
 - MegaCrit.Sts2.Core.Models.Events/PotionCourier.cs sha256:5a26b63bbbf329c1ac7dee6a5c6d82768f5a3d3d7def574b5d36db39fe0c45d5
-- MegaCrit.Sts2.Core.Models.Potions/FoulPotion.cs sha256:5fb3b0fed42e91677b0cb6d49c4a7e6422406c357f61e8cca1c0ca7cc5d5913c
-- MegaCrit.Sts2.Core.Models/ModelDb.cs sha256:7144c6e265fc4484e40860f4ec7cb288c677a63256675222010f66ab628d6e4f
-- MegaCrit.Sts2.Core.Nodes.Rooms/NMerchantRoom.cs sha256:4df5baf034e1d8ab83f6b0f4ab4f2dd5412abab2ed7212157d5c4edf18017443
+- MegaCrit.Sts2.Core.Models.Potions/FoulPotion.cs sha256:2cb47e1ff8747b41b790026939bf0386f4711526a0d67418246cc36ebe60d98a
+- MegaCrit.Sts2.Core.Models/ModelDb.cs sha256:2f7bdb25b700a1725266c720525542b660056bbc86f357852239b39b8fbf14f8
+- MegaCrit.Sts2.Core.Nodes.Rooms/NMerchantRoom.cs sha256:44483f41af69532fbfd9899b2679c4cdd5c77ed091834aab1c05372b613ab90f
 ---
 # 포션 배달원 (POTION_COURIER)
 

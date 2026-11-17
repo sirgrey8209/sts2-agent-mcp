@@ -1,13 +1,13 @@
 ---
 id: MONSTER.PHROG_PARASITE
 name: 게구리 기생체
-game_version: v0.107.1
+game_version: v0.111.1
 sources:
 - MegaCrit.Sts2.Core.Models.Monsters/PhrogParasite.cs sha256:9716e37f502e678a1153d6e946b1a2c6f9b53b217fc1b34784a3a317751b91ef
-- MegaCrit.Sts2.Core.Models.Powers/InfestedPower.cs sha256:4fa2e48adbf754e27359529f42aebaa1511eae8b2e8ade544a6484b79d62757e
+- MegaCrit.Sts2.Core.Models.Powers/InfestedPower.cs sha256:034dc46f54b01b85302b93f95e3347e26697cf083dc9d3cdd70c1babdd4003ee
 - MegaCrit.Sts2.Core.Models.Monsters/Wriggler.cs sha256:2d008f4cd9cbe791dc96012a137faa6d6fd7c5696b698ea2f6c67e720320e87a
-- MegaCrit.Sts2.Core.Models.Cards/Infection.cs sha256:88d297b6cfd86d987d2129824e0a7c1124a8ecfb3cbc300e202ca93cae449c55
-- MegaCrit.Sts2.Core.Models.Encounters/PhrogParasiteElite.cs sha256:7c886e8ebf7db10427f78cbd958f85132d1311e8fc2b0e6f5c84aef5af4a67d6
+- MegaCrit.Sts2.Core.Models.Cards/Infection.cs sha256:c96cae2714c3507a8fd342425f46d3828a29eb4eb0d2dc37242372a7fcac1f05
+- MegaCrit.Sts2.Core.Models.Encounters/PhrogParasiteElite.cs sha256:f2a2cec1196f080ea935052afdb64ba8dddcaf6c8ab751ddcc971471fa641977
 - MegaCrit.Sts2.Core.Models.Acts/Overgrowth.cs sha256:61ff9d71f9b17f2f6a2f7f51f64bbfaa6752ec8cf7e75b4d291f2b0f89dc232b
 ---
 # 게구리 기생체 (PHROG_PARASITE)
@@ -32,7 +32,7 @@ sources:
 
 ## 특수 규칙
 - **감염(`Infection`)**: 사용 불가 상태이상 카드. 턴 종료 시 손에 있으면 그 플레이어가 피해 3을 받는다(방어도로 막을 수 있음).
-- **감염됨(`InfestedPower`)**: 기생체가 죽으면(사망이 막히지 않은 경우) 사망 연출 후 꿈틀벌레(`WRIGGLER`) 4마리를 `wriggler1`~`wriggler4` 자리에 소환한다. 감염됨이 있는 동안 전투가 끝나지 않으므로, 기생체를 잡아도 꿈틀벌레까지 모두 잡아야 승리한다.
+- **감염됨(`InfestedPower`)**: 기생체가 죽으면(사망이 막히지 않은 경우) 즉시 꿈틀벌레(`WRIGGLER`) 4마리를 `wriggler1`~`wriggler4` 자리에 소환한다(사망 연출이 끝날 때까지 화면에만 숨겨져 있다). 감염됨이 있는 동안 전투가 끝나지 않으므로, 기생체를 잡아도 꿈틀벌레까지 모두 잡아야 승리한다.
 - **소환된 꿈틀벌레**:
   - HP 17~21 (A8+ 18~22). 하수인이 아니므로 각각 처치해야 한다.
   - 첫 행동은 소환됨(`SPAWNED_MOVE`, 기절 의도, 아무것도 안 함).

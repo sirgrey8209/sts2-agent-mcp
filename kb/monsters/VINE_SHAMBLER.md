@@ -1,7 +1,7 @@
 ---
 id: MONSTER.VINE_SHAMBLER
 name: 휘청거리는 덩굴
-game_version: v0.107.1
+game_version: v0.111.1
 sources:
 - MegaCrit.Sts2.Core.Models.Monsters/VineShambler.cs sha256:f11dc9dcf84b569801a2444a2b05a0eb7775e0a770931f60057047f98da83eb5
 - MegaCrit.Sts2.Core.Models.Powers/TangledPower.cs sha256:e1c23f2fb06950bb6b7abcb8a16d02367a3bcd99e2bbc59497f63ddfb9707d16

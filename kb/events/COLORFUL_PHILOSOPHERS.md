@@ -1,7 +1,7 @@
 ---
 id: EVENT.COLORFUL_PHILOSOPHERS
 name: 다채로운 철학자들
-game_version: v0.107.1
+game_version: v0.111.1
 sources:
 - MegaCrit.Sts2.Core.Models.Events/ColorfulPhilosophers.cs sha256:275cd45e34eea3221c5335ac5742918518f9c60ae5ec0fa262a27436a892b38f
 - MegaCrit.Sts2.Core.Models.Acts/Hive.cs sha256:085d95a7ea0418ada9e8544efdc97afc01c4bada90eca76fd65d3755c62c784e

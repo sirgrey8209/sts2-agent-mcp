@@ -1,10 +1,10 @@
 ---
 id: MONSTER.BOWLBUG_SILK
 name: 그릇벌레 (실크)
-game_version: v0.107.1
+game_version: v0.111.1
 sources:
-- MegaCrit.Sts2.Core.Models.Monsters/BowlbugSilk.cs sha256:b18fa6abf66e9df9567cb781a589b90ccaf359ec1ba00d4883d3628713c69175
-- MegaCrit.Sts2.Core.Models.Powers/WeakPower.cs sha256:b33ac1a44ff5edb75d6e5776627259b2bac2b4e6ab1905cab3d60b0cfa32a426
+- MegaCrit.Sts2.Core.Models.Monsters/BowlbugSilk.cs sha256:b9317bdda10306cbd52a397713543316d9836d3c37a342d6a9416d538279f661
+- MegaCrit.Sts2.Core.Models.Powers/WeakPower.cs sha256:6837912329f1c723a52362d87a0ba64a1eb03a27cd6d1e26ae707393145a5d4a
 - MegaCrit.Sts2.Core.Models.Encounters/BowlbugsNormal.cs sha256:9825e8ed31f14a2ca08e5b0e2cc790962362bf59f682b9bf62d9354ad831f0e4
 - MegaCrit.Sts2.Core.Models.Encounters/SlumberingBeetleNormal.cs sha256:0ae40808e8c225cbcc724dc14b4439c44a9dbdbd0c849d64d58e10cf90cc0932
 - MegaCrit.Sts2.Core.Models.Acts/Hive.cs sha256:085d95a7ea0418ada9e8544efdc97afc01c4bada90eca76fd65d3755c62c784e

@@ -1,7 +1,7 @@
 ---
 id: EVENT.SUNKEN_TREASURY
 name: 가라앉은 보물
-game_version: v0.107.1
+game_version: v0.111.1
 sources:
 - MegaCrit.Sts2.Core.Models.Events/SunkenTreasury.cs sha256:eb117f6e7b2b8b8e211599f157fa99617e5f834e1dce7c8b0db6569901c9aa77
 - MegaCrit.Sts2.Core.Models.Acts/Underdocks.cs sha256:b5f91ba221afa5ca83ca92290f481c8bef88c28f1ff8272f780f2540700964fb

@@ -1,11 +1,11 @@
 ---
 id: MONSTER.SLITHERING_STRANGLER
 name: 미끈거리는 교살마
-game_version: v0.107.1
+game_version: v0.111.1
 sources:
-- MegaCrit.Sts2.Core.Models.Monsters/SlitheringStrangler.cs sha256:d300724b95c294ae62cfc5d2dadad851884dd0f1e512684cfb4a7eed36a18b9c
-- MegaCrit.Sts2.Core.Models.Powers/ConstrictPower.cs sha256:cd695b3f700abcb147c6a68242850d13b8c2c03b63be48ad0aaa16a5154f32df
-- MegaCrit.Sts2.Core.Models.Encounters/SlitheringStranglerNormal.cs sha256:6303054f9e6b1809fe058179f5fe0a5a2b834255e300dd1e1b065c4ad37ccae3
+- MegaCrit.Sts2.Core.Models.Monsters/SlitheringStrangler.cs sha256:9f4aa922083c5083c2b1232f305ed64c34816e0a581751c2d0a4c384d4b1a22d
+- MegaCrit.Sts2.Core.Models.Powers/ConstrictPower.cs sha256:6166e1018cde7b4c5903eb26ad1b0c9dc6f212b27533b29ca01556bb1bf5d715
+- MegaCrit.Sts2.Core.Models.Encounters/SlitheringStranglerNormal.cs sha256:23ed70bec8d661aafeaf1d5daa8f75fa85daa31df660e6f70ad34fbe29594554
 - MegaCrit.Sts2.Core.Models.Acts/Overgrowth.cs sha256:61ff9d71f9b17f2f6a2f7f51f64bbfaa6752ec8cf7e75b4d291f2b0f89dc232b
 - MegaCrit.Sts2.Core.MonsterMoves.MonsterMoveStateMachine/RandomBranchState.cs sha256:a21f4174e001da5a0d34c23d07f52da61735618462e407ea1181ebd89469e9bb
 ---

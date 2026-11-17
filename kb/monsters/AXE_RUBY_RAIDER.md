@@ -1,7 +1,7 @@
 ---
 id: MONSTER.AXE_RUBY_RAIDER
 name: 도끼 습격자
-game_version: v0.107.1
+game_version: v0.111.1
 sources:
 - MegaCrit.Sts2.Core.Models.Monsters/AxeRubyRaider.cs sha256:3ba51c335698440e17d819ff2f25b4f0668c83b490e373198934b5814739f38d
 - MegaCrit.Sts2.Core.Models.Encounters/RubyRaidersNormal.cs sha256:ce3789a28fb2c5f2e6645473ef806f6bcce236b47fb476f3c092db1b262a5f19

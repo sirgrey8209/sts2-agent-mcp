@@ -1,7 +1,7 @@
 ---
 id: MONSTER.MAWLER
 name: 장수아귀
-game_version: v0.107.1
+game_version: v0.111.1
 sources:
 - MegaCrit.Sts2.Core.Models.Monsters/Mawler.cs sha256:7de9da00958288c7aa3025ce150238cc10a5827050b9ea87d597ba61e056de98
 - MegaCrit.Sts2.Core.Models.Encounters/MawlerNormal.cs sha256:86b8ddea688444d729b279f6e5df181d80d8afd62452960d83795941e5e72f42

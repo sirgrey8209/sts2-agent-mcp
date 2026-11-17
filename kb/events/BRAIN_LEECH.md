@@ -1,10 +1,10 @@
 ---
 id: EVENT.BRAIN_LEECH
 name: 뇌 거머리
-game_version: v0.107.1
+game_version: v0.111.1
 sources:
-- MegaCrit.Sts2.Core.Models.Events/BrainLeech.cs sha256:257da258d153d523bd76b20dd2f4930a413fd115ca6e20fac511bdd4248121f7
-- MegaCrit.Sts2.Core.Models/ModelDb.cs sha256:7144c6e265fc4484e40860f4ec7cb288c677a63256675222010f66ab628d6e4f
+- MegaCrit.Sts2.Core.Models.Events/BrainLeech.cs sha256:d6f957ad5896de396fcf0b2d0df2dfd77b640a28628d56de76cd26234c247bbb
+- MegaCrit.Sts2.Core.Models/ModelDb.cs sha256:2f7bdb25b700a1725266c720525542b660056bbc86f357852239b39b8fbf14f8
 - MegaCrit.Sts2.Core.Models/ActModel.cs sha256:55f3a43c7e055aff1e35985c0cd229f22a271698a82b0d0a24a3f01320dcab0b
 ---
 # 뇌 거머리 (BRAIN_LEECH)

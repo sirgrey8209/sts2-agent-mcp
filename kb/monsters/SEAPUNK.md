@@ -1,7 +1,7 @@
 ---
 id: MONSTER.SEAPUNK
 name: 불량 해초
-game_version: v0.107.1
+game_version: v0.111.1
 sources:
 - MegaCrit.Sts2.Core.Models.Monsters/Seapunk.cs sha256:5502426b447c4f7f3d40cdc046d945eae91037d7f90db72816aff5de0ed5d594
 - MegaCrit.Sts2.Core.Models.Encounters/SeapunkWeak.cs sha256:9ddbeb8262f02d729998124f684bfcb6f090848d8ab17ba41f64dae36a9773b9

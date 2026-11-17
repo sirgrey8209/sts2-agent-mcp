@@ -1,11 +1,11 @@
 ---
 id: EVENT.ROUND_TEA_PARTY
 name: 원탁의 다과회
-game_version: v0.107.1
+game_version: v0.111.1
 sources:
-- MegaCrit.Sts2.Core.Models.Events/RoundTeaParty.cs sha256:9e0d686605e1a60286afd52dc3f4b04393ed4a97a3db6a8dfcc42ed20ede19d3
+- MegaCrit.Sts2.Core.Models.Events/RoundTeaParty.cs sha256:9e6b3396f6e9a297fd649190cae40ef990b9fedc3cdce5177ff7fb9f3b6762ac
 - MegaCrit.Sts2.Core.Models.Acts/Glory.cs sha256:d70575f5ac62dda4c1e80d424955c412eb00248e127caaa2751a2775db4b03d0
-- MegaCrit.Sts2.Core.Models.Relics/RoyalPoison.cs sha256:79d4f5ed5e22eb7a497ddd0642b7eeeb6600ed90aa2fabac4bfa20a5986ec444
+- MegaCrit.Sts2.Core.Models.Relics/RoyalPoison.cs sha256:162e1fd4e7f334f0a22cfb12b4e72d837dd7bd97d72acda55992ebe583d558cd
 - MegaCrit.Sts2.Core.Factories/RelicFactory.cs sha256:4fbe5ca84342cef115aabdd016b55be18bfe7b66cf0ff96e2e41c8a87da3f0dd
 ---
 # 원탁의 다과회 (ROUND_TEA_PARTY)

@@ -1,11 +1,11 @@
 ---
 id: EVENT.ABYSSAL_BATHS
 name: 심연의 욕탕
-game_version: v0.107.1
+game_version: v0.111.1
 sources:
-- MegaCrit.Sts2.Core.Models.Events/AbyssalBaths.cs sha256:0c18e44f010512e3a5b895c7995164152299187a2f6d414e8eda3b8551e0b498
+- MegaCrit.Sts2.Core.Models.Events/AbyssalBaths.cs sha256:ebcb36c1df59090dfa8a0e935cf0e29923d5a183ea5f8371b47dcc0b777a5e8b
 - MegaCrit.Sts2.Core.Models.Acts/Underdocks.cs sha256:b5f91ba221afa5ca83ca92290f481c8bef88c28f1ff8272f780f2540700964fb
-- MegaCrit.Sts2.Core.Commands/CreatureCmd.cs sha256:f52882086d141dea85b8de65b8e526db5418e390d3f5ba3f2191d3d7f8a6420b
+- MegaCrit.Sts2.Core.Commands/CreatureCmd.cs sha256:3e11f255f18296998511d03ee952a7b16974f5999de7db8941e35a3ef4e92768
 ---
 # 심연의 욕탕 (ABYSSAL_BATHS)
 

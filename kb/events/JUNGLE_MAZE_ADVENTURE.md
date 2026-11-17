@@ -1,11 +1,11 @@
 ---
 id: EVENT.JUNGLE_MAZE_ADVENTURE
 name: 정글 미로 탐험
-game_version: v0.107.1
+game_version: v0.111.1
 sources:
-- MegaCrit.Sts2.Core.Models.Events/JungleMazeAdventure.cs sha256:06000356af1201b69c1ce9e4ef1d3506ff96b98665924c64df6f3820f0dbc944
+- MegaCrit.Sts2.Core.Models.Events/JungleMazeAdventure.cs sha256:fbb2e55cce3e00b56e0aca83b6b21240850c694def99033fdae0b27846503f6d
 - MegaCrit.Sts2.Core.Commands/PlayerCmd.cs sha256:c359ad806bbd92144ffbc80c85ecf86ef13a560a17bc5075548081aaa7c2db7c
-- MegaCrit.Sts2.Core.Random/Rng.cs sha256:99a404a807dae7b3c786821b3c287e6518b573f58265f98feaa63132748b7f40
+- MegaCrit.Sts2.Core.Random/Rng.cs sha256:0a8fca24479fe57d50e6dd8d16682fb9589372330b4c463bbc4ba5f4dc0ce8d8
 - MegaCrit.Sts2.Core.Models.Acts/Overgrowth.cs sha256:61ff9d71f9b17f2f6a2f7f51f64bbfaa6752ec8cf7e75b4d291f2b0f89dc232b
 ---
 # 정글 미로 탐험 (JUNGLE_MAZE_ADVENTURE)
@@ -13,7 +13,8 @@ sources:
 **요약**: 체력 18을 내고 골드 약 135~164를 얻거나, 대가 없이 골드 약 35~64를 얻는다.
 
 ## 조건
-- 1막(`Overgrowth`) 이벤트. 별도 등장 조건 없음.
+- 1막(`Overgrowth`) 이벤트.
+- 싱글플레이에서는 별도 등장 조건 없음. 멀티플레이에서는 모든 플레이어의 현재 체력이 18보다 커야(19 이상) 등장한다. 한 명이라도 18 이하이면 나오지 않는다.
 - 공유 이벤트(멀티플레이에서 투표로 고른 선택지가 모든 플레이어에게 적용).
 
 ## 선택지
@@ -28,5 +29,5 @@ sources:
 - 체력 손실이 먼저 적용되고 그다음 골드를 얻는다.
 
 ## 플레이 메모
-- 홀로 탐색에는 체력 잠금 조건이 없다. 체력이 18 이하이면 고르지 않는다.
+- 홀로 탐색 선택지 자체에는 체력 잠금 조건이 없다(싱글플레이에서는 체력 18 이하여도 이벤트가 나온다). 체력이 18 이하이면 고르지 않는다.
 - 차이는 체력 18 대 골드 약 100이다. 1막 초반에 상점 방문이 예정되어 있고 체력 여유가 있으면 홀로 탐색이 낫다.
