@@ -96,31 +96,51 @@
 
 요구사항:
 - 게임 전용 설정 폴더로 Claude Code 로그인을 분리한다(`CLAUDE_CONFIG_DIR` = `%LOCALAPPDATA%\sts2-agent-mcp\claude-config`). 지금은 이 PC의 평소 로그인을 그대로 쓴다.
-- 로그인이 안 돼 있으면 채팅창 가운데에 로그인 카드를 띄운다. 상태를 조회해서 보여 주고, 로그인 버튼을 둔다.
-- 머리글에 로그아웃 버튼을 둔다.
 - 구독과 API 키 모두 동작하게 한다. 둘 다 있으면 구독을 우선한다.
+- API 키는 모드가 입력받거나 저장하지 않는다. 사용자가 직접 설정한 `ANTHROPIC_API_KEY` 환경변수만 쓴다.
+- 둘 다 없으면 채팅창 가운데에 로그인 카드를 띄운다.
+
+참고 구현: TH-mcp-app의 `standalone-game` 브랜치(`game/agents.js`, `game/commands.js`, `game/app.js`의 로그인 감시, `game/ui/launcher.js`의 카드). 이 구조를 따르되, 그쪽은 구독 전용(API 키 변수를 항상 지움)이라는 점이 다르다.
 
 조사한 것(Claude Code 2.1.78):
 - `claude auth status`: 기본 JSON 출력. 로그인 안 됨이면 종료 코드 1.
   - 안 됨: `{"loggedIn": false, "authMethod": "none", "apiProvider": "firstParty"}`
   - 구독: `authMethod: "claude.ai"`, `subscriptionType`(예: `max`), `email`, `orgId`, `orgName`
   - API 키: `authMethod: "api_key"`, `apiKeySource: "ANTHROPIC_API_KEY"`. 환경변수가 있는지만 보고 키가 유효한지는 확인하지 않는다.
-- `claude auth login [--email <email>] [--sso]`, `claude auth logout`.
-- 창 없이(stdin·stdout 리디렉션) `claude auth login`을 실행했을 때 브라우저를 여는지, URL을 출력하는지, 끝날 때까지 기다리는지는 **아직 확인하지 못했다**. PowerShell 5.1에서 시험하다 실패했으므로, 모드 코드(.NET 9 `ProcessStartInfo.ArgumentList`)로 확인한다.
+  - 저장된 로그인을 읽기만 하므로 만료된 로그인도 `loggedIn: true`로 답한다(TH에서 확인). 그래서 실제 요청으로 한 번 더 확인한다.
+- `claude auth login [--email <email>] [--sso]`, `claude auth logout`. TH가 쓰는 `--claudeai` 플래그는 2.1.78에 없다. 플래그 없이 실행하거나 버전을 보고 붙인다.
+- 로그인은 창 없이 실행하지 않고 별도 콘솔 창에서 실행한다(TH 방식). 2.1.78에서 콘솔 창 로그인이 어떻게 진행되는지(브라우저 자동 열기, 코드 붙여 넣기 여부)는 구현할 때 확인한다.
 
-설계안:
-1. 상태 조회: `CLAUDE_CONFIG_DIR`을 게임 폴더로 두고 API 키 환경변수 없이 `claude auth status`를 실행한다.
-2. 실행 우선순위:
-   1. 게임 폴더에 계정 로그인이 있으면(구독 등) API 키 환경변수를 지우고 실행한다.
-   2. 없고 API 키가 있으면 키를 넘겨 실행한다. 키 출처는 설정 또는 게임 프로세스의 `ANTHROPIC_API_KEY`.
-   3. 둘 다 없으면 로그인 카드를 띄운다.
-3. 로그인 카드: 상태 문구, "Claude 계정으로 로그인" 버튼(`claude auth login`, 브라우저 진행 중 표시, 끝나면 다시 조회), "API 키 사용" 안내 또는 입력.
-4. 로그아웃: `claude auth logout` 후 실행 중인 세션을 끝내고 다시 조회한다.
-5. 머리글 상태에 인증 방식을 보여 준다(예: "구독(max)", "API 키").
+설계:
+1. 실행 파일 찾기: `claude_path` → PATH → `~/.local/bin`(공식 설치), `%APPDATA%\npm`(npm, `.cmd`), `~/.claude/local`, `%LOCALAPPDATA%\Microsoft\WinGet\Links` 순서. `.cmd`는 cmd.exe를 거쳐 실행하고 인자를 따옴표로 감싼다.
+2. 판정: `--version`, `auth status`(API 키 변수 없이), 실제 요청 한 번을 동시에 실행한다. 실제 요청은 `-p ok --model haiku --output-format json --tools "" --no-session-persistence --strict-mcp-config --system-prompt "Reply with OK."`.
+   1. 구독: `loggedIn`이고, `apiProvider`가 `firstParty`이고, `subscriptionType`이 있고 `free`가 아니고, 실제 요청이 성공하면 API 키 변수를 지우고 구독으로 실행한다.
+   2. 구독이 안 되고 게임 프로세스에 `ANTHROPIC_API_KEY`가 있으면, 키를 넘겨 실제 요청으로 확인한 뒤 키로 실행한다.
+   3. 둘 다 안 되면 로그인 카드를 띄운다.
+   - `auth status`가 JSON이 아니면 오래된 버전으로 보고 `claude update`를 안내한다.
+   - 오류 문구가 401, authenticat, oauth, token has expired, log in again, re-auth, not logged in 등이면 로그인 만료로 본다.
+3. 로그인 카드: 설치(버전), 계정, 플랜 세 칸과 상태(사용 가능/사용 불가/로그인 대기), 무엇이 문제인지 한 문장, [로그인] 버튼. 카드를 누르면 다시 확인한다. API 키 안내 한 줄: `ANTHROPIC_API_KEY` 환경변수를 설정한 뒤 Steam과 게임을 다시 실행한다(게임은 Steam의 환경을 물려받는다).
+4. [로그인]: 별도 콘솔 창(`cmd /c start`)에서 `claude auth login`을 실행한다. 로그인은 사용자가 브라우저와 그 창에서 직접 끝낸다. 끝나면 자동으로 다시 확인한다. TH는 `.credentials.json`의 수정 시각을 1초마다 보지만, 여기서는 자격증명 파일을 건드리지 않도록 전용 폴더의 변경을 보거나 `auth status`를 주기적으로 실행한다. 감시는 15분 뒤 멈춘다.
+5. 대화 중 로그인이 만료되면 안내 줄을 띄우고 로그인 카드로 돌아간다.
+6. 머리글 상태에 인증 방식을 보여 준다(예: "구독(Max)", "API 키").
+7. 환경변수 정리 목록을 TH 기준으로 넓힌다. 추가: `CLAUDE_CODE_USE_FOUNDRY`, `CLAUDE_CODE_CHILD_SESSION`, `CLAUDE_CODE_SESSION_ATTENDED`, `CLAUDE_CODE_EXECPATH`, `CLAUDE_CODE_MESSAGING_SOCKET`, `CLAUDE_CODE_MESSAGING_TOKEN`, `CLAUDE_PID`, `CLAUDE_AGENT_SDK_VERSION`, `CLAUDE_EFFORT`. `CLAUDE_CONFIG_DIR`은 게임 폴더로 덮어쓴다. `ANTHROPIC_API_KEY`는 구독으로 실행할 때만 지운다.
+- 주의: 전용 설정 폴더를 쓰므로 평소 `~/.claude/settings.json`의 `apiKeyHelper`나 `env`는 적용되지 않는다. 실제 환경변수만 통한다.
 
 정할 것:
-- API 키를 받는 방법: 패널에서 입력받아 저장(평문 설정 파일, 또는 Windows DPAPI로 암호화) / 환경변수만 지원.
-- 배포 정책: Anthropic 문서는 사전 승인 없이 제3자 제품이 claude.ai 로그인(구독 한도)을 제공하는 것을 허용하지 않는다고 안내한다(Agent SDK 문서 기준으로 기억함). 공개 배포 전에 최신 약관과 정책을 다시 확인하고, 필요하면 배포판의 기본값을 API 키로 둔다.
+- 설치 버튼: 설치되어 있지 않으면 공식 설치 스크립트(`irm https://claude.ai/install.ps1 | iex`)와 로그인을 한 콘솔 창에서 이어 실행하는 버튼을 둘지(TH에는 있다).
+- 로그아웃 버튼: 머리글에 두고 `claude auth logout` 후 실행 중인 세션을 끝내고 다시 확인할지(TH에는 없다).
+
+배포 정책(2026-11-17 확인. 근거: [Claude Code legal-and-compliance](https://code.claude.com/docs/en/legal-and-compliance), [Agent SDK overview](https://code.claude.com/docs/en/agent-sdk/overview), [Usage Policy](https://www.anthropic.com/aup) 2026-11-12판):
+- 제3자 제품이 claude.ai 로그인을 "제공"하거나 사용자 대신 구독 자격증명으로 요청을 보내는 것은 금지다. 자격증명이나 세션 토큰을 수집·저장·중계하는 것도 금지다.
+- 예외: 사용자가 수정하지 않은 Claude Code 바이너리에 본인 구독으로 로그인하는 것은 막지 않는다고 명시돼 있다.
+- 현재 방식(사용자가 직접 설치하고 로그인한 Claude Code 실행)과 사용자 본인 API 키는 허용 범위다. 공용 키를 넣어 배포하는 것은 금지다.
+- 로그인 카드의 [로그인] 버튼은 예외 조항 안에 든다고 보지만, Agent SDK 문서의 "offer claude.ai login" 문구와 충돌할 여지가 있다. 공개 배포 전에 Anthropic(contact sales)에 확인한다.
+- 구현 조건:
+  - 로그인은 Claude Code의 흐름으로만 끝낸다. 로그인 코드를 모드 UI로 받아 넘기지 않는다. 붙여 넣기가 필요하면 콘솔 창에서 사용자가 직접 입력한다.
+  - `.credentials.json`은 읽거나 복사하지 않는다. 상태는 `claude auth status`로만 확인한다. `setup-token`이나 `CLAUDE_CODE_OAUTH_TOKEN`은 쓰지 않는다.
+  - 구독과 API 키를 모두 쓸 수 있게 둔다. 어느 인증 방식도 막지 않는다.
+  - 기능 이름이나 버튼 이름에 "Claude Code"를 쓰지 않는다. 설명문으로 "설치된 Claude Code를 실행"한다고 쓰는 것은 된다.
+- 문의 결과가 불허면 배포판에서 [로그인] 버튼을 빼고 "터미널에서 직접 로그인" 안내와 API 키 안내만 남긴다. 현재 방식은 그대로 둔다.
 
 ### 3.2 런 단위 세션 보관과 재개
 
