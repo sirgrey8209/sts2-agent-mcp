@@ -153,7 +153,15 @@
 - 채팅창 위에서 카드를 놓았을 때. 지금은 게임 왼쪽 가장자리에서 놓은 것으로 처리돼서, 높이가 사용 구역이면 대상 없는 카드가 사용될 수 있다.
 - 첫 메시지 때 MCP 연결이 늦는 경우(지금까지는 문제없었다).
 
-## 4. 개발 도구 (`dev_layout`)
+## 4. 개발 메모
+
+- 브랜치: 채팅창 작업은 `in-game-chat` 브랜치에서만 한다. `main`은 배포된 MCP 모드 그대로 두고, 따로 정하기 전까지 병합하거나 PR을 만들지 않는다.
+- 게임 경로: 게임이 기본 경로(`D:\SteamLibrary\...`)에 없으면 `build.ps1`, `tools\redeploy.ps1`, `tools\mcp.ps1`을 실행하기 전에 `STS2_GAME_DIR`을 설정한다. 채팅창을 시험하려면 설치된 `STS2AgentMcp.conf`에 `"chat_panel": true`를 넣는다.
+- 게임 코드: `sts2.dll`을 저장소 밖 폴더에 디컴파일해서 본다(ilspycmd). 디컴파일 결과는 저장소에 넣지 않는다.
+- Windows PowerShell 5.1에서 주의할 점: `ProcessStartInfo.ArgumentList`와 `Process.Kill(bool)`이 없다. here-string을 `git commit -F -`로 넘기면 메시지가 인자로 들어가 커밋이 안 된다. 메시지는 임시 파일에 쓰고 `-F <파일>`로 넘긴다.
+- 사람이 PC를 쓰는 중일 수 있으므로 시험할 때 실제 마우스를 움직이지 않는다. `dev_layout`의 가짜 입력(move, click, drag, type, say, shot)을 쓴다. 게임이 실제 커서를 읽는 곳(드래그한 카드, 대상 지정 화살표)은 사람이 직접 시험한다.
+
+## 5. 개발 도구 (`dev_layout`)
 
 MCP 도구로 노출된다. 채팅용 Claude Code에는 허용하지 않는다.
 
