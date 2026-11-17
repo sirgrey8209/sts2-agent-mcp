@@ -36,9 +36,15 @@ internal static class Capture
     }
 
     /// <summary>Main thread. The last rendered frame of the game window.</summary>
-    public static CaptureResult Screenshot(int maxWidth)
+    public static CaptureResult Screenshot(int maxWidth, bool wholeWindow = false)
     {
         var image = Ui.Root.GetViewport().GetTexture().GetImage();
+        // With the in-game chat panel on, show only the game (the panel is not part of what the agent should see).
+        if (Chat.ChatLayout.Enabled && !wholeWindow)
+        {
+            var rect = Chat.ChatLayout.GameRectPx.Intersection(new Rect2I(0, 0, image.GetWidth(), image.GetHeight()));
+            if (rect.Size.X > 0 && rect.Size.Y > 0) image = image.GetRegion(rect);
+        }
         Fit(image, maxWidth);
         // Full scenes compress poorly as PNG (~850 KB at 1220px); JPEG keeps them light for chat.
         return Save(image, "screen", jpeg: true);

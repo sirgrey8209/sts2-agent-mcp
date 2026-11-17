@@ -7,6 +7,7 @@ using MegaCrit.Sts2.Core.Nodes;
 using MegaCrit.Sts2.Core.Runs;
 using MegaCrit.Sts2.Core.Saves;
 using MegaCrit.Sts2.Core.Settings;
+using Sts2AgentMcp.Chat;
 using Sts2AgentMcp.Game;
 using Sts2AgentMcp.Session;
 using Sts2AgentMcp.Tools;
@@ -32,6 +33,7 @@ public static class ModEntry
             Features.Try("choice-broker", ChoiceBroker.Install);
             Features.Try("event-log", EventLog.Install);
             Features.Try("turn-tracker", TurnTracker.Install);
+            if (config.ChatPanel) ChatLayout.Start(config);
             if (config.FastMode == "instant") ApplyInstantModeWhenReady();
             Capture.Configure(config.CaptureDir);
 
@@ -44,7 +46,8 @@ public static class ModEntry
                 .Add(new ScreenshotTool())
                 .Add(new RenderCardsTool())
                 .Add(new RenderMapTool())
-                .Add(new ExportLocTool());
+                .Add(new ExportLocTool())
+                .Add(new DevLayoutTool());
 
             _host = new HttpHost(config, new McpEndpoint(tools));
             _host.Start();

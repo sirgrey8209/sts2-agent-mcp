@@ -48,6 +48,7 @@
   src/
     Host/      ModEntry  HttpHost  McpEndpoint  MainThread  Config  Features  Log
     Tools/     ToolRegistry  StateTool  ActTool  InfoTool  SearchTool  CaptureTools (screenshot, render_cards, render_map)  ExportLocTool
+               DevLayoutTool (dev_layout: 채팅창 개발용)  ScenePeek (장면·자원 구조 보기)
     Session/   ActRunner (행동 실행 → 안정 대기 → 이벤트 수집 → 렌더)
     Screens/   Core (ActionSpec, ExecResult, ScreenView, IScreenHandler, ScreenRegistry)
                CombatHandler  ChoiceHandler  RewardHandlers (rewards, card_reward)
@@ -57,6 +58,9 @@
     View/      Fmt (출력 형식 전부 + 캐릭터 자원 제공자 Resources)
     Game/      GameCtx  Observation  Settle  TurnTracker  ChoiceBroker  EventLog  Ids  Ui  Text  Catalog
                Search (카드·유물·포션 검색)  MonsterInfo (행동 상태 기계 요약)  KbDocs (kb 문서 읽기)  Capture  MapRender (이미지 생성)
+               MouseRemap (채팅창 배치에서 마우스 좌표 보정)
+    Chat/      게임 안 채팅창 (15절): ChatLayout (화면 배치)  ChatPanel  ChatTheme (게임 말풍선 자원)
+               AgentSession (Claude Code 실행)  ChatController  JobObject
 ```
 (구현하면서 파일을 합쳤다: 처음 안의 `ScreenProbe`·`IdMap`·`TextEncoder`는 각각 `Observation`·`Ids`·`Fmt`가 맡는다. 게임 없이 돌리는 단위 테스트는 아직 없다.)
 
@@ -373,6 +377,8 @@ interface IResourceProvider { bool Applies(PlayerCtx p); IEnumerable<ResourceVie
 - 업데이트: 새 버전을 디컴파일 → `kb-check`가 원본이 바뀐 문서와 문서가 없는 몬스터·이벤트를 나열 → 원본 diff를 보고 고쳐 씀 → `kb-glossary`로 게임 용어 확인 → `kb-stamp`로 해시 기록. 형식과 작성 규칙은 `kb/README.md`.
 - 문서 안의 이름은 게임 현지화 문구와 같아야 한다. `kb-glossary`가 문서별 용어 목록을 만들고, 게임 이름과 다른 이름을 보고한다.
 
-## 15. 검토 중인 것
+## 15. 게임 안 채팅창 (개발 중)
 
-- 게임 안 채팅창: 화면 왼쪽에 에이전트 채팅창을 두고 게임 화면을 오른쪽으로 옮기는 안, 모드가 Claude Code를 직접 실행하는 연결 구조. [docs/in-game-chat.md](docs/in-game-chat.md)
+- 화면 왼쪽에 에이전트 채팅창을 두고 게임은 나머지 영역에 전체 높이로 그린다. 게임은 그 영역의 비율에 맞춰 UI를 다시 배치한다. 모드가 Claude Code를 직접 실행하고, Claude Code는 이 모드의 MCP 도구로 게임을 본다.
+- 1차 구현 완료(배치, 입력 보정, 메신저 패널, Claude Code 연결). 구현 방식, 버린 방법, 작업 계획: [docs/in-game-chat.md](docs/in-game-chat.md)
+- 이 기능은 Harmony 패치를 쓴다(`Viewport.GetMousePosition`, 게임의 화면 비율 처리기 두 곳, `NGame.ApplyDisplaySettings`). 설정 `chat_panel`이 꺼져 있으면 패치하지 않는다.

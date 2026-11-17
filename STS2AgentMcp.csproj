@@ -19,6 +19,10 @@
       <HintPath>$(STS2GameDataDir)/sts2.dll</HintPath>
       <Private>false</Private>
     </Reference>
+    <Reference Include="0Harmony">
+      <HintPath>$(STS2GameDataDir)/0Harmony.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
     <Reference Include="GodotSharp">
       <HintPath>$(STS2GameDataDir)/GodotSharp.dll</HintPath>
       <Private>false</Private>

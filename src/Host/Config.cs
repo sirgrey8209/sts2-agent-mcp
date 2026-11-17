@@ -19,6 +19,12 @@ internal sealed class Config
     public string FastMode { get; private set; } = "instant";
     /// <summary>Where screenshots and card sheets are written. Null = %TEMP%\sts2-agent-mcp.</summary>
     public string? CaptureDir { get; private set; }
+    /// <summary>In-game chat panel on the left, game on the right (docs/in-game-chat.md). Off by default (in development).</summary>
+    public bool ChatPanel { get; private set; }
+    /// <summary>Chat panel width in units of a 1080-tall window (the panel scales with window height, not width).</summary>
+    public float ChatWidth { get; private set; } = 480;
+    /// <summary>Claude Code executable for the chat panel. Null = search PATH and ~/.local/bin.</summary>
+    public string? ClaudePath { get; private set; }
 
     public string? FilePath { get; private set; }
 
@@ -54,6 +60,12 @@ internal sealed class Config
             config.FastMode = fast;
         if (root["capture_dir"] is JsonValue c && c.TryGetValue(out string? captureDir) && !string.IsNullOrWhiteSpace(captureDir))
             config.CaptureDir = captureDir;
+        if (root["chat_panel"] is JsonValue cp && cp.TryGetValue(out bool chatPanel))
+            config.ChatPanel = chatPanel;
+        if (root["chat_width"] is JsonValue cw && cw.TryGetValue(out double chatWidth) && chatWidth > 0)
+            config.ChatWidth = (float)chatWidth;
+        if (root["claude_path"] is JsonValue cl && cl.TryGetValue(out string? claudePath) && !string.IsNullOrWhiteSpace(claudePath))
+            config.ClaudePath = claudePath;
 
         bool changed = false;
         if (string.IsNullOrEmpty(config.Token))
@@ -69,6 +81,7 @@ internal sealed class Config
                 ["port"] = config.Port,
                 ["token"] = config.Token,
                 ["fast_mode"] = config.FastMode,
+                ["chat_panel"] = config.ChatPanel,
             };
             try
             {
@@ -82,6 +95,23 @@ internal sealed class Config
         }
 
         return config;
+    }
+
+    /// <summary>Remembers the chat panel width (written to the config file, other keys kept as they are).</summary>
+    public void SaveChatWidth(float width)
+    {
+        ChatWidth = width;
+        if (FilePath == null) return;
+        try
+        {
+            var root = File.Exists(FilePath) ? JsonNode.Parse(File.ReadAllText(FilePath)) as JsonObject ?? new JsonObject() : new JsonObject();
+            root["chat_width"] = Math.Round(width);
+            File.WriteAllText(FilePath, root.ToJsonString(new JsonSerializerOptions { WriteIndented = true }));
+        }
+        catch (Exception ex)
+        {
+            Log.Warn($"could not save chat_width: {ex.Message}");
+        }
     }
 
     private static string NewToken() => Convert.ToHexString(RandomNumberGenerator.GetBytes(24)).ToLowerInvariant();
