@@ -24,7 +24,7 @@
 [에이전트] ── MCP (Streamable HTTP, JSON 응답) ── [게임 모드: STS2AgentMcp.dll]
 
  Host       HTTP 수신, 인증, MCP JSON-RPC, 메인 스레드 스케줄러
- Tools      state / act / info  (도구 정의와 인자 파싱만)
+ Tools      state / act / info, 이미지 도구, export_loc  (도구 정의와 인자 파싱만)
  Session    한 번의 act 실행 흐름: 행동 실행 → 안정 대기 → 이벤트 수집 → 화면 렌더
  Screens    화면 처리기 레지스트리 (+ 범용 대체 처리기)
  View       우리 쪽 상태 모델(게임 타입 비의존) + 텍스트 인코더
@@ -43,9 +43,11 @@
   tools/mcp.ps1        개발용: MCP 클라이언트 없이 엔드포인트 직접 호출
   tools/redeploy.ps1   개발용: 빌드 → 게임 종료 → 설치 → 실행 → 준비될 때까지 대기
   tools/autofight.ps1  개발용: 단순 규칙으로 전투를 끝내서 다른 화면까지 빨리 이동 (플레이 에이전트 아님)
+  tools/kb-*.ps1       지식 베이스 관리: kb-check(원본 변경 검사), kb-stamp(해시 기록), kb-glossary(게임 용어 정리)
+  kb/                  몬스터와 이벤트 문서 (14절). 설치 시 DLL 옆 STS2AgentMcp-kb/로 복사
   src/
     Host/      ModEntry  HttpHost  McpEndpoint  MainThread  Config  Features  Log
-    Tools/     ToolRegistry  StateTool  ActTool  InfoTool
+    Tools/     ToolRegistry  StateTool  ActTool  InfoTool  CaptureTools (screenshot, render_cards, render_map)  ExportLocTool
     Session/   ActRunner (행동 실행 → 안정 대기 → 이벤트 수집 → 렌더)
     Screens/   Core (ActionSpec, ExecResult, ScreenView, IScreenHandler, ScreenRegistry)
                CombatHandler  ChoiceHandler  RewardHandlers (rewards, card_reward)
@@ -54,6 +56,7 @@
                PotionActions (모든 런 화면 공통)  RunActions (quit_to_menu, abandon_run)
     View/      Fmt (출력 형식 전부 + 캐릭터 자원 제공자 Resources)
     Game/      GameCtx  Observation  Settle  TurnTracker  ChoiceBroker  EventLog  Ids  Ui  Text  Catalog
+               MonsterInfo (행동 상태 기계 요약)  KbDocs (kb 문서 읽기)  Capture  MapRender (이미지 생성)
 ```
 (구현하면서 파일을 합쳤다: 처음 안의 `ScreenProbe`·`IdMap`·`TextEncoder`는 각각 `Observation`·`Ids`·`Fmt`가 맡는다. 게임 없이 돌리는 단위 테스트는 아직 없다.)
 
@@ -90,9 +93,11 @@
 |---|---|---|
 | `state` | `detail?: "brief" \| "full"` | 현재 화면, 가능한 행동, 요약 상태 |
 | `act` | `actions: string[]`, (예약) `dry_run` | 행동을 순서대로 실행. 각 행동 사이에 안정 대기. 결과 = 행동별 이벤트 + 최종 화면 |
-| `info` | `ids: string[]` | 카드·유물·파워·포션·몬스터·키워드 설명 (ModelId 또는 화면에 표시된 이름) |
+| `info` | `ids: string[]` | 카드·유물·파워·포션·몬스터·조우·이벤트·키워드 설명 (ModelId 또는 화면에 표시된 이름, 전투 중 적 `e1`, 이번 막 보스 `boss`). 몬스터는 행동 상태 기계를, 몬스터와 이벤트는 kb 문서를 덧붙인다 |
+| `screenshot` / `render_cards` / `render_map` | `attach?` 등 | 채팅 플레이용 이미지. 파일로 저장하고 경로를 돌려준다 (`attach: true`면 이미지도 반환) |
+| `export_loc` | `tables?: string[]` | kb 관리용. 현지화 문구 표를 JSON으로 저장 |
 
-런 시작·이어하기·포기도 별도 도구 없이 메뉴 화면의 행동으로 제공한다 (9.1절). 도구는 3개로 유지한다.
+런 시작·이어하기·포기도 별도 도구 없이 메뉴 화면의 행동으로 제공한다 (9.1절). 플레이에 쓰는 도구는 state, act, info 3개로 유지하고, 나머지는 보여 주기와 관리용이다.
 
 ### 행동 문법
 
@@ -355,3 +360,13 @@ interface IResourceProvider { bool Applies(PlayerCtx p); IEnumerable<ResourceVie
 - 로비 API로 캐릭터·승천을 바꿨을 때 화면 표시(승천 패널 등)가 따라오는지. 안 따라오면 해당 UI 컨트롤을 통해 바꾼다.
 - 튜토리얼 표시를 끄는 게임 설정이 있는지 (있으면 팝업 자동 닫기 대신 사용).
 - 일일 런은 시간 서버 응답이 필요하다. 오프라인일 때의 동작.
+
+## 14. 지식 베이스 (kb)
+
+게임 문구에 나오지 않는 몬스터·이벤트 동작(정확한 수치, 승천별 변화, 행동 패턴, 선택지 결과)은 런타임 코드 대신 문서로 관리한다.
+
+- 기준: 로컬에서 디컴파일한 게임 코드(저장소 밖, 공개하지 않음). 문서에는 코드를 넣지 않고 동작만 요약한다.
+- 위치: `kb/monsters/<ENTRY>.md`, `kb/events/<ENTRY>.md`. `ENTRY`는 게임 `ModelId.Entry`와 같다. v0.107.1 기준 몬스터 121개, 이벤트 68개.
+- 머리말: `game_version`과 근거 원본 파일 목록(`sources`, 파일별 sha256). `info`는 게임 버전이 다르면 문서 앞에 안내를 붙인다.
+- 업데이트: 새 버전을 디컴파일 → `kb-check`가 원본이 바뀐 문서와 문서가 없는 몬스터·이벤트를 나열 → 원본 diff를 보고 고쳐 씀 → `kb-glossary`로 게임 용어 확인 → `kb-stamp`로 해시 기록. 형식과 작성 규칙은 `kb/README.md`.
+- 문서 안의 이름은 게임 현지화 문구와 같아야 한다. `kb-glossary`가 문서별 용어 목록을 만들고, 게임 이름과 다른 이름을 보고한다.

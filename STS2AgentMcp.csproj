@@ -7,7 +7,7 @@
     <ImplicitUsings>disable</ImplicitUsings>
     <AssemblyName>STS2AgentMcp</AssemblyName>
     <RootNamespace>Sts2AgentMcp</RootNamespace>
-    <Version>0.1.0</Version>
+    <Version>0.2.0</Version>
     <!-- Game install path. Override with -p:STS2GameDir="..." or the STS2_GAME_DIR environment variable. -->
     <STS2GameDir Condition="'$(STS2GameDir)' == '' and '$(STS2_GAME_DIR)' != ''">$(STS2_GAME_DIR)</STS2GameDir>
     <STS2GameDir Condition="'$(STS2GameDir)' == ''">D:\SteamLibrary\steamapps\common\Slay the Spire 2</STS2GameDir>

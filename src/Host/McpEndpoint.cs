@@ -12,7 +12,7 @@ namespace Sts2AgentMcp.Host;
 /// </summary>
 internal sealed class McpEndpoint
 {
-    public const string ServerVersion = "0.1.0";
+    public const string ServerVersion = "0.2.0";
     private static readonly string[] SupportedVersions = { "2025-11-25", "2025-06-18", "2025-03-26", "2024-11-05" };
 
     private readonly ToolRegistry _tools;
