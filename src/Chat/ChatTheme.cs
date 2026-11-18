@@ -146,10 +146,10 @@ internal static class ChatTheme
 
     public static readonly Color OkColor = new(0.55f, 0.85f, 0.55f, 1f);
     public static readonly Color WaitColor = new(0.85f, 0.76f, 0.52f, 1f);
-    /// <summary>Claude's orange (#D97757, the color its brand pages use).</summary>
-    public static readonly Color ClaudeColor = new("D97757");
-    /// <summary>Codex blue (the deep end of the Codex logo's gradient, #3941FF).</summary>
-    public static readonly Color CodexColor = new("3941FF");
+    /// <summary>Claude's orange, toned down (#D97757 at saturation 0.45).</summary>
+    public static readonly Color ClaudeColor = new("CE8871");
+    /// <summary>Codex: a neutral gray (OpenAI's brand colors are black and grays).</summary>
+    public static readonly Color CodexColor = new("55585F");
     /// <summary>Usable but billed per use (API key).</summary>
     public static readonly Color WarnColor = new(0.98f, 0.82f, 0.30f, 1f);
     public static readonly Color PrimaryButton = new(0.18f, 0.36f, 0.42f, 1f);
