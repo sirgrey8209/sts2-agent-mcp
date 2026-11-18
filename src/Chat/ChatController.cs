@@ -46,6 +46,12 @@ internal static class ChatController
         panel.InstallPressed += OpenInstall;
         panel.RecheckPressed += () => Recheck();
         panel.LogoutPressed += Logout;
+        panel.ConnectPressed += remember =>
+        {
+            if (remember) _config?.SaveChatAutoConnect(true);
+            Log.Info($"chat: connected by the player (auto next time: {remember})");
+            UpdateStatus();
+        };
         panel.ShowAuth(_auth, _settingUp);
         if (first) Recheck();
     }
@@ -77,11 +83,19 @@ internal static class ChatController
         _auth = state;
         if (state.Ready) _settingUp = null;
         if (_session != null) _session.Auth = state;
+        // "Connect automatically" skips the card's [접속] once the login works.
+        if (state.Ready && _config?.ChatAutoConnect == true) _panel?.SetConnected(true);
         _panel?.ShowAuth(state, _settingUp);
+        UpdateStatus();
+    }
+
+    private static void UpdateStatus()
+    {
         if (_panel == null) return;
-        if (state.Checking) _panel.SetStatus("연결 확인 중…");
-        else if (state.Ready) _panel.SetStatus($"{state.Label} · 메시지를 보내면 연결해요");
-        else _panel.SetStatus("연결 안 됨");
+        if (_auth.Checking) _panel.SetStatus("연결 확인 중…");
+        else if (!_auth.Ready) _panel.SetStatus("연결 안 됨");
+        else if (!_panel.Connected) _panel.SetStatus($"{_auth.Label} · 접속 대기");
+        else _panel.SetStatus($"{_auth.Label} · 메시지를 보내면 연결해요");
     }
 
     // ---- console windows: Claude Code's own login and installer ----
@@ -176,6 +190,7 @@ internal static class ChatController
         if (_auth.Exe is not { } exe || _session == null) return;
         _session.Stop(forget: true);
         _panel?.ShowTyping(false);
+        _panel?.SetConnected(false);
         _panel?.AddNote("로그아웃했어요.");
         SetAuth(AuthState.CheckingNow);
         Task.Run(async () =>
@@ -202,6 +217,7 @@ internal static class ChatController
             case AgentEvent.AuthLost lost:
                 Log.Warn($"chat: login lost: {lost.Reason}");
                 _session?.Stop();
+                panel.SetConnected(false);
                 panel.AddNote("로그인이 만료됐어요. 다시 로그인한 뒤 메시지를 보내 주세요.", true);
                 Recheck();
                 break;

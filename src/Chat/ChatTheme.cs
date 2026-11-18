@@ -146,6 +146,8 @@ internal static class ChatTheme
 
     public static readonly Color OkColor = new(0.55f, 0.85f, 0.55f, 1f);
     public static readonly Color WaitColor = new(0.85f, 0.76f, 0.52f, 1f);
+    /// <summary>Usable but billed per use (API key).</summary>
+    public static readonly Color WarnColor = new(0.98f, 0.82f, 0.30f, 1f);
     public static readonly Color PrimaryButton = new(0.18f, 0.36f, 0.42f, 1f);
     public static readonly Color PlainButton = new(0.16f, 0.19f, 0.23f, 1f);
     public static readonly Color DangerButton = new(0.42f, 0.18f, 0.16f, 1f);

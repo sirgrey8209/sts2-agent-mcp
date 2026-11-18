@@ -25,6 +25,8 @@ internal sealed class Config
     public float ChatWidth { get; private set; } = 480;
     /// <summary>Claude Code executable for the chat panel. Null = search PATH and ~/.local/bin.</summary>
     public string? ClaudePath { get; private set; }
+    /// <summary>Chat panel: connect without asking once the login works (the card's "connect automatically" box).</summary>
+    public bool ChatAutoConnect { get; private set; }
     /// <summary>Registers development tools (dev_console: the game's cheat console). Off by default.</summary>
     public bool DevTools { get; private set; }
 
@@ -66,6 +68,8 @@ internal sealed class Config
             config.ChatPanel = chatPanel;
         if (root["chat_width"] is JsonValue cw && cw.TryGetValue(out double chatWidth) && chatWidth > 0)
             config.ChatWidth = (float)chatWidth;
+        if (root["chat_auto_connect"] is JsonValue ac && ac.TryGetValue(out bool autoConnect))
+            config.ChatAutoConnect = autoConnect;
         if (root["dev_tools"] is JsonValue dt && dt.TryGetValue(out bool devTools))
             config.DevTools = devTools;
         if (root["claude_path"] is JsonValue cl && cl.TryGetValue(out string? claudePath) && !string.IsNullOrWhiteSpace(claudePath))
@@ -105,16 +109,29 @@ internal sealed class Config
     public void SaveChatWidth(float width)
     {
         ChatWidth = width;
+        Save("chat_width", Math.Round(width));
+    }
+
+    /// <summary>Remembers "connect automatically" for the chat panel.</summary>
+    public void SaveChatAutoConnect(bool on)
+    {
+        ChatAutoConnect = on;
+        Save("chat_auto_connect", on);
+    }
+
+    /// <summary>Writes one key to the config file, keeping the others as they are.</summary>
+    private void Save(string key, JsonNode? value)
+    {
         if (FilePath == null) return;
         try
         {
             var root = File.Exists(FilePath) ? JsonNode.Parse(File.ReadAllText(FilePath)) as JsonObject ?? new JsonObject() : new JsonObject();
-            root["chat_width"] = Math.Round(width);
+            root[key] = value;
             File.WriteAllText(FilePath, root.ToJsonString(new JsonSerializerOptions { WriteIndented = true }));
         }
         catch (Exception ex)
         {
-            Log.Warn($"could not save chat_width: {ex.Message}");
+            Log.Warn($"could not save {key}: {ex.Message}");
         }
     }
 

@@ -43,8 +43,11 @@ internal sealed class ChatPanel
     private const float LogoutWidth = 132;
     private readonly PanelContainer _card;
     private readonly Label _cardPill;
+    private readonly OptionButton _agentPick;
     private readonly Dictionary<string, Label> _cardValues = new();
+    private readonly Label _cardStatus;
     private readonly Label _cardNote;
+    private readonly CheckBox _autoConnect;
     private readonly HBoxContainer _cardButtons;
     private readonly Button _cardPrimary;
     private readonly Button _cardSecondary;
@@ -52,6 +55,8 @@ internal sealed class ChatPanel
     private AuthState? _auth;
     private string? _settingUp;
     private bool _confirmInstall;
+    private bool _confirmLogin;
+    private bool _connected;
     private bool _confirmLogout;
     private int _logoutArm;
     private bool _cardShown;
@@ -128,12 +133,34 @@ internal sealed class ChatPanel
         body.AddThemeConstantOverride("separation", 14);
         _card.AddChild(body);
 
+        // Title row: [Claude v] 연결 ............ (in-progress pill)
         var top = new HBoxContainer { MouseFilter = Control.MouseFilterEnum.Ignore };
-        var title = new Label { Text = "Claude 연결", SizeFlagsHorizontal = Control.SizeFlags.ExpandFill, MouseFilter = Control.MouseFilterEnum.Ignore };
+        top.AddThemeConstantOverride("separation", 12);
+        _agentPick = new OptionButton { CustomMinimumSize = new Vector2(150, 48) };
+        _agentPick.AddItem("Claude");
+        _agentPick.AddItem("Codex");
+        _agentPick.Selected = 0;
+        ChatTheme.StyleButton(_agentPick, ChatTheme.PlainButton, 22);
+        _agentPick.ItemSelected += _ => { _confirmInstall = false; _confirmLogin = false; DrawCard(null); };
+        // The list is a popup in the game's (stretched) root, not in this layer: size its text for the root's units.
+        var popup = _agentPick.GetPopup();
+        popup.AboutToPopup += () =>
+        {
+            float rootHeight = Layer.GetViewport()?.GetVisibleRect().Size.Y ?? 1080;
+            int size = Mathf.RoundToInt(22 * rootHeight / 1080f);
+            popup.AddThemeFontSizeOverride("font_size", size);
+            if (ChatTheme.Regular != null) popup.AddThemeFontOverride("font", ChatTheme.Regular);
+            popup.AddThemeColorOverride("font_color", ChatTheme.TextColor);
+            popup.AddThemeColorOverride("font_hover_color", Colors.White);
+            popup.AddThemeConstantOverride("v_separation", Mathf.RoundToInt(size * 0.6f));
+            popup.AddThemeStyleboxOverride("panel", ChatTheme.CardStyle());
+        };
+        var title = new Label { Text = "연결", SizeFlagsHorizontal = Control.SizeFlags.ExpandFill, MouseFilter = Control.MouseFilterEnum.Ignore, VerticalAlignment = VerticalAlignment.Center };
         ChatTheme.StyleText(title, 26);
         if (ChatTheme.Bold != null) title.AddThemeFontOverride("font", ChatTheme.Bold);
         _cardPill = new Label { MouseFilter = Control.MouseFilterEnum.Ignore, VerticalAlignment = VerticalAlignment.Center };
         ChatTheme.StyleText(_cardPill, ChatTheme.SmallFontSize);
+        top.AddChild(_agentPick);
         top.AddChild(title);
         top.AddChild(_cardPill);
         body.AddChild(top);
@@ -157,9 +184,19 @@ internal sealed class ChatPanel
         }
         body.AddChild(facts);
 
+        // One status line (colored) and a guidance note under it.
+        _cardStatus = new Label { AutowrapMode = TextServer.AutowrapMode.WordSmart, MouseFilter = Control.MouseFilterEnum.Ignore };
+        ChatTheme.StyleText(_cardStatus, 22);
+        if (ChatTheme.Bold != null) _cardStatus.AddThemeFontOverride("font", ChatTheme.Bold);
+        body.AddChild(_cardStatus);
+
         _cardNote = new Label { AutowrapMode = TextServer.AutowrapMode.WordSmart, MouseFilter = Control.MouseFilterEnum.Ignore };
-        ChatTheme.StyleText(_cardNote, 20);
+        ChatTheme.StyleText(_cardNote, 19);
         body.AddChild(_cardNote);
+
+        _autoConnect = new CheckBox { Text = "다음부터 자동으로 접속", Visible = false };
+        ChatTheme.StyleText(_autoConnect, 19);
+        body.AddChild(_autoConnect);
 
         _cardButtons = new HBoxContainer { MouseFilter = Control.MouseFilterEnum.Ignore };
         _cardButtons.AddThemeConstantOverride("separation", 12);
@@ -172,15 +209,6 @@ internal sealed class ChatPanel
         _cardButtons.AddChild(_cardPrimary);
         _cardButtons.AddChild(_cardSecondary);
         body.AddChild(_cardButtons);
-
-        var hint = new Label
-        {
-            Text = "API 키로 쓰려면 ANTHROPIC_API_KEY 환경변수를 설정한 뒤 Steam과 게임을 다시 실행해 주세요. 로그인 정보는 이 게임 전용 폴더에만 저장돼요.",
-            AutowrapMode = TextServer.AutowrapMode.WordSmart,
-            MouseFilter = Control.MouseFilterEnum.Ignore,
-        };
-        ChatTheme.StyleText(hint, 16, ChatTheme.DimColor);
-        body.AddChild(hint);
 
         Layer.AddChild(_card);
         _card.MinimumSizeChanged += PlaceCard;
@@ -204,6 +232,8 @@ internal sealed class ChatPanel
     public event Action? InstallPressed;
     public event Action? RecheckPressed;
     public event Action? LogoutPressed;
+    /// <summary>The player pressed [접속]; the flag is "connect automatically next time".</summary>
+    public event Action<bool>? ConnectPressed;
 
     /// <summary>Whether the login card is up (development tool).</summary>
     public bool CardVisible => _cardShown;
@@ -213,7 +243,7 @@ internal sealed class ChatPanel
         (_cardButtons.Visible && _cardPrimary.Visible ? _cardPrimary.Text : null,
          _cardButtons.Visible && _cardSecondary.Visible ? _cardSecondary.Text : null);
 
-    public string CardNote => _cardNote.Text;
+    public string CardNote => (_cardStatus.Text + " " + _cardNote.Text).Trim();
 
     public string CardDebug =>
         $"card visible={_card.Visible} rect={_card.GetRect()} min={_card.GetCombinedMinimumSize()} " +
@@ -222,10 +252,11 @@ internal sealed class ChatPanel
     /// <summary>Presses a card or header button by its label (development tool). Returns whether one matched.</summary>
     public bool Press(string label)
     {
-        foreach (var button in new[] { _cardPrimary, _cardSecondary, _logout })
+        foreach (var button in new Button[] { _cardPrimary, _cardSecondary, _logout, _autoConnect })
         {
             if (!button.IsVisibleInTree() || button.Disabled || button.Text != label) continue;
-            button.EmitSignal(BaseButton.SignalName.Pressed);
+            if (button is CheckBox box) box.ButtonPressed = !box.ButtonPressed;
+            else button.EmitSignal(BaseButton.SignalName.Pressed);
             return true;
         }
         return false;
@@ -243,12 +274,13 @@ internal sealed class ChatPanel
     {
         _auth = auth;
         _settingUp = settingUp;
-        // A check at startup (card not up yet) runs behind the chat; a re-check keeps the card up.
-        if (!(auth.Checking && !_cardShown)) _cardShown = !auth.Ready;
-        if (auth.Ready) _confirmInstall = false;
+        // A check at startup (card not up yet) runs behind the chat; a re-check keeps the card up. The card stays up
+        // until the player connects ([접속], or automatically when they chose so).
+        if (!(auth.Checking && !_cardShown)) _cardShown = !(auth.Ready && _connected);
+        if (auth.Ready) { _confirmInstall = false; _confirmLogin = false; }
         _logoutShown = auth.Ready && auth.Method == AuthMethod.Subscription;
         Input.Editable = !_cardShown;
-        Input.PlaceholderText = _cardShown ? "로그인한 뒤 쓸 수 있어요" : "메시지 입력 (Enter 전송, Esc 게임으로)";
+        Input.PlaceholderText = _cardShown ? "연결한 뒤 쓸 수 있어요" : "메시지 입력 (Enter 전송, Esc 게임으로)";
         if (_cardShown) Input.ReleaseFocus();
         ResetLogout();
         // The header's text widths depend on the logout button.
@@ -258,6 +290,16 @@ internal sealed class ChatPanel
         // Wrapped labels settle their height a frame later.
         Callable.From(PlaceCard).CallDeferred();
     }
+
+    /// <summary>Whether the player has connected (pressed [접속] or chose automatic connection). Redraws.</summary>
+    public void SetConnected(bool connected)
+    {
+        if (_connected == connected) return;
+        _connected = connected;
+        if (_auth != null) ShowAuth(_auth, _settingUp);
+    }
+
+    public bool Connected => _connected;
 
     /// <summary>
     /// The card at the message list's width, as tall as its contents, centered in the list's area. Done by hand on
@@ -286,17 +328,46 @@ internal sealed class ChatPanel
         _logout.Visible = _hasRoom && _logoutShown;
     }
 
+    // Status lines (docs/in-game-chat.md §3.1): red = cannot run yet, green = ready, yellow = billed per use.
+    private const string NeedInstall = "Claude Agent를 설치해야 합니다.";
+    private const string NeedLogin = "로그인이 필요합니다.";
+    private const string ReadyText = "사용할 수 있습니다.";
+    private const string ApiText = "API로 사용됩니다. 요금이 부과될 수 있습니다.";
+
+    private const string InstallGuide =
+        "Anthropic의 공식 Claude 앱(Claude Code)을 이 PC에 설치합니다. 공식 설치 프로그램을 쓰고, 사용자 폴더에 설치되어 " +
+        "관리자 권한이 필요 없습니다. 설치가 끝나면 같은 창에서 로그인이 이어집니다.";
+    private const string AccountGuide =
+        "본인의 Claude 계정으로 로그인합니다. 대화에 쓰는 사용량과 요금은 본인 계정에서 차감됩니다. " +
+        "로그인 정보는 이 게임 전용 폴더에만 저장되며, 모드는 계정 정보를 읽거나 보내지 않습니다.";
+    private const string ConnectGuide =
+        "본인의 Claude 계정으로 접속합니다. 대화에 쓰는 사용량과 요금은 본인 계정에서 차감됩니다.";
+    private const string ApiGuide =
+        "본인이 설정한 API 키(ANTHROPIC_API_KEY)로 접속합니다. 대화에 쓴 만큼 해당 API 계정에 요금이 부과됩니다.";
+
     private void DrawCard(string? message)
     {
         var auth = _auth;
         if (auth == null || !_cardShown) return;
+        _autoConnect.Visible = false;
+
+        if (_agentPick.Selected == 1)
+        {
+            Pill(null, default);
+            foreach (var value in _cardValues.Values) { value.Text = "—"; value.Modulate = Colors.White; }
+            Status("Codex는 아직 지원하지 않습니다.", ChatTheme.ErrorColor);
+            Note(null, false);
+            Buttons(null, null);
+            return;
+        }
+
         if (auth.Checking)
         {
             Pill("확인 중", ChatTheme.WaitColor);
             foreach (var value in _cardValues.Values) { value.Text = "…"; value.Modulate = Colors.White; }
-            _cardNote.Text = "이 PC의 설치와 로그인을 확인하고 있어요.";
-            _cardNote.RemoveThemeColorOverride("font_color");
-            _cardButtons.Visible = false;
+            Status("이 PC의 설치와 로그인을 확인하고 있습니다.", ChatTheme.DimColor);
+            Note(null, false);
+            Buttons(null, null);
             return;
         }
 
@@ -305,33 +376,61 @@ internal sealed class ChatPanel
         Fact("plan", auth.Plan ?? "—", auth.Plan != null && auth.Plan != "Free");
 
         string kind = auth.CanInstall ? "install" : auth.CanLogin ? "login" : "";
-        if (_confirmInstall && kind == "install" && _settingUp == null)
-        {
-            Pill("설치 확인", ChatTheme.WaitColor);
-            Note("Anthropic의 공식 설치 프로그램(https://claude.ai/install.ps1)으로 Claude Code를 설치해요. " +
-                 "설치 위치는 사용자 폴더\\.local\\bin이고 관리자 권한은 필요 없어요. 설치가 끝나면 같은 창에서 로그인이 이어져요.", false);
-            Buttons("설치", "취소");
-            return;
-        }
+        // Problem beyond the plain "not logged in / not installed" (expired, Free plan, other provider, ...).
+        string? detail = auth.Problem is { } p && p != "로그인이 필요해요." && !p.Contains("설치되어 있지 않아요") ? p : null;
+
         if (_settingUp != null)
         {
             Pill(_settingUp == "install" ? "설치 중" : "로그인 대기", ChatTheme.WaitColor);
+            Status(_settingUp == "install" ? NeedInstall : NeedLogin, ChatTheme.ErrorColor);
             Note(message ?? (_settingUp == "install"
-                ? "열린 창에서 설치가 진행돼요. 끝나면 이어서 로그인이 열리니, 브라우저에서 로그인을 마쳐 주세요. 마치면 자동으로 확인해요."
-                : "열린 창과 브라우저에서 로그인을 마쳐 주세요. 마치면 자동으로 확인해요."), message != null);
+                ? "열린 창에서 설치가 진행됩니다. 끝나면 이어서 로그인이 열리니, 브라우저에서 로그인을 마쳐 주세요. 마치면 자동으로 확인합니다."
+                : "열린 창과 브라우저에서 로그인을 마쳐 주세요. 마치면 자동으로 확인합니다."), message != null);
             Buttons(kind.Length > 0 ? "다시 열기" : null, "다시 확인");
             return;
         }
-        Pill("사용 불가", ChatTheme.ErrorColor);
-        string fix = kind == "install" ? " [설치]를 눌러 주세요." : kind == "login" ? " [로그인]을 눌러 주세요." : " 해결한 뒤 [다시 확인]을 눌러 주세요.";
-        Note(message ?? (auth.Problem ?? "사용할 수 없어요.") + fix, message != null);
-        Buttons(kind == "install" ? "설치" : kind == "login" ? "로그인" : null, "다시 확인");
+        Pill(null, default);
+
+        if (auth.Ready)
+        {
+            bool api = auth.Method == AuthMethod.ApiKey;
+            Status(api ? ApiText : ReadyText, api ? ChatTheme.WarnColor : ChatTheme.OkColor);
+            Note(message ?? (api ? ApiGuide : ConnectGuide), message != null);
+            _autoConnect.Visible = true;
+            Buttons("접속", null);
+            return;
+        }
+
+        if (kind == "install")
+        {
+            Status(NeedInstall, ChatTheme.ErrorColor);
+            if (_confirmInstall) { Note(InstallGuide, false); Buttons("설치", "취소"); }
+            else { Note(message ?? detail, message != null); Buttons("설치", "다시 확인"); }
+            return;
+        }
+        if (kind == "login")
+        {
+            Status(NeedLogin, ChatTheme.ErrorColor);
+            if (_confirmLogin) { Note(AccountGuide, false); Buttons("로그인", "취소"); }
+            else { Note(message ?? detail, message != null); Buttons("로그인", "다시 확인"); }
+            return;
+        }
+        Status(auth.Problem ?? "연결할 수 없습니다.", ChatTheme.ErrorColor);
+        Note(message ?? "해결한 뒤 [다시 확인]을 눌러 주세요.", message != null);
+        Buttons(null, "다시 확인");
     }
 
-    private void Pill(string text, Color color)
+    private void Pill(string? text, Color color)
     {
-        _cardPill.Text = text;
-        _cardPill.AddThemeColorOverride("font_color", color);
+        _cardPill.Visible = text != null;
+        _cardPill.Text = text ?? "";
+        if (text != null) _cardPill.AddThemeColorOverride("font_color", color);
+    }
+
+    private void Status(string text, Color color)
+    {
+        _cardStatus.Text = text;
+        _cardStatus.AddThemeColorOverride("font_color", color);
     }
 
     private void Fact(string key, string text, bool ok)
@@ -340,9 +439,10 @@ internal sealed class ChatPanel
         _cardValues[key].Modulate = ok ? Colors.White : new Color(1, 0.7f, 0.65f, 0.8f);
     }
 
-    private void Note(string text, bool error)
+    private void Note(string? text, bool error)
     {
-        _cardNote.Text = text;
+        _cardNote.Visible = !string.IsNullOrEmpty(text);
+        _cardNote.Text = text ?? "";
         if (error) _cardNote.AddThemeColorOverride("font_color", ChatTheme.ErrorColor);
         else _cardNote.AddThemeColorOverride("font_color", ChatTheme.TextColor);
     }
@@ -370,8 +470,18 @@ internal sealed class ChatPanel
                 _confirmInstall = false;
                 InstallPressed?.Invoke();
                 break;
+            case "로그인" when !_confirmLogin:
+                _confirmLogin = true;
+                DrawCard(null);
+                break;
             case "로그인":
+                _confirmLogin = false;
                 LoginPressed?.Invoke();
+                break;
+            case "접속":
+                bool remember = _autoConnect.ButtonPressed;
+                SetConnected(true);
+                ConnectPressed?.Invoke(remember);
                 break;
             case "다시 열기":
                 if (_settingUp == "install" || auth.CanInstall) InstallPressed?.Invoke();
@@ -385,6 +495,7 @@ internal sealed class ChatPanel
         if (_cardSecondary.Text == "취소")
         {
             _confirmInstall = false;
+            _confirmLogin = false;
             DrawCard(null);
             return;
         }
