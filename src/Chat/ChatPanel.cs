@@ -43,7 +43,9 @@ internal sealed class ChatPanel
     private const float LogoutWidth = 132;
     private readonly PanelContainer _card;
     private readonly Label _cardPill;
-    private readonly OptionButton _agentPick;
+    private readonly Button _agentPick;
+    private static readonly string[] Agents = { "Claude", "Codex" };
+    private int _agent;
     private readonly Dictionary<string, Label> _cardValues = new();
     private readonly Label _cardStatus;
     private readonly Label _cardNote;
@@ -136,24 +138,16 @@ internal sealed class ChatPanel
         // Title row: [Claude v] 연결 ............ (in-progress pill)
         var top = new HBoxContainer { MouseFilter = Control.MouseFilterEnum.Ignore };
         top.AddThemeConstantOverride("separation", 12);
-        _agentPick = new OptionButton { CustomMinimumSize = new Vector2(150, 48) };
-        _agentPick.AddItem("Claude");
-        _agentPick.AddItem("Codex");
-        _agentPick.Selected = 0;
+        // Agent picker: a cycle button (each press shows the next agent).
+        _agentPick = new Button { CustomMinimumSize = new Vector2(190, 48), Text = AgentLabel(0) };
         ChatTheme.StyleButton(_agentPick, ChatTheme.PlainButton, 22);
-        _agentPick.ItemSelected += _ => { _confirmInstall = false; _confirmLogin = false; DrawCard(null); };
-        // The list is a popup in the game's (stretched) root, not in this layer: size its text for the root's units.
-        var popup = _agentPick.GetPopup();
-        popup.AboutToPopup += () =>
+        _agentPick.Pressed += () =>
         {
-            float rootHeight = Layer.GetViewport()?.GetVisibleRect().Size.Y ?? 1080;
-            int size = Mathf.RoundToInt(22 * rootHeight / 1080f);
-            popup.AddThemeFontSizeOverride("font_size", size);
-            if (ChatTheme.Regular != null) popup.AddThemeFontOverride("font", ChatTheme.Regular);
-            popup.AddThemeColorOverride("font_color", ChatTheme.TextColor);
-            popup.AddThemeColorOverride("font_hover_color", Colors.White);
-            popup.AddThemeConstantOverride("v_separation", Mathf.RoundToInt(size * 0.6f));
-            popup.AddThemeStyleboxOverride("panel", ChatTheme.CardStyle());
+            _agent = (_agent + 1) % Agents.Length;
+            _agentPick.Text = AgentLabel(_agent);
+            _confirmInstall = false;
+            _confirmLogin = false;
+            DrawCard(null);
         };
         var title = new Label { Text = "연결", SizeFlagsHorizontal = Control.SizeFlags.ExpandFill, MouseFilter = Control.MouseFilterEnum.Ignore, VerticalAlignment = VerticalAlignment.Center };
         ChatTheme.StyleText(title, 26);
@@ -291,6 +285,8 @@ internal sealed class ChatPanel
         Callable.From(PlaceCard).CallDeferred();
     }
 
+    private static string AgentLabel(int i) => $"◀  {Agents[i]}  ▶";
+
     /// <summary>Whether the player has connected (pressed [접속] or chose automatic connection). Redraws.</summary>
     public void SetConnected(bool connected)
     {
@@ -351,7 +347,7 @@ internal sealed class ChatPanel
         if (auth == null || !_cardShown) return;
         _autoConnect.Visible = false;
 
-        if (_agentPick.Selected == 1)
+        if (Agents[_agent] == "Codex")
         {
             Pill(null, default);
             foreach (var value in _cardValues.Values) { value.Text = "—"; value.Modulate = Colors.White; }
