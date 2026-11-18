@@ -98,18 +98,18 @@
 ### 3.1 로그인 분리 (구현함)
 
 구현(`src/Chat/ClaudeCli.cs` 실행 파일 찾기·실행·환경, `AuthCheck.cs` 판정, `ChatController.cs` 흐름과 감시, `ChatPanel.cs` 카드와 로그아웃 버튼):
-- 판정은 채팅창이 생길 때 한 번, 카드의 [다시 확인], 로그인 감지, 로그아웃 뒤에 한다. 시작할 때의 첫 판정은 카드 없이 뒤에서 돌고(머리글에 "연결 확인 중…"), 안 되면 카드를 띄운다. 카드가 떠 있으면 입력창을 막는다.
+- 판정은 채팅창이 생길 때 한 번, 카드 오른쪽 위의 새로고침 아이콘, 로그인·설치 감지, 로그아웃 뒤에 한다. 시작할 때의 첫 판정은 카드 없이 뒤에서 돌고(머리글에 "연결 확인 중…"), 안 되면 카드를 띄운다. 카드가 떠 있으면 입력창을 막는다.
 - 판정이 끝나기 전에 보낸 메시지는 큐에서 기다렸다가 판정이 되면 보낸다.
-- 카드(2026-11-18 개편): 시작 화면은 [Claude로 시작하기]·[Codex로 시작하기] 버튼 두 개. 하나를 누르면 그 자리에 카드(제목도 "Claude로 시작하기"/"Codex로 시작하기")가 펼쳐지고, 다른 하나는 버튼으로 남는다. 한 번에 하나만 펼친다. Codex 카드는 "Codex는 아직 지원하지 않습니다."만 보여 준다. (콤보박스와 사이클 버튼을 거쳐 이 방식으로 정했다. 드롭다운 목록은 게임 화면 배율을 따로 받는 팝업이라 모양을 맞추기 어려웠다.) Claude 카드, 설치·계정·플랜 세 칸, 색 있는 상태 한 줄(빨강 "Claude Agent를 설치해야 합니다." / "로그인이 필요합니다.", 초록 "사용할 수 있습니다.", 노랑 "API로 사용됩니다. 요금이 부과될 수 있습니다."), 그 아래 안내 문구. 진행 중 표시(확인 중/설치 중/로그인 대기)만 작은 글씨로 남기고 "사용 불가" 표시는 없앴다. API 키 안내 줄도 없앴다(키가 있으면 노랑 상태로 알린다). 카드는 손으로 배치한다(컨테이너에 넣으면 폭이 0일 때 줄바꿈 라벨이 커진 높이가 줄지 않아 카드가 화면 밖으로 밀렸다).
-- 설치·로그인·접속 안내는 게임의 확인 팝업(`NGenericPopup`, 메뉴가 쓰는 것)으로 띄운다. 문구는 직접 넣고(`NVerticalPopup.SetText`), 버튼은 [확인]/[취소]. 설치: 공식 Claude 앱을 이 PC 사용자 폴더에 설치함. 로그인: 본인 계정, 사용량과 요금은 본인 계정에서 차감, 로그인 정보는 게임 전용 폴더에만 저장. 접속: 같은 계정 안내(API 키면 요금 부과 안내).
+- 카드(2026-11-18 개편): 시작 화면은 [Claude로 시작하기]·[Codex로 시작하기] 버튼 두 개. 하나를 누르면 그 자리에 카드(제목도 "Claude로 시작하기"/"Codex로 시작하기")가 펼쳐지고, 다른 하나는 버튼으로 남는다. 한 번에 하나만 펼친다. Codex 카드는 "Codex는 아직 지원하지 않습니다."만 보여 준다. (콤보박스와 사이클 버튼을 거쳐 이 방식으로 정했다. 드롭다운 목록은 게임 화면 배율을 따로 받는 팝업이라 모양을 맞추기 어려웠다.) Claude 카드, 설치·계정·플랜 세 칸, 색 있는 상태 한 줄(빨강 "Claude Agent를 설치해야 합니다." / "로그인이 필요합니다.", 초록 "사용할 수 있습니다.", 노랑 "API로 사용됩니다. 요금이 부과될 수 있습니다."), 그 아래 안내 문구. 진행 중 표시(확인 중/설치 중/로그인 대기)만 작은 글씨로 남기고 "사용 불가" 표시는 없앴다. API 키 안내 줄도 없앴다. 새로고침은 제목 줄 오른쪽 끝의 아이콘 버튼이다(게임 글꼴에 화살표 글자가 없어 원호와 삼각형을 직접 그린다). 카드는 손으로 배치한다(컨테이너에 넣으면 폭이 0일 때 줄바꿈 라벨이 커진 높이가 줄지 않아 카드가 화면 밖으로 밀렸다).
+- 설치·로그인·접속 안내는 게임의 확인 팝업(`NGenericPopup`, 메뉴가 쓰는 것)으로 띄운다. 문구는 직접 넣고(`NVerticalPopup.SetText`), 버튼은 [확인]/[취소]. 설치: Anthropic의 공식 설치 경로로 Claude Code를 이 PC에 설치함(설치만 하고 로그인은 카드에서 따로 한다). 로그인(구독·API 같은 문구, 제목만 다름): 본인 계정으로 로그인, 로그인 정보는 이 PC에 따로 저장, 모드는 계정 정보를 읽거나 외부로 보내지 않음, 사용량과 요금은 이 계정에서 차감. 접속: 방식별로 같은 안내. 팝업 본문은 좁고 한글을 음절 사이 어디서든 끊으므로, 줄은 어절 경계에서 20자 안팎으로 직접 나누고 문장 사이에 빈 줄을 둔다. 개발 도구 `dev_layout auth text "popup:install|login|console|connect|api"`로 미리 본다.
 - 시작 버튼 색: Claude `#CE8871`(브랜드 자료에서 흔히 쓰는 `#D97757`의 채도를 0.60에서 0.45로 낮춤), Codex 회색 `#55585F`(OpenAI 브랜드 색은 검정·회색 계열). 카드 제목과 Claude 카드의 주 버튼도 같은 색.
 - 펼침 애니메이션: 카드는 높이를 잘라 보여 주는 상자(`ClipContents`) 안에 있고, 열리는 카드는 버튼 높이에서 실제 높이로 커지며 나타나고, 닫히는 카드는 버튼 높이로 줄며 사라진 뒤 버튼으로 바뀐다(0.3초). 매 프레임 전체 영역의 높이를 보이는 줄들에서 직접 합산해 가운데에 둔다. 펼칠 카드의 높이는 보이게 한 뒤 값이 안정될 때까지(최대 4프레임) 기다렸다가 잰다. 줄바꿈 라벨이 보이게 된 직후 한두 프레임은 이전 폭 기준 높이를 돌려주기 때문이다.
 - 마지막으로 연 카드를 설정 `chat_agent`(`claude`/`codex`)에 저장하고, 다음 시작 때 그 카드를 펼친 채로 보여 준다.
-- 로그인이 된 상태에서도 카드는 [접속]을 누를 때까지 남는다(안내: 본인 계정으로 접속, 사용량과 요금은 본인 계정에서 차감. API 키면 요금 부과 안내). "다음부터 자동으로 접속"을 체크하면 설정 `chat_auto_connect`에 저장하고 다음부터 카드를 건너뛴다. 로그아웃이나 로그인 만료 때는 접속 상태를 푼다.
-- [설치]는 한 번 더 확인한다(설치 위치, 관리자 권한 불필요, 이어서 로그인). 확인하면 콘솔 창에서 공식 설치 스크립트와 `~/.local/bin/claude.exe auth login --claudeai`를 이어 실행한다.
-- [로그인]: `auth login --help`에 `--claudeai`가 있으면 붙인다. 콘솔 창은 `%LOCALAPPDATA%\sts2-agent-mcp\claude-login.cmd`(설치는 `claude-install.cmd`)를 써서 `cmd /c start`로 연다. 한 줄 명령으로 넘기면 cmd 따옴표 규칙 때문에 인자 안의 `|`가 바깥 cmd의 파이프가 된다.
-- 감시: 3초마다 실행 파일을 찾고 `auth status`(API 키 없이)로 저장된 로그인이 생겼는지 본다. 생기면 전체 판정을 다시 한다. 15분 뒤 멈춘다. 자격증명 파일은 읽지 않는다.
-- 로그아웃: 머리글 오른쪽 [로그아웃](구독일 때만). 한 번 누르면 "정말요?"로 바뀌고 4초 안에 다시 누르면 `auth logout`, 실행 중인 세션과 큐를 버린 뒤 다시 판정한다.
+- 로그인이 된 상태에서도 카드는 [접속]을 누를 때까지 남는다(구독이면 구독 한도 안내, API면 요금 부과 안내). "다음부터 자동으로 접속"을 체크하면 설정 `chat_auto_connect`에 저장하고 다음부터 카드를 건너뛴다. 로그아웃이나 로그인 만료 때는 접속 상태를 푼다.
+- [설치]는 한 번 더 확인한다(설치 위치, 관리자 권한 불필요). 확인하면 콘솔 창에서 공식 설치 스크립트만 실행한다. 설치가 끝나면(감시가 `--version` 성공을 잡으면) 카드에 로그인 버튼 두 개가 뜬다.
+- 로그인 버튼 두 개(2026-11-18): [구독으로 로그인]은 `auth login --claudeai`, [API로 로그인]은 `auth login --console`(Anthropic Console 계정, API 사용량 결제). `auth login --help`에 그 플래그가 있을 때 붙인다. `--console`이 없는 버전이면 API 로그인을 열지 않고 `claude update`를 안내한다(플래그 없이 열면 구독 로그인이 되므로). 콘솔 창은 `%LOCALAPPDATA%\sts2-agent-mcp\claude-login.cmd`(설치는 `claude-install.cmd`)를 써서 `cmd /c start`로 연다. 한 줄 명령으로 넘기면 cmd 따옴표 규칙 때문에 인자 안의 `|`가 바깥 cmd의 파이프가 된다.
+- 감시: 3초마다 실행 파일을 찾고, 설치 중이면 `--version`이 되는지, 로그인 중이면 `auth status`로 저장된 로그인이 생겼는지 본다. 생기면 전체 판정을 다시 한다. 15분 뒤 멈춘다. 자격증명 파일은 읽지 않는다.
+- 로그아웃: 머리글 오른쪽 [로그아웃](저장된 로그인이 있으면 구독·API 모두. 구독과 API를 바꿀 때도 쓴다). 한 번 누르면 "정말요?"로 바뀌고 4초 안에 다시 누르면 `auth logout`, 실행 중인 세션과 큐를 버린 뒤 다시 판정한다.
 - 대화 중 `result` 오류가 로그인 오류면 claude를 끝내고(세션 ID는 남겨 `--resume`) 안내 줄을 띄운 뒤 다시 판정한다.
 - 판정용 실제 요청은 `%LOCALAPPDATA%\sts2-agent-mcp\probe`에서 실행한다.
 
@@ -122,13 +122,13 @@
 남은 확인:
 - 실제 로그인을 마친 뒤 감시가 로그인을 잡아 카드를 닫고 "구독(Max)"으로 대화가 되는지, 로그아웃.
 - 설치 버튼(이 PC에는 이미 설치되어 있어 실제로 실행하지 않았다), npm(`.cmd`) 설치에서 실행.
-- API 키 경로(키가 없어 시험하지 않았다).
+- API(Console) 로그인 경로: `auth status`의 `apiKeySource` 값은 Claude Code 실행 파일의 코드를 읽어 확인했고, 실제 Console 계정으로는 시험하지 않았다.
 - 대화 중 로그인 만료.
 
 요구사항:
 - 게임 전용 설정 폴더로 Claude Code 로그인을 분리한다(`CLAUDE_CONFIG_DIR` = `%LOCALAPPDATA%\sts2-agent-mcp\claude-config`). 이 PC의 평소 Claude Code 로그인과 따로 로그인한다.
-- 구독과 API 키 모두 동작하게 한다. 둘 다 있으면 구독을 우선한다.
-- API 키는 모드가 입력받거나 저장하지 않는다. 사용자가 직접 설정한 `ANTHROPIC_API_KEY` 환경변수만 쓴다.
+- 구독과 API 모두 동작하게 한다. 사용자가 로그인 방법을 고른다(2026-11-18 변경: 전에는 구독이 안 되면 `ANTHROPIC_API_KEY` 환경변수로 자동으로 넘어갔다).
+- API 키는 모드가 입력받거나 저장하지 않는다. API는 Claude Code의 Console 로그인으로만 쓰고, 게임 프로세스의 `ANTHROPIC_API_KEY` 환경변수는 넘기지 않는다.
 - 둘 다 없으면 채팅창 가운데에 로그인 카드를 띄운다.
 
 참고 구현: TH-mcp-app의 `standalone-game` 브랜치(`game/agents.js`, `game/commands.js`, `game/app.js`의 로그인 감시, `game/ui/launcher.js`의 카드). 이 구조를 따르되, 그쪽은 구독 전용(API 키 변수를 항상 지움)이라는 점이 다르다.
@@ -137,7 +137,8 @@
 - `claude auth status`: 기본 JSON 출력. 로그인 안 됨이면 종료 코드 1.
   - 안 됨: `{"loggedIn": false, "authMethod": "none", "apiProvider": "firstParty"}`
   - 구독: `authMethod: "claude.ai"`, `subscriptionType`(예: `max`), `email`, `orgId`, `orgName`
-  - API 키: `authMethod: "api_key"`, `apiKeySource: "ANTHROPIC_API_KEY"`. 환경변수가 있는지만 보고 키가 유효한지는 확인하지 않는다.
+  - API 키 환경변수: `authMethod: "api_key"`, `apiKeySource: "ANTHROPIC_API_KEY"`. 환경변수가 있는지만 보고 키가 유효한지는 확인하지 않는다(지금은 쓰지 않는다).
+  - Console 로그인(2.1.159, 실행 파일의 코드에서 확인): `authMethod: "claude.ai"`, `apiKeySource: "/login managed key"`, `subscriptionType` 없음. 이 값으로 구독 로그인과 구분한다.
   - 저장된 로그인을 읽기만 하므로 만료된 로그인도 `loggedIn: true`로 답한다(TH에서 확인). 그래서 실제 요청으로 한 번 더 확인한다.
 - `claude auth login [--email <email>] [--sso]`, `claude auth logout`. TH가 쓰는 `--claudeai` 플래그는 2.1.78에 없다. 플래그 없이 실행하거나 버전을 보고 붙인다.
 - 로그인은 창 없이 실행하지 않고 별도 콘솔 창에서 실행한다(TH 방식). 2.1.78에서 콘솔 창 로그인이 어떻게 진행되는지(브라우저 자동 열기, 코드 붙여 넣기 여부)는 구현할 때 확인한다.
@@ -145,20 +146,20 @@
 설계:
 1. 실행 파일 찾기: `claude_path` → PATH → `~/.local/bin`(공식 설치), `%APPDATA%\npm`(npm, `.cmd`), `~/.claude/local`, `%LOCALAPPDATA%\Microsoft\WinGet\Links` 순서. `.cmd`는 cmd.exe를 거쳐 실행하고 인자를 따옴표로 감싼다.
 2. 판정: `--version`, `auth status`(API 키 변수 없이), 실제 요청 한 번을 동시에 실행한다. 실제 요청은 `-p ok --model haiku --output-format json --tools "" --no-session-persistence --strict-mcp-config --system-prompt "Reply with OK."`.
-   1. 구독: `loggedIn`이고, `apiProvider`가 `firstParty`이고, `subscriptionType`이 있고 `free`가 아니고, 실제 요청이 성공하면 API 키 변수를 지우고 구독으로 실행한다.
-   2. 구독이 안 되고 게임 프로세스에 `ANTHROPIC_API_KEY`가 있으면, 키를 넘겨 실제 요청으로 확인한 뒤 키로 실행한다.
-   3. 둘 다 안 되면 로그인 카드를 띄운다.
+   1. API(Console): `loggedIn`이고, `apiProvider`가 `firstParty`이고, `apiKeySource`가 `/login managed key`이고, 실제 요청이 성공하면 API로 실행한다(노랑 상태).
+   2. 구독: `loggedIn`이고, `apiProvider`가 `firstParty`이고, `subscriptionType`이 있고 `free`가 아니고, 실제 요청이 성공하면 구독으로 실행한다.
+   3. 둘 다 아니면 로그인 카드를 띄운다. `ANTHROPIC_API_KEY` 환경변수는 언제나 지운다.
    - `auth status`가 JSON이 아니면 오래된 버전으로 보고 `claude update`를 안내한다.
    - 오류 문구가 401, authenticat, oauth, token has expired, log in again, re-auth, not logged in 등이면 로그인 만료로 본다.
 3. 로그인 카드: 설치(버전), 계정, 플랜 세 칸과 상태(사용 가능/사용 불가/로그인 대기), 무엇이 문제인지 한 문장, [로그인] 버튼. 카드를 누르면 다시 확인한다. API 키 안내 한 줄: `ANTHROPIC_API_KEY` 환경변수를 설정한 뒤 Steam과 게임을 다시 실행한다(게임은 Steam의 환경을 물려받는다).
 4. [로그인]: 별도 콘솔 창(`cmd /c start`)에서 `claude auth login`을 실행한다. 로그인은 사용자가 브라우저와 그 창에서 직접 끝낸다. 끝나면 자동으로 다시 확인한다. TH는 `.credentials.json`의 수정 시각을 1초마다 보지만, 여기서는 자격증명 파일을 건드리지 않도록 전용 폴더의 변경을 보거나 `auth status`를 주기적으로 실행한다. 감시는 15분 뒤 멈춘다.
 5. 대화 중 로그인이 만료되면 안내 줄을 띄우고 로그인 카드로 돌아간다.
-6. 머리글 상태에 인증 방식을 보여 준다(예: "구독(Max)", "API 키").
-7. 환경변수 정리 목록을 TH 기준으로 넓힌다. 추가: `CLAUDE_CODE_USE_FOUNDRY`, `CLAUDE_CODE_CHILD_SESSION`, `CLAUDE_CODE_SESSION_ATTENDED`, `CLAUDE_CODE_EXECPATH`, `CLAUDE_CODE_MESSAGING_SOCKET`, `CLAUDE_CODE_MESSAGING_TOKEN`, `CLAUDE_PID`, `CLAUDE_AGENT_SDK_VERSION`, `CLAUDE_EFFORT`. `CLAUDE_CONFIG_DIR`은 게임 폴더로 덮어쓴다. `ANTHROPIC_API_KEY`는 구독으로 실행할 때만 지운다.
+6. 머리글 상태에 인증 방식을 보여 준다(예: "구독(Max)", "API").
+7. 환경변수 정리 목록을 TH 기준으로 넓힌다. 추가: `CLAUDE_CODE_USE_FOUNDRY`, `CLAUDE_CODE_CHILD_SESSION`, `CLAUDE_CODE_SESSION_ATTENDED`, `CLAUDE_CODE_EXECPATH`, `CLAUDE_CODE_MESSAGING_SOCKET`, `CLAUDE_CODE_MESSAGING_TOKEN`, `CLAUDE_PID`, `CLAUDE_AGENT_SDK_VERSION`, `CLAUDE_EFFORT`. `CLAUDE_CONFIG_DIR`은 게임 폴더로 덮어쓴다. `ANTHROPIC_API_KEY`는 항상 지운다.
 - 주의: 전용 설정 폴더를 쓰므로 평소 `~/.claude/settings.json`의 `apiKeyHelper`나 `env`는 적용되지 않는다. 실제 환경변수만 통한다.
 
 정한 것(2026-11-18):
-- 설치 버튼을 둔다. 설치되어 있지 않으면 공식 설치 스크립트(`irm https://claude.ai/install.ps1 | iex`)와 로그인을 한 콘솔 창에서 이어 실행한다(TH와 같다).
+- 설치 버튼을 둔다. 설치되어 있지 않으면 공식 설치 스크립트(`irm https://claude.ai/install.ps1 | iex`)를 콘솔 창에서 실행한다. 로그인은 설치 뒤 카드에서 고른다(TH는 설치와 구독 로그인을 이어 실행한다).
 - 로그아웃 버튼을 머리글에 둔다. `claude auth logout` 후 실행 중인 세션을 끝내고 다시 확인한다(TH에는 없다).
 
 배포 정책(2026-11-17 확인. 근거: [Claude Code legal-and-compliance](https://code.claude.com/docs/en/legal-and-compliance), [Agent SDK overview](https://code.claude.com/docs/en/agent-sdk/overview), [Usage Policy](https://www.anthropic.com/aup) 2026-11-12판):
@@ -225,4 +226,4 @@ MCP 도구로 노출된다. 채팅용 Claude Code에는 허용하지 않는다.
 | `say` | 채팅 메시지 보내기 |
 | `shot` | 채팅창까지 포함한 창 전체 스크린샷 |
 | `probe` | `res://` 장면·자원 구조 보기(`text`에 경로, 디렉터리는 `/`로 끝낸다) |
-| `auth` | 로그인 판정과 카드 상태. `text`: `recheck`(다시 판정), `press:<버튼 글자>`(카드·머리글 버튼 누르기) |
+| `auth` | 로그인 판정과 카드 상태. `text`: `recheck`(다시 판정), `press:<버튼 글자>`(카드·머리글 버튼 누르기, 새로고침 아이콘은 `press:새로고침`), `popup:install\|login\|console\|connect\|api`(안내 팝업 미리보기) |

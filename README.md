@@ -73,7 +73,7 @@ Claude Code에서는 `.mcp.json`에 다음과 같이 적는다.
 
 설정에 `"chat_panel": true`를 넣으면 게임 화면 왼쪽에 채팅창이 생기고, 게임은 나머지 영역에 전체 높이로 그려진다. 게임은 그 영역의 비율에 맞춰 UI를 스스로 다시 배치한다. 채팅창 오른쪽 경계선을 끌어서 폭을 바꿀 수 있다.
 
-채팅창에 메시지를 보내면 모드가 Claude Code(`claude`)를 직접 실행한다. Claude Code는 이 모드의 MCP 도구(state, act, info, search)로 게임을 보고 답한다. 말풍선은 게임의 대화 말풍선과 글꼴을 쓴다. 로그인은 이 게임 전용 폴더(`%LOCALAPPDATA%\sts2-agent-mcp\claude-config`)에 따로 한다. 로그인이 없으면 채팅창에 로그인 카드가 뜨고, 버튼을 누르면 Claude Code의 로그인(설치되어 있지 않으면 공식 설치 후 로그인)이 별도 창에서 열린다. Claude 구독(Pro 이상)이 우선이고, 없으면 사용자가 직접 설정한 `ANTHROPIC_API_KEY` 환경변수를 쓴다. 실행 파일을 찾지 못하면 `claude_path`에 경로를 적는다. 구현 방식과 작업 계획은 [docs/in-game-chat.md](docs/in-game-chat.md)에 있다.
+채팅창에 메시지를 보내면 모드가 Claude Code(`claude`)를 직접 실행한다. Claude Code는 이 모드의 MCP 도구(state, act, info, search)로 게임을 보고 답한다. 말풍선은 게임의 대화 말풍선과 글꼴을 쓴다. 로그인은 이 게임 전용 폴더(`%LOCALAPPDATA%\sts2-agent-mcp\claude-config`)에 따로 한다. 로그인이 없으면 채팅창에 로그인 카드가 뜬다. 로그인은 두 가지 중에서 고른다. [구독으로 로그인]은 Claude 구독(Pro 이상)으로, [API로 로그인]은 Anthropic Console 계정으로 로그인하며 API 사용량만큼 요금이 나간다. 버튼을 누르면 Claude Code의 로그인이 별도 창에서 열린다. Claude Code가 설치되어 있지 않으면 카드에서 공식 설치를 먼저 한다. 실행 파일을 찾지 못하면 `claude_path`에 경로를 적는다. 구현 방식과 작업 계획은 [docs/in-game-chat.md](docs/in-game-chat.md)에 있다.
 
 ### 행동 (화면별로 받는 행동)
 

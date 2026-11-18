@@ -62,6 +62,8 @@ internal sealed class ChatPanel
     private readonly HBoxContainer _cardButtons;
     private readonly Button _cardPrimary;
     private readonly Button _cardSecondary;
+    private readonly Button _refresh;
+    private bool _lastLoginConsole;
     private readonly Button _logout;
     private AuthState? _auth;
     private string? _settingUp;
@@ -152,14 +154,20 @@ internal sealed class ChatPanel
         body.AddThemeConstantOverride("separation", 14);
         _card.AddChild(body);
 
-        // Title row: Claude로 시작하기 ............ (in-progress pill)
+        // Title row: Claude로 시작하기 ............ (in-progress pill) (refresh)
         var top = new HBoxContainer { MouseFilter = Control.MouseFilterEnum.Ignore };
         top.AddThemeConstantOverride("separation", 12);
         var title = CardTitle("Claude로 시작하기", ChatTheme.ClaudeColor);
         _cardPill = new Label { MouseFilter = Control.MouseFilterEnum.Ignore, VerticalAlignment = VerticalAlignment.Center };
         ChatTheme.StyleText(_cardPill, ChatTheme.SmallFontSize);
+        // Check again: an icon button (the game font has no arrow glyphs, so the icon is drawn).
+        _refresh = new Button { CustomMinimumSize = new Vector2(48, 48), TooltipText = "다시 확인", SizeFlagsVertical = Control.SizeFlags.ShrinkCenter };
+        ChatTheme.StyleButton(_refresh, ChatTheme.PlainButton);
+        _refresh.Draw += DrawRefreshIcon;
+        _refresh.Pressed += () => RecheckPressed?.Invoke();
         top.AddChild(title);
         top.AddChild(_cardPill);
+        top.AddChild(_refresh);
         body.AddChild(top);
 
         var facts = new GridContainer { Columns = 2, MouseFilter = Control.MouseFilterEnum.Ignore };
@@ -243,7 +251,8 @@ internal sealed class ChatPanel
 
     /// <summary>Raised with the text the player sent.</summary>
     public event Action<string>? Submitted;
-    public event Action? LoginPressed;
+    /// <summary>A login was chosen; the flag is "Anthropic Console (API)" instead of the subscription.</summary>
+    public event Action<bool>? LoginPressed;
     public event Action? InstallPressed;
     public event Action? RecheckPressed;
     public event Action? LogoutPressed;
@@ -270,9 +279,10 @@ internal sealed class ChatPanel
     /// <summary>Presses a card or header button by its label (development tool). Returns whether one matched.</summary>
     public bool Press(string label)
     {
-        foreach (var button in new Button[] { _claudeStart, _codexStart, _cardPrimary, _cardSecondary, _logout, _autoConnect })
+        foreach (var button in new Button[] { _claudeStart, _codexStart, _cardPrimary, _cardSecondary, _refresh, _logout, _autoConnect })
         {
-            if (!button.IsVisibleInTree() || button.Disabled || button.Text != label) continue;
+            if (!button.IsVisibleInTree() || button.Disabled) continue;
+            if (button.Text != label && !(button == _refresh && label == "새로고침")) continue;
             if (button is CheckBox box) box.ButtonPressed = !box.ButtonPressed;
             else button.EmitSignal(BaseButton.SignalName.Pressed);
             return true;
@@ -295,7 +305,8 @@ internal sealed class ChatPanel
         // A check at startup (card not up yet) runs behind the chat; a re-check keeps the card up. The card stays up
         // until the player connects ([접속], or automatically when they chose so).
         if (!(auth.Checking && !_cardShown)) _cardShown = !(auth.Ready && _connected);
-        _logoutShown = auth.Ready && auth.Method == AuthMethod.Subscription;
+        // Logout whenever a login is saved: also the way to switch between the subscription and the API.
+        _logoutShown = !auth.Checking && auth.LoggedIn;
         Input.Editable = !_cardShown;
         Input.PlaceholderText = _cardShown ? "연결한 뒤 쓸 수 있어요" : "메시지 입력 (Enter 전송, Esc 게임으로)";
         if (_cardShown) Input.ReleaseFocus();
@@ -533,22 +544,44 @@ internal sealed class ChatPanel
     private const string ReadyText = "사용할 수 있습니다.";
     private const string ApiText = "API로 사용됩니다. 요금이 부과될 수 있습니다.";
 
+    // Popup texts. The popup body is narrow and breaks Korean between any two syllables, so every line is broken by
+    // hand at a phrase boundary (about 20 characters at most), with a blank line between sentences.
     private const string InstallGuide =
-        "Anthropic의 공식 Claude 앱(Claude Code)을 이 PC에 설치합니다. 공식 설치 프로그램을 쓰고, 사용자 폴더에 설치되어 " +
-        "관리자 권한이 필요 없습니다. 설치가 끝나면 같은 창에서 로그인이 이어집니다.";
+        "Anthropic의 공식 설치 경로를 통해\nClaude Code를 이 PC에 설치합니다.";
+    // Both logins (subscription and API) show the same guidance; only the title differs.
     private const string AccountGuide =
-        "본인의 Claude 계정으로 로그인합니다. 대화에 쓰는 사용량과 요금은 본인 계정에서 차감됩니다. " +
-        "로그인 정보는 이 게임 전용 폴더에만 저장되며, 모드는 계정 정보를 읽거나 보내지 않습니다.";
+        "본인의 Claude 계정으로 로그인합니다.\n" +
+        "로그인 정보는 이 PC에 따로 저장되며,\n모드는 계정 정보를 읽거나\n외부로 보내지 않습니다.\n\n" +
+        "대화에 드는 사용량과 요금은\n이 계정에서 차감됩니다.";
     private const string ConnectGuide =
-        "본인의 Claude 계정으로 접속합니다. 대화에 쓰는 사용량과 요금은 본인 계정에서 차감됩니다.";
+        "Claude 구독 계정으로 접속합니다.\n\n" +
+        "대화에 드는 사용량은\n이 계정의 구독 한도에서 차감됩니다.";
     private const string ApiGuide =
-        "본인이 설정한 API 키(ANTHROPIC_API_KEY)로 접속합니다. 대화에 쓴 만큼 해당 API 계정에 요금이 부과됩니다.";
+        "Anthropic Console 계정의\nAPI로 접속합니다.\n\n" +
+        "대화에 사용한 만큼\n이 계정에 요금이 부과됩니다.";
+
+    /// <summary>Development: shows one of the guidance popups without acting on the answer.</summary>
+    public async void PreviewPopup(string which)
+    {
+        var (title, body) = which switch
+        {
+            "install" => ("Claude 설치", InstallGuide),
+            "login" => ("구독으로 로그인", AccountGuide),
+            "console" => ("API로 로그인", AccountGuide),
+            "connect" => ("Claude 접속", ConnectGuide),
+            "api" => ("Claude 접속", ApiGuide),
+            _ => ("Claude 접속", ConnectGuide),
+        };
+        await Confirm(title, body);
+    }
 
     private void DrawCard(string? message)
     {
         var auth = _auth;
         if (auth == null || !_cardShown) return;
         _autoConnect.Visible = false;
+        _refresh.Disabled = auth.Checking;
+        _refresh.QueueRedraw();
 
         if (auth.Checking)
         {
@@ -573,16 +606,16 @@ internal sealed class ChatPanel
             Pill(_settingUp == "install" ? "설치 중" : "로그인 대기", ChatTheme.WaitColor);
             Status(_settingUp == "install" ? NeedInstall : NeedLogin, ChatTheme.ErrorColor);
             Note(message ?? (_settingUp == "install"
-                ? "열린 창에서 설치가 진행됩니다. 끝나면 이어서 로그인이 열리니, 브라우저에서 로그인을 마쳐 주세요. 마치면 자동으로 확인합니다."
+                ? "열린 창에서 설치가 진행됩니다. 끝나면 자동으로 확인합니다."
                 : "열린 창과 브라우저에서 로그인을 마쳐 주세요. 마치면 자동으로 확인합니다."), message != null);
-            Buttons(kind.Length > 0 ? "다시 열기" : null, "다시 확인");
+            Buttons(kind.Length > 0 ? "다시 열기" : null, null);
             return;
         }
         Pill(null, default);
 
         if (auth.Ready)
         {
-            bool api = auth.Method == AuthMethod.ApiKey;
+            bool api = auth.Method == AuthMethod.Console;
             Status(api ? ApiText : ReadyText, api ? ChatTheme.WarnColor : ChatTheme.OkColor);
             Note(message, message != null);
             _autoConnect.Visible = true;
@@ -594,19 +627,19 @@ internal sealed class ChatPanel
         {
             Status(NeedInstall, ChatTheme.ErrorColor);
             Note(message ?? detail, message != null);
-            Buttons("설치", "다시 확인");
+            Buttons("설치", null);
             return;
         }
         if (kind == "login")
         {
             Status(NeedLogin, ChatTheme.ErrorColor);
             Note(message ?? detail, message != null);
-            Buttons("로그인", "다시 확인");
+            Buttons(LoginSubscription, LoginConsole);
             return;
         }
         Status(auth.Problem ?? "연결할 수 없습니다.", ChatTheme.ErrorColor);
-        Note(message ?? "해결한 뒤 [다시 확인]을 눌러 주세요.", message != null);
-        Buttons(null, "다시 확인");
+        Note(message ?? "해결한 뒤 오른쪽 위의 새로고침을 눌러 주세요.", message != null);
+        Buttons(null, null);
     }
 
     private void Pill(string? text, Color color)
@@ -654,15 +687,15 @@ internal sealed class ChatPanel
             case "설치":
                 if (await Confirm("Claude 설치", InstallGuide)) InstallPressed?.Invoke();
                 break;
-            case "로그인":
-                if (await Confirm("Claude 로그인", AccountGuide)) LoginPressed?.Invoke();
+            case LoginSubscription:
+                if (await Confirm(LoginSubscription, AccountGuide)) Login(false);
                 break;
             case "다시 열기":
                 if (_settingUp == "install" || auth.CanInstall) InstallPressed?.Invoke();
-                else LoginPressed?.Invoke();
+                else Login(_lastLoginConsole);
                 break;
             case "접속":
-                bool api = auth.Method == AuthMethod.ApiKey;
+                bool api = auth.Method == AuthMethod.Console;
                 if (!await Confirm("Claude 접속", api ? ApiGuide : ConnectGuide)) break;
                 bool remember = _autoConnect.ButtonPressed;
                 SetConnected(true);
@@ -671,7 +704,46 @@ internal sealed class ChatPanel
         }
     }
 
-    private void OnCardSecondary() => RecheckPressed?.Invoke();
+    private const string LoginSubscription = "구독으로 로그인";
+    private const string LoginConsole = "API로 로그인";
+
+    private async void OnCardSecondary()
+    {
+        var auth = _auth;
+        if (auth == null || auth.Checking || _popupOpen) return;
+        if (_cardSecondary.Text == LoginConsole && await Confirm(LoginConsole, AccountGuide)) Login(true);
+    }
+
+    private void Login(bool console)
+    {
+        _lastLoginConsole = console;
+        LoginPressed?.Invoke(console);
+    }
+
+    /// <summary>A clockwise circular arrow, drawn over the refresh button.</summary>
+    private void DrawRefreshIcon()
+    {
+        var size = _refresh.Size;
+        var center = size / 2;
+        float r = Mathf.Min(size.X, size.Y) * 0.24f;
+        float width = Mathf.Max(2, r * 0.32f);
+        var color = _refresh.Disabled ? new Color(ChatTheme.TextColor, 0.35f) : ChatTheme.TextColor;
+        // From just right of the top, clockwise (angles grow clockwise on screen) round to the top left.
+        float start = -Mathf.Pi / 2 + 0.35f;
+        float end = start + Mathf.Tau - 1.0f;
+        _refresh.DrawArc(center, r, start, end, 40, color, width, true);
+        // Arrowhead at the end, pointing along the turn.
+        var at = center + new Vector2(Mathf.Cos(end), Mathf.Sin(end)) * r;
+        var along = new Vector2(-Mathf.Sin(end), Mathf.Cos(end));
+        var outward = new Vector2(Mathf.Cos(end), Mathf.Sin(end));
+        float h = width * 2.2f;
+        _refresh.DrawColoredPolygon(new[]
+        {
+            at + along * h,
+            at + outward * h * 0.9f - along * h * 0.2f,
+            at - outward * h * 0.9f - along * h * 0.2f,
+        }, color);
+    }
 
     /// <summary>
     /// The game's own confirm popup (the one its menus use) with our text and [확인]/[취소]. Falls back to

@@ -175,7 +175,7 @@ internal sealed class AgentSession
         };
         if (_sessionId != null) args.AddRange(new[] { "--resume", _sessionId });
 
-        var psi = ClaudeCli.StartInfo(exe, args, auth.ApiKey);
+        var psi = ClaudeCli.StartInfo(exe, args);
         psi.WorkingDirectory = dir;
         psi.RedirectStandardInput = true;
         psi.RedirectStandardOutput = true;

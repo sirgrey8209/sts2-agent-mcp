@@ -102,29 +102,41 @@ internal static class ChatController
 
     // ---- console windows: Claude Code's own login and installer ----
 
-    private static void OpenLogin()
+    /// <param name="console">An Anthropic Console login (billed per API use) instead of a Claude subscription.</param>
+    private static void OpenLogin(bool console)
     {
         if (_auth.Exe is not { } exe) return;
         _settingUp = "login";
         _panel?.ShowAuth(_auth, _settingUp);
         Task.Run(async () =>
         {
-            bool flag = await AuthCheck.HasClaudeAiFlag(exe);
-            var args = flag ? new[] { "auth", "login", "--claudeai" } : new[] { "auth", "login" };
-            Log.Info("chat: opening Claude Code login");
-            bool opened = ClaudeCli.OpenConsole("claude-login", "STS2 Agent - Claude login", (exe, args));
+            string flag = console ? "--console" : "--claudeai";
+            bool hasFlag = await AuthCheck.HasLoginFlag(exe, flag);
+            if (console && !hasFlag)
+            {
+                // Without the flag the login would be a subscription one.
+                await MainThread.Run(() =>
+                {
+                    _settingUp = null;
+                    _panel?.ShowAuth(_auth, _settingUp, "이 버전의 Claude Code는 API 로그인을 지원하지 않아요. 터미널에서 claude update 를 실행해 주세요.");
+                });
+                return;
+            }
+            var args = hasFlag ? new[] { "auth", "login", flag } : new[] { "auth", "login" };
+            Log.Info($"chat: opening Claude Code login ({(console ? "console" : "subscription")})");
+            bool opened = ClaudeCli.OpenConsole("claude-login", console ? "STS2 Agent - API login" : "STS2 Agent - Claude login", (exe, args));
             await MainThread.Run(() => AfterOpen(opened));
         });
     }
 
+    /// <summary>Installs only; the card then offers both logins.</summary>
     private static void OpenInstall()
     {
         _settingUp = "install";
         _panel?.ShowAuth(_auth, _settingUp);
-        Log.Info("chat: opening Claude Code install and login");
+        Log.Info("chat: opening Claude Code install");
         bool opened = ClaudeCli.OpenConsole("claude-install", "STS2 Agent - Claude install",
-            ("powershell.exe", new[] { "-NoProfile", "-Command", "irm https://claude.ai/install.ps1 | iex" }),
-            (ClaudeCli.NativeInstallPath, new[] { "auth", "login", "--claudeai" }));
+            ("powershell.exe", new[] { "-NoProfile", "-Command", "irm https://claude.ai/install.ps1 | iex" }));
         AfterOpen(opened);
     }
 
@@ -140,8 +152,8 @@ internal static class ChatController
     }
 
     /// <summary>
-    /// Waits for the console window's work: Claude Code appearing, then a saved login in the game's folder (asked with
-    /// <c>auth status</c>; the credentials file is never read). Then a full check. Stops after <see cref="WatchLimit"/>.
+    /// Waits for the console window's work: Claude Code running (install), or a saved login in the game's folder (asked
+    /// with <c>auth status</c>; the credentials file is never read). Then a full check. Stops after <see cref="WatchLimit"/>.
     /// </summary>
     private static void Watch()
     {
@@ -149,6 +161,7 @@ internal static class ChatController
         var cts = new CancellationTokenSource(WatchLimit);
         _watch = cts;
         var config = _config!;
+        bool installing = _settingUp == "install";
         Task.Run(async () =>
         {
             try
@@ -157,8 +170,9 @@ internal static class ChatController
                 {
                     await Task.Delay(WatchInterval, cts.Token);
                     string? exe = ClaudeCli.Find(config.ClaudePath);
-                    if (exe == null || !await AuthCheck.LoggedIn(exe)) continue;
-                    Log.Info("chat: login found");
+                    if (exe == null) continue;
+                    if (installing ? !await AuthCheck.Runs(exe) : !await AuthCheck.LoggedIn(exe)) continue;
+                    Log.Info(installing ? "chat: install found" : "chat: login found");
                     await MainThread.Run(() =>
                     {
                         if (_watch != cts) return;
@@ -197,7 +211,7 @@ internal static class ChatController
         SetAuth(AuthState.CheckingNow);
         Task.Run(async () =>
         {
-            var result = await ClaudeCli.Run(exe, new[] { "auth", "logout" }, null, TimeSpan.FromSeconds(20));
+            var result = await ClaudeCli.Run(exe, new[] { "auth", "logout" }, TimeSpan.FromSeconds(20));
             Log.Info($"chat: logout ({result.ExitCode}) {result.Stdout} {result.Stderr}".Trim());
             await MainThread.Run(Recheck);
         });

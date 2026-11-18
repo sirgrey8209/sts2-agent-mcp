@@ -23,7 +23,7 @@ internal static class ClaudeCli
 
     // What the child must not inherit: settings that bill another account or provider, and the marks of a Claude
     // Code session the game was started from (which would make the child run as that session's child).
-    // ANTHROPIC_API_KEY is put back only when the chat runs on the player's API key.
+    // The player's ANTHROPIC_API_KEY is never passed on: the API way is Claude Code's own Console login.
     private static readonly string[] ScrubbedEnv =
     {
         "ANTHROPIC_API_KEY", "ANTHROPIC_AUTH_TOKEN", "ANTHROPIC_BASE_URL",
@@ -48,10 +48,6 @@ internal static class ClaudeCli
     /// <summary>Where Anthropic's installer puts Claude Code on Windows.</summary>
     public static string NativeInstallPath =>
         Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), ".local", "bin", OperatingSystem.IsWindows() ? "claude.exe" : "claude");
-
-    /// <summary>The player's own key, from the game process (Steam passes its environment on).</summary>
-    public static string? PlayerApiKey =>
-        Environment.GetEnvironmentVariable("ANTHROPIC_API_KEY") is { Length: > 0 } key ? key : null;
 
     public static bool IsLoginError(string? text) => text != null && LoginError.IsMatch(text);
 
@@ -94,8 +90,7 @@ internal static class ClaudeCli
     private static string Quote(string arg) => "\"" + arg.Replace("\"", "\"\"") + "\"";
 
     /// <summary>A start info for Claude Code with the game's folder and a clean environment.</summary>
-    /// <param name="apiKey">The player's key when the chat runs on it; null runs on the subscription login.</param>
-    public static ProcessStartInfo StartInfo(string exe, IEnumerable<string> args, string? apiKey)
+    public static ProcessStartInfo StartInfo(string exe, IEnumerable<string> args)
     {
         ProcessStartInfo psi;
         if (NeedsShell(exe))
@@ -113,17 +108,16 @@ internal static class ClaudeCli
         }
         psi.UseShellExecute = false;
         psi.CreateNoWindow = true;
-        ApplyEnv(psi, apiKey);
+        ApplyEnv(psi);
         return psi;
     }
 
-    private static void ApplyEnv(ProcessStartInfo psi, string? apiKey)
+    private static void ApplyEnv(ProcessStartInfo psi)
     {
         foreach (var key in psi.Environment.Keys.ToList())
             if (ScrubbedEnv.Contains(key, StringComparer.OrdinalIgnoreCase)) psi.Environment.Remove(key);
         Directory.CreateDirectory(ConfigDir);
         psi.Environment["CLAUDE_CONFIG_DIR"] = ConfigDir;
-        if (apiKey != null) psi.Environment["ANTHROPIC_API_KEY"] = apiKey;
     }
 
     /// <summary>Puts a child in the job that dies with the game (even if the game is killed).</summary>
@@ -139,12 +133,12 @@ internal static class ClaudeCli
     public readonly record struct RunResult(bool Ok, int ExitCode, string Stdout, string Stderr);
 
     /// <summary>Runs Claude Code to its end, with a time limit. Never throws.</summary>
-    public static async Task<RunResult> Run(string exe, IEnumerable<string> args, string? apiKey, TimeSpan timeout, string? workDir = null)
+    public static async Task<RunResult> Run(string exe, IEnumerable<string> args, TimeSpan timeout, string? workDir = null)
     {
         Process? process = null;
         try
         {
-            var psi = StartInfo(exe, args, apiKey);
+            var psi = StartInfo(exe, args);
             psi.RedirectStandardInput = true;
             psi.RedirectStandardOutput = true;
             psi.RedirectStandardError = true;
@@ -202,7 +196,7 @@ internal static class ClaudeCli
                 UseShellExecute = false,
                 CreateNoWindow = true,
             };
-            ApplyEnv(psi, apiKey: null);
+            ApplyEnv(psi);
             using var _ = Process.Start(psi);
             return true;
         }

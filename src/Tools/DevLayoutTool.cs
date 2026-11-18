@@ -22,7 +22,7 @@ internal sealed class DevLayoutTool : ITool
     public string Description =>
         "Development (in-game chat layout). action: info | on | off | hover | move | click | drag | type | probe | say | shot | auth. " +
         "move/click take window pixel x, y; type takes text (ASCII letters, digits, space). " +
-        "auth: login state and card; text \"recheck\" checks again, \"press:<label>\" presses a card or header button.";
+        "auth: login state and card; text \"recheck\" checks again, \"press:<label>\" presses a card or header button (\"새로고침\" for the refresh icon), \"popup:install|login|console|connect|api\" previews a guidance popup.";
 
     public JsonObject InputSchema() => new()
     {
@@ -102,7 +102,13 @@ internal sealed class DevLayoutTool : ITool
             string label = text["press:".Length..];
             if (!panel.Press(label)) throw new ToolError($"no visible button \"{label}\"");
         }
-        else if (text.Length > 0) throw new ToolError("text: \"\" | recheck | press:<label>");
+        else if (text.StartsWith("popup:"))
+        {
+            string which = text["popup:".Length..];
+            if (which is not ("install" or "login" or "console" or "connect" or "api")) throw new ToolError("popup:install|login|console|connect|api");
+            panel.PreviewPopup(which);
+        }
+        else if (text.Length > 0) throw new ToolError("text: \"\" | recheck | press:<label> | popup:install|login|console|connect|api");
         var (primary, secondary) = panel.CardButtons;
         return $"auth: {ChatController.Auth}\nsetting up: {ChatController.SettingUp ?? "-"}\n" +
                $"card: {(panel.CardVisible ? "shown" : "hidden")} buttons [{primary ?? "-"}] [{secondary ?? "-"}]\nnote: {panel.CardNote}\n{panel.CardDebug}\n" +
