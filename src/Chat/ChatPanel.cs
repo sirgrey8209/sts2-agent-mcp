@@ -41,11 +41,14 @@ internal sealed class ChatPanel
 
     // Login card (docs/in-game-chat.md §3.1) and the header's logout button.
     private const float LogoutWidth = 132;
+    // Start area: [Claude로 시작하기] / [Codex로 시작하기]; pressing one opens its card in its place (one at a time).
+    private readonly VBoxContainer _start;
+    private readonly Button _claudeStart;
+    private readonly Button _codexStart;
+    private readonly PanelContainer _codexCard;
+    private string? _open; // null, "claude", "codex"
     private readonly PanelContainer _card;
     private readonly Label _cardPill;
-    private readonly Button _agentPick;
-    private static readonly string[] Agents = { "Claude", "Codex" };
-    private int _agent;
     private readonly Dictionary<string, Label> _cardValues = new();
     private readonly Label _cardStatus;
     private readonly Label _cardNote;
@@ -128,33 +131,28 @@ internal sealed class ChatPanel
         _logout.Pressed += OnLogoutPressed;
         Layer.AddChild(_logout);
 
-        // The card sits over the message list, centered (placed by hand: see PlaceCard).
+        // The start area sits over the message list, centered (placed by hand: see PlaceCard).
+        _start = new VBoxContainer { MouseFilter = Control.MouseFilterEnum.Ignore, Visible = false };
+        _start.AddThemeConstantOverride("separation", 16);
+        _claudeStart = new Button { Text = "Claude로 시작하기", CustomMinimumSize = new Vector2(0, 64) };
+        ChatTheme.StyleButton(_claudeStart, ChatTheme.PrimaryButton, 24);
+        _claudeStart.Pressed += () => Open("claude");
+        _codexStart = new Button { Text = "Codex로 시작하기", CustomMinimumSize = new Vector2(0, 64) };
+        ChatTheme.StyleButton(_codexStart, ChatTheme.PrimaryButton, 24);
+        _codexStart.Pressed += () => Open("codex");
+
         _card = new PanelContainer { MouseFilter = Control.MouseFilterEnum.Stop, Visible = false };
         _card.AddThemeStyleboxOverride("panel", ChatTheme.CardStyle());
         var body = new VBoxContainer { MouseFilter = Control.MouseFilterEnum.Ignore };
         body.AddThemeConstantOverride("separation", 14);
         _card.AddChild(body);
 
-        // Title row: [Claude v] 연결 ............ (in-progress pill)
+        // Title row: Claude로 시작하기 ............ (in-progress pill)
         var top = new HBoxContainer { MouseFilter = Control.MouseFilterEnum.Ignore };
         top.AddThemeConstantOverride("separation", 12);
-        // Agent picker: a cycle button (each press shows the next agent).
-        _agentPick = new Button { CustomMinimumSize = new Vector2(190, 48), Text = AgentLabel(0) };
-        ChatTheme.StyleButton(_agentPick, ChatTheme.PlainButton, 22);
-        _agentPick.Pressed += () =>
-        {
-            _agent = (_agent + 1) % Agents.Length;
-            _agentPick.Text = AgentLabel(_agent);
-            _confirmInstall = false;
-            _confirmLogin = false;
-            DrawCard(null);
-        };
-        var title = new Label { Text = "연결", SizeFlagsHorizontal = Control.SizeFlags.ExpandFill, MouseFilter = Control.MouseFilterEnum.Ignore, VerticalAlignment = VerticalAlignment.Center };
-        ChatTheme.StyleText(title, 26);
-        if (ChatTheme.Bold != null) title.AddThemeFontOverride("font", ChatTheme.Bold);
+        var title = CardTitle("Claude로 시작하기");
         _cardPill = new Label { MouseFilter = Control.MouseFilterEnum.Ignore, VerticalAlignment = VerticalAlignment.Center };
         ChatTheme.StyleText(_cardPill, ChatTheme.SmallFontSize);
-        top.AddChild(_agentPick);
         top.AddChild(title);
         top.AddChild(_cardPill);
         body.AddChild(top);
@@ -204,8 +202,24 @@ internal sealed class ChatPanel
         _cardButtons.AddChild(_cardSecondary);
         body.AddChild(_cardButtons);
 
-        Layer.AddChild(_card);
-        _card.MinimumSizeChanged += PlaceCard;
+        // Codex: not supported yet; its card only says so.
+        _codexCard = new PanelContainer { MouseFilter = Control.MouseFilterEnum.Stop, Visible = false };
+        _codexCard.AddThemeStyleboxOverride("panel", ChatTheme.CardStyle());
+        var codexBody = new VBoxContainer { MouseFilter = Control.MouseFilterEnum.Ignore };
+        codexBody.AddThemeConstantOverride("separation", 14);
+        codexBody.AddChild(CardTitle("Codex로 시작하기"));
+        var codexStatus = new Label { Text = "Codex는 아직 지원하지 않습니다.", AutowrapMode = TextServer.AutowrapMode.WordSmart, MouseFilter = Control.MouseFilterEnum.Ignore };
+        ChatTheme.StyleText(codexStatus, 22, ChatTheme.ErrorColor);
+        if (ChatTheme.Bold != null) codexStatus.AddThemeFontOverride("font", ChatTheme.Bold);
+        codexBody.AddChild(codexStatus);
+        _codexCard.AddChild(codexBody);
+
+        _start.AddChild(_claudeStart);
+        _start.AddChild(_card);
+        _start.AddChild(_codexStart);
+        _start.AddChild(_codexCard);
+        Layer.AddChild(_start);
+        _start.MinimumSizeChanged += PlaceCard;
 
         _dividerLine = new ColorRect { Color = LineIdle, MouseFilter = Control.MouseFilterEnum.Ignore };
         _divider = new Control { MouseFilter = Control.MouseFilterEnum.Stop, MouseDefaultCursorShape = Control.CursorShape.Hsize };
@@ -240,13 +254,13 @@ internal sealed class ChatPanel
     public string CardNote => (_cardStatus.Text + " " + _cardNote.Text).Trim();
 
     public string CardDebug =>
-        $"card visible={_card.Visible} rect={_card.GetRect()} min={_card.GetCombinedMinimumSize()} " +
+        $"start visible={_start.Visible} open={_open ?? "-"} rect={_start.GetRect()} min={_start.GetCombinedMinimumSize()} " +
         $"scroll pos={_scroll.Position} size={_scroll.Size} hasRoom={_hasRoom}";
 
     /// <summary>Presses a card or header button by its label (development tool). Returns whether one matched.</summary>
     public bool Press(string label)
     {
-        foreach (var button in new Button[] { _cardPrimary, _cardSecondary, _logout, _autoConnect })
+        foreach (var button in new Button[] { _claudeStart, _codexStart, _cardPrimary, _cardSecondary, _logout, _autoConnect })
         {
             if (!button.IsVisibleInTree() || button.Disabled || button.Text != label) continue;
             if (button is CheckBox box) box.ButtonPressed = !box.ButtonPressed;
@@ -285,7 +299,31 @@ internal sealed class ChatPanel
         Callable.From(PlaceCard).CallDeferred();
     }
 
-    private static string AgentLabel(int i) => $"◀  {Agents[i]}  ▶";
+    private static Label CardTitle(string text)
+    {
+        var title = new Label
+        {
+            Text = text, SizeFlagsHorizontal = Control.SizeFlags.ExpandFill,
+            MouseFilter = Control.MouseFilterEnum.Ignore, VerticalAlignment = VerticalAlignment.Center,
+        };
+        ChatTheme.StyleText(title, 26);
+        if (ChatTheme.Bold != null) title.AddThemeFontOverride("font", ChatTheme.Bold);
+        return title;
+    }
+
+    /// <summary>Opens one agent's card in place of its start button; the other one goes back to its button.</summary>
+    private void Open(string? which)
+    {
+        _open = which;
+        _confirmInstall = false;
+        _confirmLogin = false;
+        _claudeStart.Visible = _open != "claude";
+        _card.Visible = _open == "claude";
+        _codexStart.Visible = _open != "codex";
+        _codexCard.Visible = _open == "codex";
+        DrawCard(null);
+        Callable.From(PlaceCard).CallDeferred();
+    }
 
     /// <summary>Whether the player has connected (pressed [접속] or chose automatic connection). Redraws.</summary>
     public void SetConnected(bool connected)
@@ -309,9 +347,9 @@ internal sealed class ChatPanel
         try
         {
             var area = new Rect2(_scroll.Position, _scroll.Size);
-            _card.Size = new Vector2(area.Size.X, 0); // clamps up to the minimum height for this width
-            float h = _card.Size.Y;
-            _card.Position = new Vector2(area.Position.X, area.Position.Y + Mathf.Max(0, (area.Size.Y - h) / 2));
+            _start.Size = new Vector2(area.Size.X, 0); // clamps up to the minimum height for this width
+            float h = _start.Size.Y;
+            _start.Position = new Vector2(area.Position.X, area.Position.Y + Mathf.Max(0, (area.Size.Y - h) / 2));
         }
         finally { _placingCard = false; }
     }
@@ -320,7 +358,7 @@ internal sealed class ChatPanel
     {
         foreach (var c in new Control[] { _headerBg, _headerIcon, _name, _status, Input }) c.Visible = _hasRoom;
         _scroll.Visible = _hasRoom && !_cardShown;
-        _card.Visible = _hasRoom && _cardShown;
+        _start.Visible = _hasRoom && _cardShown;
         _logout.Visible = _hasRoom && _logoutShown;
     }
 
@@ -346,16 +384,6 @@ internal sealed class ChatPanel
         var auth = _auth;
         if (auth == null || !_cardShown) return;
         _autoConnect.Visible = false;
-
-        if (Agents[_agent] == "Codex")
-        {
-            Pill(null, default);
-            foreach (var value in _cardValues.Values) { value.Text = "—"; value.Modulate = Colors.White; }
-            Status("Codex는 아직 지원하지 않습니다.", ChatTheme.ErrorColor);
-            Note(null, false);
-            Buttons(null, null);
-            return;
-        }
 
         if (auth.Checking)
         {
