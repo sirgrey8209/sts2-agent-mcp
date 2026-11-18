@@ -57,6 +57,7 @@ internal static class EventLog
             _player.Deck.CardRemoved -= OnDeckCardRemoved;
             _player.Creature.CurrentHpChanged -= OnHpChanged;
             _player.Creature.MaxHpChanged -= OnMaxHpChanged;
+            foreach (var card in _watched.Keys.ToList()) Unwatch(card);
         }
 
         _player = me;
@@ -71,6 +72,81 @@ internal static class EventLog
         me.Deck.CardRemoved += OnDeckCardRemoved;
         me.Creature.CurrentHpChanged += OnHpChanged;
         me.Creature.MaxHpChanged += OnMaxHpChanged;
+        foreach (var card in me.Deck.Cards) Watch(card);
+    }
+
+    // ---------- deck card changes (upgrade, downgrade, enchantment, affliction) ----------
+
+    private sealed class Watched
+    {
+        public int Level;
+        public string Name = "";
+        public string? Enchantment;
+        public string? Affliction;
+        public Action OnUpgraded = null!;
+        public Action OnEnchantment = null!;
+        public Action OnAffliction = null!;
+    }
+
+    private static readonly Dictionary<CardModel, Watched> _watched = new(ReferenceEqualityComparer.Instance);
+
+    private static void Watch(CardModel card)
+    {
+        if (_watched.ContainsKey(card)) return;
+        var w = new Watched
+        {
+            Level = SafeLevel(card),
+            Name = View.Fmt.CardName(card),
+            Enchantment = View.Fmt.EnchantmentLabel(card),
+            Affliction = View.Fmt.AfflictionLabel(card),
+        };
+        w.OnUpgraded = () => CardUpgraded(card, w);
+        w.OnEnchantment = () => CardEnchantmentChanged(card, w);
+        w.OnAffliction = () => CardAfflictionChanged(card, w);
+        card.Upgraded += w.OnUpgraded;
+        card.EnchantmentChanged += w.OnEnchantment;
+        card.AfflictionChanged += w.OnAffliction;
+        _watched[card] = w;
+    }
+
+    private static void Unwatch(CardModel card)
+    {
+        if (!_watched.Remove(card, out var w)) return;
+        card.Upgraded -= w.OnUpgraded;
+        card.EnchantmentChanged -= w.OnEnchantment;
+        card.AfflictionChanged -= w.OnAffliction;
+    }
+
+    private static int SafeLevel(CardModel card)
+    {
+        try { return card.CurrentUpgradeLevel; } catch { return 0; }
+    }
+
+    /// <summary>The game raises Upgraded for both upgrades and downgrades; the level tells which.</summary>
+    private static void CardUpgraded(CardModel card, Watched w)
+    {
+        int level = SafeLevel(card);
+        string name = View.Fmt.CardName(card);
+        if (level != w.Level)
+            Append($"deck {(level > w.Level ? "upgraded" : "downgraded")} {w.Name} → {name}");
+        w.Level = level;
+        w.Name = name;
+    }
+
+    private static void CardEnchantmentChanged(CardModel card, Watched w)
+    {
+        string? now = View.Fmt.EnchantmentLabel(card);
+        if (now != w.Enchantment)
+            Append(now != null ? $"deck enchanted {View.Fmt.CardName(card)}: {now}" : $"deck enchantment removed {View.Fmt.CardName(card)}");
+        w.Enchantment = now;
+    }
+
+    private static void CardAfflictionChanged(CardModel card, Watched w)
+    {
+        string? now = View.Fmt.AfflictionLabel(card);
+        if (now != w.Affliction)
+            Append(now != null ? $"deck afflicted {View.Fmt.CardName(card)}: {now}" : $"deck affliction removed {View.Fmt.CardName(card)}");
+        w.Affliction = now;
     }
 
     /// <summary>Out-of-combat HP changes (rest, events). In combat, damage entries already cover HP.</summary>
@@ -99,8 +175,17 @@ internal static class EventLog
     private static void OnRelicRemoved(RelicModel relic) => Append($"relic - {Text.Of(() => relic.Title)}");
     private static void OnPotionProcured(PotionModel potion) => Append($"potion + {Text.Of(() => potion.Title)}");
     private static void OnPotionDiscarded(PotionModel potion) => Append($"potion - {Text.Of(() => potion.Title)}");
-    private static void OnDeckCardAdded(CardModel card) => Append($"deck + {View.Fmt.CardName(card)}");
-    private static void OnDeckCardRemoved(CardModel card) => Append($"deck - {View.Fmt.CardName(card)}");
+    private static void OnDeckCardAdded(CardModel card)
+    {
+        Append($"deck + {View.Fmt.CardLabel(card)}");
+        Watch(card);
+    }
+
+    private static void OnDeckCardRemoved(CardModel card)
+    {
+        Append($"deck - {View.Fmt.CardLabel(card)}");
+        Unwatch(card);
+    }
 
     /// <summary>Main thread only.</summary>
     public static long Mark()

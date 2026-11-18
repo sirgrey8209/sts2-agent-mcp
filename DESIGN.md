@@ -102,6 +102,7 @@
 | `screenshot` / `render_cards` / `render_map` | `attach?` 등 | 채팅 플레이용 이미지. 파일로 저장하고 경로를 돌려준다 (`attach: true`면 이미지도 반환) |
 | `render_map` 덧그리기 | `coords?`, `paths?`, `marks?`, `notes?` | 이미지에만 그린다(게임 지도의 그리기 기능은 쓰지 않음). 칸은 `r7c3` / `current` / `boss`. 없는 칸·잘못된 색은 오류로 돌려준다 |
 | `export_loc` | `tables?: string[]` | kb 관리용. 현지화 문구 표를 JSON으로 저장 |
+| `dev_console` | `command` | 설정 `dev_tools`가 켜졌을 때만 등록. 게임 개발자 콘솔 명령 실행 + `event_any <ID>`, `profile <n>`. 시험 전용 |
 
 런 시작·이어하기·포기도 별도 도구 없이 메뉴 화면의 행동으로 제공한다 (9.1절). 플레이에 쓰는 도구는 state, act, info, search로 유지하고, 나머지는 보여 주기와 관리용이다.
 
@@ -353,8 +354,21 @@ interface IResourceProvider { bool Applies(PlayerCtx p); IEnumerable<ResourceVie
 - Claude Code의 HTTP MCP 연결로 직접 호출 확인 (게임 재시작 후에도 재연결 없이 동작).
 
 남은 것:
-- 크리스탈 구체, 묶음 선택, 가짜 상인, `reveal_epochs` 실검증
-- 인챈트·강화처럼 덱 카드가 바뀌는 이벤트 기록 (지금은 추가/제거만 기록)
+- 크리스탈 구체, 묶음 선택, 가짜 상인 실검증
+
+## 12-3. v0.111.1 플레이 피드백 반영 (2026-11-18)
+
+리젠트 런 한 판(승리)과 시험용 프로필 2에서 확인했다. 시험은 개발 도구 `dev_console`(설정 `dev_tools`)로 방과 이벤트를 바로 열어서 했다.
+
+| 항목 | 내용 |
+|---|---|
+| 휴식처 재련 뒤 대기 | 카드 선택을 거쳐 휴식처로 돌아올 때도 연출이 끝나 진행 버튼이 켜질 때까지 기다린다 (`RestSiteHandler.Ready`) |
+| 덱 카드 변화 기록 | 강화·약화(`deck upgraded/downgraded`), 인챈트(`deck enchanted`), 고난 변화를 덱 카드마다 구독해 기록. 덱·더미 목록에 인챈트 `[...]`, 고난 `{...}` 표시 |
+| 게임 오버 요약 | 화면 글자가 애니메이션으로 늦게 나타나므로 게임 데이터로 직접 계산: 승패, 층, 골드, 엘리트, 보스, 승천, 점수, 문구 |
+| 아키텍트 대사 | 말풍선 대사를 `» 화자: 대사`로 표시 (`_dialogue`, `_currentLineIndex`) |
+| `new_run` (새 프로필) | 모드가 하나뿐이면 게임이 모드 메뉴를 건너뛰므로, 로비에서 같은 모드면 `mode` 단계를 통과 |
+| `reveal_epochs` | 실검증 완료. 첫 방문 안내(`_tutorial`)의 확인 버튼 단계를 추가 |
+| 안내 문구 | `detail=full` 안내, `play 2` 같은 숫자 입력 안내, 보상 화면의 진행 안내, 카드 보상 건너뛰기 안내 |
 
 ## 13. 확인이 필요한 것 (구현 중 검증)
 

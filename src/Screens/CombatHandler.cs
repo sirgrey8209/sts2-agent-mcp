@@ -40,12 +40,13 @@ internal sealed class CombatHandler : IScreenHandler
         foreach (var card in pcs.Hand.Cards)
             view.Add("  " + Fmt.HandCard(card, enemies));
 
-        view.Add($"piles: draw {pcs.DrawPile.Cards.Count} · discard {pcs.DiscardPile.Cards.Count} · exhaust {pcs.ExhaustPile.Cards.Count}");
+        view.Add($"piles: draw {pcs.DrawPile.Cards.Count} · discard {pcs.DiscardPile.Cards.Count} · exhaust {pcs.ExhaustPile.Cards.Count}"
+                 + (full ? "" : " (card lists: state detail=full)"));
         if (full)
         {
-            view.Add("  draw (unordered): " + string.Join(", ", pcs.DrawPile.Cards.Select(Fmt.CardName).OrderBy(n => n)));
-            view.Add("  discard: " + string.Join(", ", pcs.DiscardPile.Cards.Select(Fmt.CardName)));
-            view.Add("  exhaust: " + string.Join(", ", pcs.ExhaustPile.Cards.Select(Fmt.CardName)));
+            view.Add("  draw (unordered): " + string.Join(", ", pcs.DrawPile.Cards.Select(Fmt.CardLabel).OrderBy(n => n)));
+            view.Add("  discard: " + string.Join(", ", pcs.DiscardPile.Cards.Select(Fmt.CardLabel)));
+            view.Add("  exhaust: " + string.Join(", ", pcs.ExhaustPile.Cards.Select(Fmt.CardLabel)));
         }
 
         view.Add("enemies:");
@@ -91,7 +92,12 @@ internal sealed class CombatHandler : IScreenHandler
         if (token == null) return ExecResult.Fail("usage: play <card id> [@<target>]");
         var card = Ids.ResolveCard(token);
         if (card == null || !me.PlayerCombatState!.Hand.Cards.Contains(card))
-            return ExecResult.Fail($"{token} is not in your hand");
+        {
+            // Cards are named by their combat id (c12), not by hand position.
+            return int.TryParse(token, out _)
+                ? ExecResult.Fail($"{token} is not a card id: use the id shown before the card name in the hand list, e.g. play c12 (ids are not hand positions)")
+                : ExecResult.Fail($"{token} is not in your hand");
+        }
 
         if (!card.CanPlay(out var reason, out _))
             return ExecResult.Fail($"{Fmt.CardName(card)} cannot be played: {reason}");

@@ -202,6 +202,15 @@ internal sealed class LobbyHandler : IScreenHandler
             }
             case "embark":
                 return Embark(screen, lobby, action);
+            case "mode":
+            {
+                // new_run's mode step: the game skips the mode menu when only one mode is unlocked (new profiles)
+                // and opens the character screen directly. Accept the step if the lobby is already in that mode.
+                string wanted = action.Arg(0) ?? "";
+                return string.Equals(lobby.GameMode.ToString(), wanted, StringComparison.OrdinalIgnoreCase)
+                    ? ExecResult.Ok(SettleMode.Screen, note: $"mode {lobby.GameMode} (mode menu was skipped)")
+                    : ExecResult.Fail($"the game opened character select in mode {lobby.GameMode}; mode '{wanted}' is not available here");
+            }
             default:
                 return ExecResult.Fail($"unknown lobby action '{action.Verb}'");
         }
@@ -256,10 +265,54 @@ internal sealed class GameOverHandler : IScreenHandler
     public ScreenView Render(GameCtx ctx, bool full)
     {
         var view = new ScreenView(Kind);
+        try
+        {
+            foreach (var line in Summary((NGameOverScreen)ctx.Screen!)) view.Add("  " + line);
+        }
+        catch (Exception ex)
+        {
+            view.Add("  (summary unavailable: " + ex.Message + ")");
+        }
         foreach (var text in Ui.Texts(ctx.Screen as Node, 10)) view.Add("  " + text);
         ButtonScreen.Render(view, Buttons(ctx.Screen!), withKeys: true);
         view.Actions = "choose <i|key>";
         return view;
+    }
+
+    private static T? Field<T>(object owner, string name) where T : class =>
+        owner.GetType().GetField(name, BindingFlags.Instance | BindingFlags.NonPublic)?.GetValue(owner) as T;
+
+    /// <summary>
+    /// Result and score lines from the screen's own data (the on-screen labels animate in over several seconds, so
+    /// they are often still empty when the screen is read). Same numbers as the game's score lines.
+    /// </summary>
+    private static List<string> Summary(NGameOverScreen screen)
+    {
+        var lines = new List<string>();
+        var history = Field<MegaCrit.Sts2.Core.Runs.RunHistory>(screen, "_history");
+        var run = Field<MegaCrit.Sts2.Core.Saves.SerializableRun>(screen, "_serializableRun");
+        var player = Field<MegaCrit.Sts2.Core.Entities.Players.Player>(screen, "_localPlayer");
+        var banner = Field<NCommonBanner>(screen, "_banner");
+        if (history == null || run == null) return lines;
+
+        string result = history.WasAbandoned ? "abandoned" : history.Win ? "victory" : "defeat";
+        string? title = Text.Of(() => banner?.label?.Text);
+        lines.Add($"result: {result}" + (string.IsNullOrEmpty(title) ? "" : $" ({title})"));
+
+        var points = run.MapPointHistory;
+        int gold = player == null ? 0 : points.SelectMany(a => a).Sum(e => e.GetEntry(player.NetId).GoldGained);
+        int elites = MegaCrit.Sts2.Core.Runs.ScoreUtility.GetElitesKilledCount(points);
+        int bosses = MegaCrit.Sts2.Core.Runs.ScoreUtility.GetBossesSlainCount(points, history.Win);
+        int score = MegaCrit.Sts2.Core.Runs.ScoreUtility.CalculateScore(run, history.Win);
+        lines.Add($"floors {run.FloorReached} · gold gained {gold} · elites {elites} · bosses {bosses} · ascension {history.Ascension} · score {score}");
+
+        foreach (var name in new[] { "_victoryDamageLabel", "_deathQuote", "_scoreProgress", "_unlocksRemaining" })
+        {
+            if (screen.GetType().GetField(name, BindingFlags.Instance | BindingFlags.NonPublic)?.GetValue(screen) is Node node
+                && Text.Of(() => node.Get("text").AsString()) is { Length: > 0 } text)
+                lines.Add(text);
+        }
+        return lines;
     }
 
     public ExecResult Execute(GameCtx ctx, ActionSpec action)

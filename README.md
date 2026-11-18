@@ -31,6 +31,7 @@ Slay the Spire 2 버전 **v0.111.1**에서 시험했다. 설계 문서는 [DESIG
 - `token`: 모든 요청에 필요한 bearer 토큰이다.
 - `fast_mode`: `instant`(기본값)이면 게임이 시작된 뒤 모드가 애니메이션 속도를 '즉시'로 바꾼다. `keep`이면 사용자 설정을 그대로 둔다.
 - `capture_dir`(선택): 스크린샷과 이미지 파일을 저장할 폴더다. 기본값은 `%TEMP%\sts2-agent-mcp`이고, 최근 파일 60개만 보관한다.
+- `dev_tools`(선택, 기본값 `false`): 개발과 시험용 도구 `dev_console`을 켠다. 게임의 개발자 콘솔 명령(방 이동, 이벤트 이동, 카드와 유물 추가 등 치트)을 실행하는 도구라서 평소 플레이에서는 켜지 않는다.
 - `chat_panel`, `chat_width`, `claude_path`(선택, 개발 중): 게임 안 채팅창 설정이다. 아래 "게임 안 채팅창"을 참고한다.
 
 ## MCP 클라이언트 연결
@@ -152,6 +153,8 @@ actions: play <card> [@<target>] · potion <slot> [@<target>] · discard_potion 
 ```
 
 게임 로그는 `%APPDATA%\SlayTheSpire2\logs\godot.log`에 있고, 이 모드가 남긴 줄은 `[STS2 Agent MCP]`로 시작한다.
+
+설정에서 `dev_tools`를 켜면 `dev_console(command)` 도구가 생긴다. 게임의 개발자 콘솔 명령(`room RestSite`, `event SPIRALING_WHIRLPOOL`, `fight ...`, `die` 등)을 그대로 실행하고, 모드가 더한 명령 두 개를 받는다. `event_any <ID>`는 일반 이벤트 목록에 없는 이벤트(`THE_ARCHITECT` 등)로 들어가고, `profile <n>`은 열려 있는 프로필 화면에서 n번째 프로필을 고른다. 시험은 실제 진행 기록이 아닌 다른 프로필에서 한다.
 
 ## 보안
 

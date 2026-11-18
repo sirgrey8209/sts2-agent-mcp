@@ -48,6 +48,7 @@ public static class ModEntry
                 .Add(new RenderMapTool())
                 .Add(new ExportLocTool())
                 .Add(new DevLayoutTool());
+            if (config.DevTools) tools.Add(new DevConsoleTool());
 
             _host = new HttpHost(config, new McpEndpoint(tools));
             _host.Start();

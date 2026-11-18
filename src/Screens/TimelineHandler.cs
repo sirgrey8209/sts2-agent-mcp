@@ -52,6 +52,10 @@ internal sealed class TimelineHandler : IScreenHandler
         {
             view.Add("  epoch inspect screen is open");
         }
+        else if (Timeline is { } tl && Ui.GetField(tl, "_tutorial") is CanvasItem tutorial && Ui.IsVisible(tutorial))
+        {
+            foreach (var text in Ui.Texts(tutorial, 3)) view.Add("  tutorial: " + text);
+        }
 
         bool canBack = Timeline is { } t && ctx.Screen is NTimelineScreen && !InspectOpen(t) && Ui.IsActionable(Button(t, "_backButton"));
         view.Actions = pending > 0 || ctx.Screen is NUnlockScreen
@@ -104,6 +108,17 @@ internal sealed class TimelineHandler : IScreenHandler
             close!.ForceClick();
             return ExecResult.Ok(SettleMode.Screen, followups: again,
                 until: () => !InspectOpen(timeline) || ActiveUnlockScreen(timeline));
+        }
+
+        // 3a. First visit: a tutorial overlay ("the timeline reveals history...") blocks input until acknowledged.
+        if (Ui.GetField(timeline, "_tutorial") is CanvasItem tutorial && Ui.IsVisible(tutorial))
+        {
+            var acknowledge = Button(tutorial, "_acknowledgeButton");
+            if (!Ui.IsActionable(acknowledge))
+                return ExecResult.Ok(SettleMode.Screen, followups: again, until: () => Ui.IsActionable(acknowledge) || !Ui.IsLive(tutorial));
+            acknowledge!.ForceClick();
+            return ExecResult.Ok(SettleMode.Screen, followups: again,
+                until: () => !Ui.IsLive(tutorial) || !Ui.IsVisible(tutorial) || !InputBlocked(timeline));
         }
 
         // 3. Timeline is animating (input blocked): wait.

@@ -30,7 +30,8 @@ internal sealed class RewardsHandler : IScreenHandler
         if (buttons.Count == 0) view.Add("  (nothing left to claim)");
 
         bool canProceed = Ui.FindFirst<NProceedButton>(screen) is { } proceed && Ui.IsActionable(proceed);
-        view.Actions = "choose <i>" + (canProceed ? " · proceed" : "");
+        // A skipped card reward stays listed (it can be reopened); proceed leaves without it.
+        view.Actions = "choose <i>" + (canProceed ? (buttons.Count > 0 ? " · proceed (leave; unclaimed rewards are lost)" : " · proceed") : "");
         return view;
     }
 
@@ -97,7 +98,7 @@ internal sealed class CardRewardHandler : IScreenHandler
         for (int i = 0; i < alternatives.Count; i++)
             view.Add($"  alt {i}: {Ui.LabelOf(alternatives[i]) ?? "alternative"}");
 
-        view.Actions = "choose <i>" + (alternatives.Count > 0 ? " · skip (= alt 0) · alt <i>" : "");
+        view.Actions = "choose <i>" + (alternatives.Count > 0 ? " · skip (= alt 0, back to the rewards list) · alt <i>" : "");
         return view;
     }
 

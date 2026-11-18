@@ -59,6 +59,10 @@ internal sealed class ChoiceHandler : IScreenHandler
                 return ExecResult.Fail($"a card choice is pending; use choose/skip (got '{action.Verb}')");
         }
         if (error != null) return ExecResult.Fail(error);
-        return ExecResult.Ok(ctx.InCombat ? SettleMode.Combat : SettleMode.Screen);
+        if (ctx.InCombat) return ExecResult.Ok(SettleMode.Combat);
+        // A rest-site choice (smith) returns to the room, which enables proceed only after its VFX.
+        if (ctx.Screen is MegaCrit.Sts2.Core.Nodes.Rooms.NRestSiteRoom room)
+            return ExecResult.Ok(SettleMode.Screen, until: () => RestSiteHandler.Ready(room));
+        return ExecResult.Ok(SettleMode.Screen);
     }
 }

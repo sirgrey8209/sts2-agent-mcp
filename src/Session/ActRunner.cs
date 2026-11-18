@@ -149,6 +149,11 @@ internal sealed class ActRunner
                     sb.AppendLine(Fmt.Deck(ctx.Me));
                     foreach (var line in Fmt.RelicDetails(ctx.Me)) sb.Append("  ").AppendLine(line);
                 }
+                else if (!ctx.InCombat)
+                {
+                    // In combat the piles line carries the same hint.
+                    sb.AppendLine($"deck {ctx.Me.Deck.Cards.Count} cards (card list and relic text: state detail=full)");
+                }
             }
         }
 

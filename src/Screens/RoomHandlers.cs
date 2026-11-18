@@ -49,6 +49,11 @@ internal sealed class EventRoomHandler : IScreenHandler
         {
             foreach (var line in Ui.Texts(dialogue, 6)) view.Add("  » " + line);
         }
+        else if (model != null && CurrentDialogueLine(model) is { } spoken)
+        {
+            // Events that talk through speech bubbles in the room (The Architect) have no description text.
+            view.Add("  » " + spoken);
+        }
 
         var options = Options(room);
         for (int i = 0; i < options.Count; i++)
@@ -69,6 +74,37 @@ internal sealed class EventRoomHandler : IScreenHandler
         bool onlyProceed = options.Count == 1 && options[0].Option.IsProceed;
         view.Actions = onlyProceed ? "proceed (= choose 0)" : "choose <i>";
         return view;
+    }
+
+    /// <summary>
+    /// The line an event with ancient-style dialogue (private `_dialogue` + `_currentLineIndex`) is currently
+    /// speaking, as "speaker: text". Null for other events.
+    /// </summary>
+    private static string? CurrentDialogueLine(MegaCrit.Sts2.Core.Models.EventModel model)
+    {
+        try
+        {
+            const System.Reflection.BindingFlags flags = System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic;
+            if (model.GetType().GetField("_dialogue", flags)?.GetValue(model)
+                    is not MegaCrit.Sts2.Core.Entities.Ancients.AncientDialogue dialogue
+                || model.GetType().GetField("_currentLineIndex", flags)?.GetValue(model) is not int index
+                || index < 0 || index >= dialogue.Lines.Count)
+                return null;
+            var line = dialogue.Lines[index];
+            string? text = Text.Of(() => line.LineText) ?? Text.Of(() => line.LineText?.GetRawText());
+            if (string.IsNullOrEmpty(text)) return null;
+            string speaker = line.Speaker.ToString() switch
+            {
+                "Ancient" => Text.Of(() => model.Title) ?? "ancient",
+                "Character" => "me",
+                var other => other,
+            };
+            return $"{speaker}: {text}";
+        }
+        catch
+        {
+            return null;
+        }
     }
 
     public ExecResult Execute(GameCtx ctx, ActionSpec action)
@@ -131,10 +167,7 @@ internal sealed class RestSiteHandler : IScreenHandler
                 var button = room.GetButtonForOption(option);
                 if (button == null || !Ui.IsActionable(button)) return ExecResult.Fail("options are not selectable right now");
                 button.ForceClick();
-                // After an option resolves the room plays VFX, rebuilds options and only then enables proceed.
-                return ExecResult.Ok(SettleMode.Screen, until: () =>
-                    Ui.IsActionable(room.ProceedButton)
-                    || room.Options.Any(o => room.GetButtonForOption(o) is { } b && Ui.IsActionable(b)));
+                return ExecResult.Ok(SettleMode.Screen, until: () => Ready(room));
             }
             case "proceed":
                 if (!Ui.IsActionable(room.ProceedButton)) return ExecResult.Fail("proceed is not available yet");
@@ -144,6 +177,14 @@ internal sealed class RestSiteHandler : IScreenHandler
                 return ExecResult.Fail($"unknown rest site action '{action.Verb}'");
         }
     }
+
+    /// <summary>
+    /// After an option resolves (directly, or through a card choice such as smith) the room plays VFX, rebuilds its
+    /// options and only then enables proceed. Ready once proceed or an option button can be clicked.
+    /// </summary>
+    public static bool Ready(NRestSiteRoom room) =>
+        Ui.IsActionable(room.ProceedButton)
+        || room.Options.Any(o => room.GetButtonForOption(o) is { } b && Ui.IsActionable(b));
 }
 
 /// <summary>

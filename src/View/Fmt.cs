@@ -39,6 +39,39 @@ internal static class Fmt
     /// <summary>The game's title already carries the upgrade marker ("타격+").</summary>
     public static string CardName(CardModel card) => Text.Of(() => card.Title) ?? card.Id.Entry;
 
+    /// <summary>Name plus enchantment and affliction, e.g. "타격+ [날카로움 2] {위축 1}".</summary>
+    public static string CardLabel(CardModel card)
+    {
+        string label = CardName(card);
+        if (EnchantmentLabel(card) is { } ench) label += $" [{ench}]";
+        if (AfflictionLabel(card) is { } aff) label += $" {{{aff}}}";
+        return label;
+    }
+
+    public static string? EnchantmentLabel(CardModel card)
+    {
+        try
+        {
+            var e = card.Enchantment;
+            if (e == null) return null;
+            string title = Text.Of(() => e.Title) ?? e.Id.Entry;
+            return e.ShowAmount ? $"{title} {e.DisplayAmount}" : title;
+        }
+        catch { return null; }
+    }
+
+    public static string? AfflictionLabel(CardModel card)
+    {
+        try
+        {
+            var a = card.Affliction;
+            if (a == null) return null;
+            string title = Text.Of(() => a.Title) ?? a.Id.Entry;
+            return a.Amount != 0 ? $"{title} {a.Amount}" : title;
+        }
+        catch { return null; }
+    }
+
     public static string CardDescription(CardModel card, PileType pile) =>
         Text.Of(() => card.GetDescriptionForPile(pile)) ?? "";
 
@@ -277,7 +310,7 @@ internal static class Fmt
     public static string Deck(Player me)
     {
         var groups = me.Deck.Cards
-            .GroupBy(CardName)
+            .GroupBy(CardLabel)
             .Select(g => g.Count() > 1 ? $"{g.Key} x{g.Count()}" : g.Key);
         return $"deck ({me.Deck.Cards.Count}): " + string.Join(", ", groups);
     }

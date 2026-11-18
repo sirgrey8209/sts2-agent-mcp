@@ -25,6 +25,8 @@ internal sealed class Config
     public float ChatWidth { get; private set; } = 480;
     /// <summary>Claude Code executable for the chat panel. Null = search PATH and ~/.local/bin.</summary>
     public string? ClaudePath { get; private set; }
+    /// <summary>Registers development tools (dev_console: the game's cheat console). Off by default.</summary>
+    public bool DevTools { get; private set; }
 
     public string? FilePath { get; private set; }
 
@@ -64,6 +66,8 @@ internal sealed class Config
             config.ChatPanel = chatPanel;
         if (root["chat_width"] is JsonValue cw && cw.TryGetValue(out double chatWidth) && chatWidth > 0)
             config.ChatWidth = (float)chatWidth;
+        if (root["dev_tools"] is JsonValue dt && dt.TryGetValue(out bool devTools))
+            config.DevTools = devTools;
         if (root["claude_path"] is JsonValue cl && cl.TryGetValue(out string? claudePath) && !string.IsNullOrWhiteSpace(claudePath))
             config.ClaudePath = claudePath;
 
