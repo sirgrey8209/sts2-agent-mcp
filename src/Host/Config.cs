@@ -27,6 +27,8 @@ internal sealed class Config
     public string? ClaudePath { get; private set; }
     /// <summary>Chat panel: connect without asking once the login works (the card's "connect automatically" box).</summary>
     public bool ChatAutoConnect { get; private set; }
+    /// <summary>Chat panel: the agent card opened last ("claude" / "codex"), opened again at start.</summary>
+    public string? ChatAgent { get; private set; }
     /// <summary>Registers development tools (dev_console: the game's cheat console). Off by default.</summary>
     public bool DevTools { get; private set; }
 
@@ -68,6 +70,8 @@ internal sealed class Config
             config.ChatPanel = chatPanel;
         if (root["chat_width"] is JsonValue cw && cw.TryGetValue(out double chatWidth) && chatWidth > 0)
             config.ChatWidth = (float)chatWidth;
+        if (root["chat_agent"] is JsonValue ag && ag.TryGetValue(out string? agent) && agent is "claude" or "codex")
+            config.ChatAgent = agent;
         if (root["chat_auto_connect"] is JsonValue ac && ac.TryGetValue(out bool autoConnect))
             config.ChatAutoConnect = autoConnect;
         if (root["dev_tools"] is JsonValue dt && dt.TryGetValue(out bool devTools))
@@ -117,6 +121,13 @@ internal sealed class Config
     {
         ChatAutoConnect = on;
         Save("chat_auto_connect", on);
+    }
+
+    /// <summary>Remembers which agent card the player opened last.</summary>
+    public void SaveChatAgent(string agent)
+    {
+        ChatAgent = agent;
+        Save("chat_agent", agent);
     }
 
     /// <summary>Writes one key to the config file, keeping the others as they are.</summary>

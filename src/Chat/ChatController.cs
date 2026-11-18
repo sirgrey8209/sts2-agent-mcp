@@ -46,6 +46,8 @@ internal static class ChatController
         panel.InstallPressed += OpenInstall;
         panel.RecheckPressed += () => Recheck();
         panel.LogoutPressed += Logout;
+        panel.AgentChosen += agent => _config?.SaveChatAgent(agent);
+        panel.OpenInitial(config.ChatAgent);
         panel.ConnectPressed += remember =>
         {
             if (remember) _config?.SaveChatAutoConnect(true);

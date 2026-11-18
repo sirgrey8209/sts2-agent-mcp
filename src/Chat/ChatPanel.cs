@@ -46,6 +46,12 @@ internal sealed class ChatPanel
     private readonly Button _claudeStart;
     private readonly Button _codexStart;
     private readonly PanelContainer _codexCard;
+    // Each card sits in a clipping wrapper whose height animates when the card opens.
+    private readonly Control _claudeWrap;
+    private readonly Control _codexWrap;
+    private readonly HashSet<Control> _animating = new();
+    private Tween? _openTween;
+    private int _openRun;
     private string? _open; // null, "claude", "codex"
     private readonly PanelContainer _card;
     private readonly Label _cardPill;
@@ -59,9 +65,8 @@ internal sealed class ChatPanel
     private readonly Button _logout;
     private AuthState? _auth;
     private string? _settingUp;
-    private bool _confirmInstall;
-    private bool _confirmLogin;
     private bool _connected;
+    private bool _popupOpen;
     private bool _confirmLogout;
     private int _logoutArm;
     private bool _cardShown;
@@ -135,11 +140,11 @@ internal sealed class ChatPanel
         _start = new VBoxContainer { MouseFilter = Control.MouseFilterEnum.Ignore, Visible = false };
         _start.AddThemeConstantOverride("separation", 16);
         _claudeStart = new Button { Text = "Claude로 시작하기", CustomMinimumSize = new Vector2(0, 64) };
-        ChatTheme.StyleButton(_claudeStart, ChatTheme.PrimaryButton, 24);
-        _claudeStart.Pressed += () => Open("claude");
+        ChatTheme.StyleButton(_claudeStart, ChatTheme.ClaudeColor, 24);
+        _claudeStart.Pressed += () => Open("claude", animate: true, remember: true);
         _codexStart = new Button { Text = "Codex로 시작하기", CustomMinimumSize = new Vector2(0, 64) };
-        ChatTheme.StyleButton(_codexStart, ChatTheme.PrimaryButton, 24);
-        _codexStart.Pressed += () => Open("codex");
+        ChatTheme.StyleButton(_codexStart, ChatTheme.CodexColor, 24);
+        _codexStart.Pressed += () => Open("codex", animate: true, remember: true);
 
         _card = new PanelContainer { MouseFilter = Control.MouseFilterEnum.Stop, Visible = false };
         _card.AddThemeStyleboxOverride("panel", ChatTheme.CardStyle());
@@ -150,7 +155,7 @@ internal sealed class ChatPanel
         // Title row: Claude로 시작하기 ............ (in-progress pill)
         var top = new HBoxContainer { MouseFilter = Control.MouseFilterEnum.Ignore };
         top.AddThemeConstantOverride("separation", 12);
-        var title = CardTitle("Claude로 시작하기");
+        var title = CardTitle("Claude로 시작하기", ChatTheme.ClaudeColor);
         _cardPill = new Label { MouseFilter = Control.MouseFilterEnum.Ignore, VerticalAlignment = VerticalAlignment.Center };
         ChatTheme.StyleText(_cardPill, ChatTheme.SmallFontSize);
         top.AddChild(title);
@@ -193,7 +198,7 @@ internal sealed class ChatPanel
         _cardButtons = new HBoxContainer { MouseFilter = Control.MouseFilterEnum.Ignore };
         _cardButtons.AddThemeConstantOverride("separation", 12);
         _cardPrimary = new Button { CustomMinimumSize = new Vector2(0, 56), SizeFlagsHorizontal = Control.SizeFlags.ExpandFill };
-        ChatTheme.StyleButton(_cardPrimary, ChatTheme.PrimaryButton);
+        ChatTheme.StyleButton(_cardPrimary, ChatTheme.ClaudeColor);
         _cardPrimary.Pressed += OnCardPrimary;
         _cardSecondary = new Button { CustomMinimumSize = new Vector2(0, 56), SizeFlagsHorizontal = Control.SizeFlags.ExpandFill };
         ChatTheme.StyleButton(_cardSecondary, ChatTheme.PlainButton);
@@ -207,17 +212,19 @@ internal sealed class ChatPanel
         _codexCard.AddThemeStyleboxOverride("panel", ChatTheme.CardStyle());
         var codexBody = new VBoxContainer { MouseFilter = Control.MouseFilterEnum.Ignore };
         codexBody.AddThemeConstantOverride("separation", 14);
-        codexBody.AddChild(CardTitle("Codex로 시작하기"));
+        codexBody.AddChild(CardTitle("Codex로 시작하기", ChatTheme.CodexColor.Lightened(0.35f)));
         var codexStatus = new Label { Text = "Codex는 아직 지원하지 않습니다.", AutowrapMode = TextServer.AutowrapMode.WordSmart, MouseFilter = Control.MouseFilterEnum.Ignore };
         ChatTheme.StyleText(codexStatus, 22, ChatTheme.ErrorColor);
         if (ChatTheme.Bold != null) codexStatus.AddThemeFontOverride("font", ChatTheme.Bold);
         codexBody.AddChild(codexStatus);
         _codexCard.AddChild(codexBody);
 
+        _claudeWrap = Wrap(_card);
+        _codexWrap = Wrap(_codexCard);
         _start.AddChild(_claudeStart);
-        _start.AddChild(_card);
+        _start.AddChild(_claudeWrap);
         _start.AddChild(_codexStart);
-        _start.AddChild(_codexCard);
+        _start.AddChild(_codexWrap);
         Layer.AddChild(_start);
         _start.MinimumSizeChanged += PlaceCard;
 
@@ -242,6 +249,8 @@ internal sealed class ChatPanel
     public event Action? LogoutPressed;
     /// <summary>The player pressed [접속]; the flag is "connect automatically next time".</summary>
     public event Action<bool>? ConnectPressed;
+    /// <summary>The player opened an agent's card ("claude" / "codex"), to remember for next time.</summary>
+    public event Action<string>? AgentChosen;
 
     /// <summary>Whether the login card is up (development tool).</summary>
     public bool CardVisible => _cardShown;
@@ -255,6 +264,7 @@ internal sealed class ChatPanel
 
     public string CardDebug =>
         $"start visible={_start.Visible} open={_open ?? "-"} rect={_start.GetRect()} min={_start.GetCombinedMinimumSize()} " +
+        $"rows=[{string.Join(", ", System.Linq.Enumerable.Select(System.Linq.Enumerable.OfType<Control>(_start.GetChildren()), c => $"{c.GetType().Name}:{(c.Visible ? c.GetCombinedMinimumSize().Y.ToString("0") + "/" + c.Size.Y.ToString("0") + "@" + c.Position.Y.ToString("0") : "-")}"))}] " +
         $"scroll pos={_scroll.Position} size={_scroll.Size} hasRoom={_hasRoom}";
 
     /// <summary>Presses a card or header button by its label (development tool). Returns whether one matched.</summary>
@@ -285,7 +295,6 @@ internal sealed class ChatPanel
         // A check at startup (card not up yet) runs behind the chat; a re-check keeps the card up. The card stays up
         // until the player connects ([접속], or automatically when they chose so).
         if (!(auth.Checking && !_cardShown)) _cardShown = !(auth.Ready && _connected);
-        if (auth.Ready) { _confirmInstall = false; _confirmLogin = false; }
         _logoutShown = auth.Ready && auth.Method == AuthMethod.Subscription;
         Input.Editable = !_cardShown;
         Input.PlaceholderText = _cardShown ? "연결한 뒤 쓸 수 있어요" : "메시지 입력 (Enter 전송, Esc 게임으로)";
@@ -299,30 +308,176 @@ internal sealed class ChatPanel
         Callable.From(PlaceCard).CallDeferred();
     }
 
-    private static Label CardTitle(string text)
+    private static Label CardTitle(string text, Color color)
     {
         var title = new Label
         {
             Text = text, SizeFlagsHorizontal = Control.SizeFlags.ExpandFill,
             MouseFilter = Control.MouseFilterEnum.Ignore, VerticalAlignment = VerticalAlignment.Center,
         };
-        ChatTheme.StyleText(title, 26);
+        ChatTheme.StyleText(title, 26, color);
         if (ChatTheme.Bold != null) title.AddThemeFontOverride("font", ChatTheme.Bold);
         return title;
     }
 
-    /// <summary>Opens one agent's card in place of its start button; the other one goes back to its button.</summary>
-    private void Open(string? which)
+    /// <summary>
+    /// A clipping box for a card. The card is laid out by hand inside it (full width, its own minimum height); the box
+    /// follows the card's height, except while its opening animation runs.
+    /// </summary>
+    private Control Wrap(PanelContainer card)
     {
+        var wrap = new Control { ClipContents = true, MouseFilter = Control.MouseFilterEnum.Ignore, Visible = false };
+        card.Visible = true;
+        wrap.AddChild(card);
+        wrap.Resized += () => FitWrap(wrap, card);
+        card.MinimumSizeChanged += () => Callable.From(() => FitWrap(wrap, card)).CallDeferred();
+        return wrap;
+    }
+
+    /// <summary>The card's height at the wrapper's width (the start area's width when the wrapper is not laid out yet).</summary>
+    private float CardHeight(Control wrap, PanelContainer card)
+    {
+        // Always the list area's width: a wrapper that is not laid out yet is near zero wide, and wrapped labels are
+        // very tall at that width (which made the whole area jump to the top for a frame).
+        float width = _scroll.Size.X > 0 ? _scroll.Size.X : _start.Size.X;
+        if (width <= 0) return card.Size.Y;
+        card.Position = Vector2.Zero;
+        card.Size = new Vector2(width, 0); // clamps up to the minimum height for this width
+        return card.Size.Y;
+    }
+
+    private void FitWrap(Control wrap, PanelContainer card)
+    {
+        if (!wrap.Visible) return;
+        float h = CardHeight(wrap, card);
+        if (_animating.Contains(wrap)) return;
+        if (!Mathf.IsEqualApprox(wrap.CustomMinimumSize.Y, h)) wrap.CustomMinimumSize = new Vector2(0, h);
+    }
+
+    private const float StartButtonHeight = 64;
+
+    private (Control Wrap, PanelContainer Card, Button Button)? Parts(string? which) => which switch
+    {
+        "claude" => (_claudeWrap, _card, _claudeStart),
+        "codex" => (_codexWrap, _codexCard, _codexStart),
+        _ => null,
+    };
+
+    /// <summary>
+    /// Opens one agent's card in place of its start button; the open one (if any) goes back to its button. Animated:
+    /// the opening card grows from the button's height and fades in while the closing one shrinks to the button's
+    /// height and fades out, then turns back into its button. Every frame places the whole area again, so it stays
+    /// centered while it changes height.
+    /// </summary>
+    private void Open(string? which, bool animate, bool remember)
+    {
+        if (which == _open) return;
+        string? previous = _open;
         _open = which;
-        _confirmInstall = false;
-        _confirmLogin = false;
-        _claudeStart.Visible = _open != "claude";
-        _card.Visible = _open == "claude";
-        _codexStart.Visible = _open != "codex";
-        _codexCard.Visible = _open == "codex";
         DrawCard(null);
+        if (remember && which != null) AgentChosen?.Invoke(which);
+
+        _openTween?.Kill();
+        _openTween = null;
+        _animating.Clear();
+        int run = ++_openRun;
+        var opening = Parts(which);
+        var closing = Parts(previous);
+        if (!animate || !Layer.IsInsideTree())
+        {
+            FinishOpen();
+            return;
+        }
+
+        float buttonH = (opening?.Button.Size.Y ?? 0) > 0 ? opening!.Value.Button.Size.Y
+            : (closing?.Button.Size.Y ?? 0) > 0 ? closing!.Value.Button.Size.Y : StartButtonHeight;
+        float closeFrom = 0;
+        if (opening is { } o)
+        {
+            o.Button.Visible = false;
+            o.Wrap.Visible = true;
+            CardHeight(o.Wrap, o.Card); // lays the card out at the right width; its height settles a frame later
+            o.Wrap.CustomMinimumSize = new Vector2(0, buttonH);
+            o.Card.Modulate = new Color(1, 1, 1, 0);
+            _animating.Add(o.Wrap);
+        }
+        if (closing is { } c)
+        {
+            c.Button.Visible = false;
+            c.Wrap.Visible = true;
+            closeFrom = c.Wrap.CustomMinimumSize.Y > 0 ? c.Wrap.CustomMinimumSize.Y : CardHeight(c.Wrap, c.Card);
+            _animating.Add(c.Wrap);
+        }
+        PlaceCard();
+        AnimateOpen(run, opening, closing, buttonH, closeFrom);
+    }
+
+    /// <summary>
+    /// Waits until the opening card's height has settled at its new width (wrapped labels report their old, narrow
+    /// height for a frame or two after being shown), then runs the open/close tween.
+    /// </summary>
+    private async void AnimateOpen(int run, (Control Wrap, PanelContainer Card, Button Button)? opening,
+        (Control Wrap, PanelContainer Card, Button Button)? closing, float buttonH, float closeFrom)
+    {
+        var tree = Layer.GetTree();
+        float openTo = 0;
+        if (opening is { } first)
+        {
+            float last = -1;
+            for (int i = 0; i < 4; i++)
+            {
+                await Layer.ToSignal(tree, SceneTree.SignalName.ProcessFrame);
+                if (run != _openRun) return;
+                openTo = CardHeight(first.Wrap, first.Card);
+                if (Mathf.Abs(openTo - last) < 0.5f) break;
+                last = openTo;
+            }
+        }
+        if (run != _openRun) return;
+
+        void Step(float e)
+        {
+            if (opening is { } o)
+            {
+                o.Wrap.CustomMinimumSize = new Vector2(0, Mathf.Lerp(buttonH, openTo, e));
+                o.Card.Modulate = new Color(1, 1, 1, Mathf.Clamp((e - 0.25f) / 0.75f, 0, 1));
+            }
+            if (closing is { } c)
+            {
+                c.Wrap.CustomMinimumSize = new Vector2(0, Mathf.Lerp(closeFrom, buttonH, e));
+                c.Card.Modulate = new Color(1, 1, 1, Mathf.Clamp(1 - e / 0.6f, 0, 1));
+            }
+            PlaceCard();
+        }
+
+        var tween = Layer.CreateTween();
+        tween.TweenMethod(Callable.From<float>(Step), 0f, 1f, 0.3).SetTrans(Tween.TransitionType.Cubic).SetEase(Tween.EaseType.InOut);
+        tween.Finished += FinishOpen;
+        _openTween = tween;
+    }
+
+    /// <summary>The resting state for <see cref="_open"/>: one card open (full height), the others as buttons.</summary>
+    private void FinishOpen()
+    {
+        _openTween = null;
+        _animating.Clear();
+        foreach (var name in new[] { "claude", "codex" })
+        {
+            if (Parts(name) is not { } part) continue;
+            bool open = _open == name;
+            part.Button.Visible = !open;
+            part.Wrap.Visible = open;
+            part.Card.Modulate = Colors.White;
+            if (open) part.Wrap.CustomMinimumSize = new Vector2(0, CardHeight(part.Wrap, part.Card));
+        }
+        PlaceCard();
         Callable.From(PlaceCard).CallDeferred();
+    }
+
+    /// <summary>Opens the card chosen last time (no animation, not saved again).</summary>
+    public void OpenInitial(string? which)
+    {
+        if (which is "claude" or "codex") Open(which, animate: false, remember: false);
     }
 
     /// <summary>Whether the player has connected (pressed [접속] or chose automatic connection). Redraws.</summary>
@@ -347,8 +502,18 @@ internal sealed class ChatPanel
         try
         {
             var area = new Rect2(_scroll.Position, _scroll.Size);
-            _start.Size = new Vector2(area.Size.X, 0); // clamps up to the minimum height for this width
-            float h = _start.Size.Y;
+            // The height is summed here from the visible rows (start buttons, card wrappers) instead of read from the
+            // container's cached minimum, which lags a frame behind visibility changes and made the area jump.
+            float h = 0;
+            int rows = 0;
+            foreach (var child in _start.GetChildren())
+            {
+                if (child is not Control row || !row.Visible) continue;
+                h += row.GetCombinedMinimumSize().Y;
+                rows++;
+            }
+            if (rows > 1) h += (rows - 1) * _start.GetThemeConstant("separation");
+            _start.Size = new Vector2(area.Size.X, h);
             _start.Position = new Vector2(area.Position.X, area.Position.Y + Mathf.Max(0, (area.Size.Y - h) / 2));
         }
         finally { _placingCard = false; }
@@ -419,7 +584,7 @@ internal sealed class ChatPanel
         {
             bool api = auth.Method == AuthMethod.ApiKey;
             Status(api ? ApiText : ReadyText, api ? ChatTheme.WarnColor : ChatTheme.OkColor);
-            Note(message ?? (api ? ApiGuide : ConnectGuide), message != null);
+            Note(message, message != null);
             _autoConnect.Visible = true;
             Buttons("접속", null);
             return;
@@ -428,15 +593,15 @@ internal sealed class ChatPanel
         if (kind == "install")
         {
             Status(NeedInstall, ChatTheme.ErrorColor);
-            if (_confirmInstall) { Note(InstallGuide, false); Buttons("설치", "취소"); }
-            else { Note(message ?? detail, message != null); Buttons("설치", "다시 확인"); }
+            Note(message ?? detail, message != null);
+            Buttons("설치", "다시 확인");
             return;
         }
         if (kind == "login")
         {
             Status(NeedLogin, ChatTheme.ErrorColor);
-            if (_confirmLogin) { Note(AccountGuide, false); Buttons("로그인", "취소"); }
-            else { Note(message ?? detail, message != null); Buttons("로그인", "다시 확인"); }
+            Note(message ?? detail, message != null);
+            Buttons("로그인", "다시 확인");
             return;
         }
         Status(auth.Problem ?? "연결할 수 없습니다.", ChatTheme.ErrorColor);
@@ -480,50 +645,69 @@ internal sealed class ChatPanel
         _cardSecondary.Text = secondary ?? "";
     }
 
-    private void OnCardPrimary()
+    private async void OnCardPrimary()
     {
         var auth = _auth;
-        if (auth == null || auth.Checking) return;
+        if (auth == null || auth.Checking || _popupOpen) return;
         switch (_cardPrimary.Text)
         {
-            case "설치" when !_confirmInstall:
-                _confirmInstall = true;
-                DrawCard(null);
-                break;
             case "설치":
-                _confirmInstall = false;
-                InstallPressed?.Invoke();
-                break;
-            case "로그인" when !_confirmLogin:
-                _confirmLogin = true;
-                DrawCard(null);
+                if (await Confirm("Claude 설치", InstallGuide)) InstallPressed?.Invoke();
                 break;
             case "로그인":
-                _confirmLogin = false;
-                LoginPressed?.Invoke();
-                break;
-            case "접속":
-                bool remember = _autoConnect.ButtonPressed;
-                SetConnected(true);
-                ConnectPressed?.Invoke(remember);
+                if (await Confirm("Claude 로그인", AccountGuide)) LoginPressed?.Invoke();
                 break;
             case "다시 열기":
                 if (_settingUp == "install" || auth.CanInstall) InstallPressed?.Invoke();
                 else LoginPressed?.Invoke();
                 break;
+            case "접속":
+                bool api = auth.Method == AuthMethod.ApiKey;
+                if (!await Confirm("Claude 접속", api ? ApiGuide : ConnectGuide)) break;
+                bool remember = _autoConnect.ButtonPressed;
+                SetConnected(true);
+                ConnectPressed?.Invoke(remember);
+                break;
         }
     }
 
-    private void OnCardSecondary()
+    private void OnCardSecondary() => RecheckPressed?.Invoke();
+
+    /// <summary>
+    /// The game's own confirm popup (the one its menus use) with our text and [확인]/[취소]. Falls back to
+    /// "yes" when the popup cannot be shown, since the card already showed the status.
+    /// </summary>
+    private async System.Threading.Tasks.Task<bool> Confirm(string title, string body)
     {
-        if (_cardSecondary.Text == "취소")
+        var modal = MegaCrit.Sts2.Core.Nodes.CommonUi.NModalContainer.Instance;
+        var popup = MegaCrit.Sts2.Core.Nodes.Multiplayer.NGenericPopup.Create();
+        if (modal == null || popup == null)
         {
-            _confirmInstall = false;
-            _confirmLogin = false;
-            DrawCard(null);
-            return;
+            Host.Log.Warn("chat: confirm popup unavailable; going ahead");
+            return true;
         }
-        RecheckPressed?.Invoke();
+        _popupOpen = true;
+        try
+        {
+            modal.Add(popup);
+            var answer = popup.WaitForConfirmation(
+                new MegaCrit.Sts2.Core.Localization.LocString("main_menu_ui", "GENERIC_POPUP.confirm"),
+                new MegaCrit.Sts2.Core.Localization.LocString("main_menu_ui", "GENERIC_POPUP.confirm"),
+                new MegaCrit.Sts2.Core.Localization.LocString("main_menu_ui", "GENERIC_POPUP.cancel"),
+                new MegaCrit.Sts2.Core.Localization.LocString("main_menu_ui", "GENERIC_POPUP.confirm"));
+            // The popup takes localization keys; put our own text in after it set the keys' text.
+            var vertical = popup.GetNode<MegaCrit.Sts2.Core.Nodes.CommonUi.NVerticalPopup>("VerticalPopup");
+            vertical.SetText(title, body);
+            vertical.YesButton?.SetText("확인");
+            vertical.NoButton?.SetText("취소");
+            return await answer;
+        }
+        catch (Exception ex)
+        {
+            Host.Log.Warn($"chat: confirm popup failed: {ex.Message}; going ahead");
+            return true;
+        }
+        finally { _popupOpen = false; }
     }
 
     /// <summary>Logout asks once more on the button itself; the question goes away after a few seconds.</summary>

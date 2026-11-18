@@ -32,7 +32,7 @@ Slay the Spire 2 버전 **v0.111.1**에서 시험했다. 설계 문서는 [DESIG
 - `fast_mode`: `instant`(기본값)이면 게임이 시작된 뒤 모드가 애니메이션 속도를 '즉시'로 바꾼다. `keep`이면 사용자 설정을 그대로 둔다.
 - `capture_dir`(선택): 스크린샷과 이미지 파일을 저장할 폴더다. 기본값은 `%TEMP%\sts2-agent-mcp`이고, 최근 파일 60개만 보관한다.
 - `dev_tools`(선택, 기본값 `false`): 개발과 시험용 도구 `dev_console`을 켠다. 게임의 개발자 콘솔 명령(방 이동, 이벤트 이동, 카드와 유물 추가 등 치트)을 실행하는 도구라서 평소 플레이에서는 켜지 않는다.
-- `chat_panel`, `chat_width`, `chat_auto_connect`, `claude_path`(선택, 개발 중): 게임 안 채팅창 설정이다. 아래 "게임 안 채팅창"을 참고한다.
+- `chat_panel`, `chat_width`, `chat_agent`, `chat_auto_connect`, `claude_path`(선택, 개발 중): 게임 안 채팅창 설정이다. 아래 "게임 안 채팅창"을 참고한다.
 
 ## MCP 클라이언트 연결
 
