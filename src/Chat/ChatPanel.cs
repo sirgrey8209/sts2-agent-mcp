@@ -39,6 +39,27 @@ internal sealed class ChatPanel
     private bool _hovered;
     private bool _stickToBottom = true;
 
+    // Login card (docs/in-game-chat.md §3.1) and the header's logout button.
+    private const float LogoutWidth = 132;
+    private readonly PanelContainer _card;
+    private readonly Label _cardPill;
+    private readonly Dictionary<string, Label> _cardValues = new();
+    private readonly Label _cardNote;
+    private readonly HBoxContainer _cardButtons;
+    private readonly Button _cardPrimary;
+    private readonly Button _cardSecondary;
+    private readonly Button _logout;
+    private AuthState? _auth;
+    private string? _settingUp;
+    private bool _confirmInstall;
+    private bool _confirmLogout;
+    private int _logoutArm;
+    private bool _cardShown;
+    private bool _logoutShown;
+    private bool _hasRoom = true;
+    private (Transform2D Stretch, Vector2 Win, Rect2 Game)? _lastLayout;
+    private bool _placingCard;
+
     public ChatPanel(Window root)
     {
         Layer = new CanvasLayer { Name = NodeName, Layer = 120 };
@@ -95,6 +116,75 @@ internal sealed class ChatPanel
         };
         Layer.AddChild(Input);
 
+        _logout = new Button { Text = "로그아웃", Visible = false, ClipText = true };
+        ChatTheme.StyleButton(_logout, ChatTheme.PlainButton, ChatTheme.SmallFontSize);
+        _logout.Pressed += OnLogoutPressed;
+        Layer.AddChild(_logout);
+
+        // The card sits over the message list, centered (placed by hand: see PlaceCard).
+        _card = new PanelContainer { MouseFilter = Control.MouseFilterEnum.Stop, Visible = false };
+        _card.AddThemeStyleboxOverride("panel", ChatTheme.CardStyle());
+        var body = new VBoxContainer { MouseFilter = Control.MouseFilterEnum.Ignore };
+        body.AddThemeConstantOverride("separation", 14);
+        _card.AddChild(body);
+
+        var top = new HBoxContainer { MouseFilter = Control.MouseFilterEnum.Ignore };
+        var title = new Label { Text = "Claude 연결", SizeFlagsHorizontal = Control.SizeFlags.ExpandFill, MouseFilter = Control.MouseFilterEnum.Ignore };
+        ChatTheme.StyleText(title, 26);
+        if (ChatTheme.Bold != null) title.AddThemeFontOverride("font", ChatTheme.Bold);
+        _cardPill = new Label { MouseFilter = Control.MouseFilterEnum.Ignore, VerticalAlignment = VerticalAlignment.Center };
+        ChatTheme.StyleText(_cardPill, ChatTheme.SmallFontSize);
+        top.AddChild(title);
+        top.AddChild(_cardPill);
+        body.AddChild(top);
+
+        var facts = new GridContainer { Columns = 2, MouseFilter = Control.MouseFilterEnum.Ignore };
+        facts.AddThemeConstantOverride("h_separation", 18);
+        facts.AddThemeConstantOverride("v_separation", 6);
+        foreach (var (key, label) in new[] { ("install", "설치"), ("account", "계정"), ("plan", "플랜") })
+        {
+            var name = new Label { Text = label, MouseFilter = Control.MouseFilterEnum.Ignore };
+            ChatTheme.StyleText(name, 20, ChatTheme.DimColor);
+            var value = new Label
+            {
+                Text = "…", SizeFlagsHorizontal = Control.SizeFlags.ExpandFill, ClipText = true,
+                TextOverrunBehavior = TextServer.OverrunBehavior.TrimEllipsis, MouseFilter = Control.MouseFilterEnum.Ignore,
+            };
+            ChatTheme.StyleText(value, 20);
+            facts.AddChild(name);
+            facts.AddChild(value);
+            _cardValues[key] = value;
+        }
+        body.AddChild(facts);
+
+        _cardNote = new Label { AutowrapMode = TextServer.AutowrapMode.WordSmart, MouseFilter = Control.MouseFilterEnum.Ignore };
+        ChatTheme.StyleText(_cardNote, 20);
+        body.AddChild(_cardNote);
+
+        _cardButtons = new HBoxContainer { MouseFilter = Control.MouseFilterEnum.Ignore };
+        _cardButtons.AddThemeConstantOverride("separation", 12);
+        _cardPrimary = new Button { CustomMinimumSize = new Vector2(0, 56), SizeFlagsHorizontal = Control.SizeFlags.ExpandFill };
+        ChatTheme.StyleButton(_cardPrimary, ChatTheme.PrimaryButton);
+        _cardPrimary.Pressed += OnCardPrimary;
+        _cardSecondary = new Button { CustomMinimumSize = new Vector2(0, 56), SizeFlagsHorizontal = Control.SizeFlags.ExpandFill };
+        ChatTheme.StyleButton(_cardSecondary, ChatTheme.PlainButton);
+        _cardSecondary.Pressed += OnCardSecondary;
+        _cardButtons.AddChild(_cardPrimary);
+        _cardButtons.AddChild(_cardSecondary);
+        body.AddChild(_cardButtons);
+
+        var hint = new Label
+        {
+            Text = "API 키로 쓰려면 ANTHROPIC_API_KEY 환경변수를 설정한 뒤 Steam과 게임을 다시 실행해 주세요. 로그인 정보는 이 게임 전용 폴더에만 저장돼요.",
+            AutowrapMode = TextServer.AutowrapMode.WordSmart,
+            MouseFilter = Control.MouseFilterEnum.Ignore,
+        };
+        ChatTheme.StyleText(hint, 16, ChatTheme.DimColor);
+        body.AddChild(hint);
+
+        Layer.AddChild(_card);
+        _card.MinimumSizeChanged += PlaceCard;
+
         _dividerLine = new ColorRect { Color = LineIdle, MouseFilter = Control.MouseFilterEnum.Ignore };
         _divider = new Control { MouseFilter = Control.MouseFilterEnum.Stop, MouseDefaultCursorShape = Control.CursorShape.Hsize };
         _divider.GuiInput += OnDividerInput;
@@ -110,6 +200,221 @@ internal sealed class ChatPanel
 
     /// <summary>Raised with the text the player sent.</summary>
     public event Action<string>? Submitted;
+    public event Action? LoginPressed;
+    public event Action? InstallPressed;
+    public event Action? RecheckPressed;
+    public event Action? LogoutPressed;
+
+    /// <summary>Whether the login card is up (development tool).</summary>
+    public bool CardVisible => _cardShown;
+
+    /// <summary>The card's buttons as shown (development tool): primary, secondary; null when hidden.</summary>
+    public (string? Primary, string? Secondary) CardButtons =>
+        (_cardButtons.Visible && _cardPrimary.Visible ? _cardPrimary.Text : null,
+         _cardButtons.Visible && _cardSecondary.Visible ? _cardSecondary.Text : null);
+
+    public string CardNote => _cardNote.Text;
+
+    public string CardDebug =>
+        $"card visible={_card.Visible} rect={_card.GetRect()} min={_card.GetCombinedMinimumSize()} " +
+        $"scroll pos={_scroll.Position} size={_scroll.Size} hasRoom={_hasRoom}";
+
+    /// <summary>Presses a card or header button by its label (development tool). Returns whether one matched.</summary>
+    public bool Press(string label)
+    {
+        foreach (var button in new[] { _cardPrimary, _cardSecondary, _logout })
+        {
+            if (!button.IsVisibleInTree() || button.Disabled || button.Text != label) continue;
+            button.EmitSignal(BaseButton.SignalName.Pressed);
+            return true;
+        }
+        return false;
+    }
+
+    // ---- login card ----
+
+    /// <summary>
+    /// Shows how the chat can run. The card is up while it cannot (it stays up through a re-check once shown, but
+    /// the first check at startup runs behind the chat without it). The header gets a logout button on a subscription.
+    /// </summary>
+    /// <param name="settingUp">"login" / "install" while a console window opened from the card is at work.</param>
+    /// <param name="message">An error to show instead of the usual note.</param>
+    public void ShowAuth(AuthState auth, string? settingUp, string? message = null)
+    {
+        _auth = auth;
+        _settingUp = settingUp;
+        // A check at startup (card not up yet) runs behind the chat; a re-check keeps the card up.
+        if (!(auth.Checking && !_cardShown)) _cardShown = !auth.Ready;
+        if (auth.Ready) _confirmInstall = false;
+        _logoutShown = auth.Ready && auth.Method == AuthMethod.Subscription;
+        Input.Editable = !_cardShown;
+        Input.PlaceholderText = _cardShown ? "로그인한 뒤 쓸 수 있어요" : "메시지 입력 (Enter 전송, Esc 게임으로)";
+        if (_cardShown) Input.ReleaseFocus();
+        ResetLogout();
+        // The header's text widths depend on the logout button.
+        if (_lastLayout is { } l) Layout(l.Stretch, l.Win, l.Game);
+        else UpdateVisibility();
+        DrawCard(message);
+        // Wrapped labels settle their height a frame later.
+        Callable.From(PlaceCard).CallDeferred();
+    }
+
+    /// <summary>
+    /// The card at the message list's width, as tall as its contents, centered in the list's area. Done by hand on
+    /// every layout and content change: a container would keep the tallest size it ever had (wrapped labels are very
+    /// tall while their width is still zero) and push the card off screen.
+    /// </summary>
+    private void PlaceCard()
+    {
+        if (_placingCard) return;
+        _placingCard = true;
+        try
+        {
+            var area = new Rect2(_scroll.Position, _scroll.Size);
+            _card.Size = new Vector2(area.Size.X, 0); // clamps up to the minimum height for this width
+            float h = _card.Size.Y;
+            _card.Position = new Vector2(area.Position.X, area.Position.Y + Mathf.Max(0, (area.Size.Y - h) / 2));
+        }
+        finally { _placingCard = false; }
+    }
+
+    private void UpdateVisibility()
+    {
+        foreach (var c in new Control[] { _headerBg, _headerIcon, _name, _status, Input }) c.Visible = _hasRoom;
+        _scroll.Visible = _hasRoom && !_cardShown;
+        _card.Visible = _hasRoom && _cardShown;
+        _logout.Visible = _hasRoom && _logoutShown;
+    }
+
+    private void DrawCard(string? message)
+    {
+        var auth = _auth;
+        if (auth == null || !_cardShown) return;
+        if (auth.Checking)
+        {
+            Pill("확인 중", ChatTheme.WaitColor);
+            foreach (var value in _cardValues.Values) { value.Text = "…"; value.Modulate = Colors.White; }
+            _cardNote.Text = "이 PC의 설치와 로그인을 확인하고 있어요.";
+            _cardNote.RemoveThemeColorOverride("font_color");
+            _cardButtons.Visible = false;
+            return;
+        }
+
+        Fact("install", auth.Installed ? (auth.Version != null ? "v" + auth.Version : "설치됨") : "없음", auth.Installed);
+        Fact("account", auth.Account ?? "—", auth.Account != null);
+        Fact("plan", auth.Plan ?? "—", auth.Plan != null && auth.Plan != "Free");
+
+        string kind = auth.CanInstall ? "install" : auth.CanLogin ? "login" : "";
+        if (_confirmInstall && kind == "install" && _settingUp == null)
+        {
+            Pill("설치 확인", ChatTheme.WaitColor);
+            Note("Anthropic의 공식 설치 프로그램(https://claude.ai/install.ps1)으로 Claude Code를 설치해요. " +
+                 "설치 위치는 사용자 폴더\\.local\\bin이고 관리자 권한은 필요 없어요. 설치가 끝나면 같은 창에서 로그인이 이어져요.", false);
+            Buttons("설치", "취소");
+            return;
+        }
+        if (_settingUp != null)
+        {
+            Pill(_settingUp == "install" ? "설치 중" : "로그인 대기", ChatTheme.WaitColor);
+            Note(message ?? (_settingUp == "install"
+                ? "열린 창에서 설치가 진행돼요. 끝나면 이어서 로그인이 열리니, 브라우저에서 로그인을 마쳐 주세요. 마치면 자동으로 확인해요."
+                : "열린 창과 브라우저에서 로그인을 마쳐 주세요. 마치면 자동으로 확인해요."), message != null);
+            Buttons(kind.Length > 0 ? "다시 열기" : null, "다시 확인");
+            return;
+        }
+        Pill("사용 불가", ChatTheme.ErrorColor);
+        string fix = kind == "install" ? " [설치]를 눌러 주세요." : kind == "login" ? " [로그인]을 눌러 주세요." : " 해결한 뒤 [다시 확인]을 눌러 주세요.";
+        Note(message ?? (auth.Problem ?? "사용할 수 없어요.") + fix, message != null);
+        Buttons(kind == "install" ? "설치" : kind == "login" ? "로그인" : null, "다시 확인");
+    }
+
+    private void Pill(string text, Color color)
+    {
+        _cardPill.Text = text;
+        _cardPill.AddThemeColorOverride("font_color", color);
+    }
+
+    private void Fact(string key, string text, bool ok)
+    {
+        _cardValues[key].Text = text;
+        _cardValues[key].Modulate = ok ? Colors.White : new Color(1, 0.7f, 0.65f, 0.8f);
+    }
+
+    private void Note(string text, bool error)
+    {
+        _cardNote.Text = text;
+        if (error) _cardNote.AddThemeColorOverride("font_color", ChatTheme.ErrorColor);
+        else _cardNote.AddThemeColorOverride("font_color", ChatTheme.TextColor);
+    }
+
+    private void Buttons(string? primary, string? secondary)
+    {
+        _cardButtons.Visible = primary != null || secondary != null;
+        _cardPrimary.Visible = primary != null;
+        _cardPrimary.Text = primary ?? "";
+        _cardSecondary.Visible = secondary != null;
+        _cardSecondary.Text = secondary ?? "";
+    }
+
+    private void OnCardPrimary()
+    {
+        var auth = _auth;
+        if (auth == null || auth.Checking) return;
+        switch (_cardPrimary.Text)
+        {
+            case "설치" when !_confirmInstall:
+                _confirmInstall = true;
+                DrawCard(null);
+                break;
+            case "설치":
+                _confirmInstall = false;
+                InstallPressed?.Invoke();
+                break;
+            case "로그인":
+                LoginPressed?.Invoke();
+                break;
+            case "다시 열기":
+                if (_settingUp == "install" || auth.CanInstall) InstallPressed?.Invoke();
+                else LoginPressed?.Invoke();
+                break;
+        }
+    }
+
+    private void OnCardSecondary()
+    {
+        if (_cardSecondary.Text == "취소")
+        {
+            _confirmInstall = false;
+            DrawCard(null);
+            return;
+        }
+        RecheckPressed?.Invoke();
+    }
+
+    /// <summary>Logout asks once more on the button itself; the question goes away after a few seconds.</summary>
+    private void OnLogoutPressed()
+    {
+        if (!_confirmLogout)
+        {
+            _confirmLogout = true;
+            _logout.Text = "정말요?";
+            ChatTheme.StyleButton(_logout, ChatTheme.DangerButton, ChatTheme.SmallFontSize);
+            int arm = ++_logoutArm;
+            Layer.GetTree().CreateTimer(4).Timeout += () => { if (arm == _logoutArm) ResetLogout(); };
+            return;
+        }
+        ResetLogout();
+        LogoutPressed?.Invoke();
+    }
+
+    private void ResetLogout()
+    {
+        _logoutArm++;
+        if (!_confirmLogout && _logout.Text == "로그아웃") return;
+        _confirmLogout = false;
+        _logout.Text = "로그아웃";
+        ChatTheme.StyleButton(_logout, ChatTheme.PlainButton, ChatTheme.SmallFontSize);
+    }
 
     public void SetVisible(bool visible) => Layer.Visible = visible;
 
@@ -199,6 +504,7 @@ internal sealed class ChatPanel
     /// <param name="game">Where the game is drawn, in window pixels.</param>
     public void Layout(Transform2D stretch, Vector2 win, Rect2 game)
     {
+        _lastLayout = (stretch, win, game);
         float u = win.Y / 1080f;
         Layer.Transform = stretch.AffineInverse() * new Transform2D(0, new Vector2(u, u), 0, Vector2.Zero);
         Rect2 R(float x0, float y0, float x1, float y1) => new(x0 / u, y0 / u, Mathf.Max(0, x1 - x0) / u, Mathf.Max(0, y1 - y0) / u);
@@ -216,17 +522,23 @@ internal sealed class ChatPanel
         float textX = Pad + IconSize + 14;
         _name.Position = strip.Position + new Vector2(textX, 10);
         _name.Size = new Vector2(Mathf.Max(0, strip.Size.X - textX - Pad), 36);
+        // Logout at the header's right; the name and status stop before it while it is shown.
+        float logoutRoom = _logoutShown ? LogoutWidth + 12 : 0;
+        _logout.Size = new Vector2(LogoutWidth, 48);
+        _logout.Position = strip.Position + new Vector2(strip.Size.X - DividerHit - Pad - LogoutWidth, (HeaderHeight - 48) / 2);
+        _name.Size = new Vector2(Mathf.Max(0, strip.Size.X - textX - Pad - DividerHit - logoutRoom), 36);
         _status.Position = strip.Position + new Vector2(textX, 48);
-        _status.Size = new Vector2(Mathf.Max(0, strip.Size.X - textX - Pad - DividerHit), 26);
+        _status.Size = new Vector2(Mathf.Max(0, strip.Size.X - textX - Pad - DividerHit - logoutRoom), 26);
 
         _scroll.Position = strip.Position + new Vector2(Pad, HeaderHeight + 12);
         _scroll.Size = new Vector2(inner, Mathf.Max(0, strip.Size.Y - HeaderHeight - 12 - InputHeight - 2 * Pad));
+        PlaceCard();
 
         Input.Position = strip.Position + new Vector2(Pad, strip.Size.Y - InputHeight - Pad);
         Input.Size = new Vector2(inner, InputHeight);
 
-        bool hasRoom = strip.Size.X >= 160;
-        foreach (var c in new Control[] { _headerBg, _headerIcon, _name, _status, _scroll, Input }) c.Visible = hasRoom;
+        _hasRoom = strip.Size.X >= 160;
+        UpdateVisibility();
 
         _divider.Position = new Vector2(strip.End.X - DividerHit, strip.Position.Y);
         _divider.Size = new Vector2(DividerHit, strip.Size.Y);

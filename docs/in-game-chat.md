@@ -1,6 +1,6 @@
 # 게임 안 채팅창
 
-상태: 1차 구현 완료(화면 배치, 채팅 패널, Claude Code 연결). 다음 작업은 로그인 분리(3.1절). 기준 게임 버전 v0.111.1.
+상태: 1차 구현 완료(화면 배치, 채팅 패널, Claude Code 연결). 로그인 분리(3.1절) 구현, 실제 로그인 완료 후 흐름은 확인 남음. 기준 게임 버전 v0.111.1.
 
 게임 화면 왼쪽에 에이전트와 대화하는 채팅창을 두고, 게임은 나머지 영역에 전체 높이로 그린다. 채팅창 뒤에서는 모드가 Claude Code를 직접 실행하고, Claude Code는 이 모드의 MCP 도구로 게임을 본다.
 
@@ -12,7 +12,7 @@
 
 - `chat_panel`: 채팅창을 켠다. 게임 노드가 준비되는 즉시(메인 메뉴 전부터) 적용된다.
 - `chat_width`: 채팅창 폭. 창 높이를 1080으로 볼 때의 단위다. 경계선을 끌면 저장된다.
-- `claude_path`(선택): Claude Code 실행 파일. 없으면 PATH와 `~/.local/bin`에서 찾는다.
+- `claude_path`(선택): Claude Code 실행 파일. 없으면 PATH와 설치 폴더들에서 찾는다(3.1절 설계 1).
 
 ## 1. 지금 동작하는 것
 
@@ -79,23 +79,47 @@
 
 ### 2.5 Claude Code 연결 (`src/Chat/AgentSession.cs`, `ChatController.cs`, `JobObject.cs`)
 
-- 첫 메시지를 보낼 때 실행한다:
-  `claude -p --input-format stream-json --output-format stream-json --verbose --mcp-config <작업 폴더>/mcp.json --strict-mcp-config --tools "" --allowedTools mcp__sts2__state,mcp__sts2__act,mcp__sts2__info,mcp__sts2__search --permission-mode dontAsk --system-prompt <프롬프트>`
+- 첫 메시지를 보낼 때 실행한다(3.1절 판정이 끝난 뒤에만):
+  `claude -p --input-format stream-json --output-format stream-json --verbose --mcp-config <작업 폴더>/mcp.json --strict-mcp-config --tools "" --allowedTools mcp__sts2__state,mcp__sts2__act,mcp__sts2__info,mcp__sts2__search --permission-mode dontAsk --system-prompt-file <작업 폴더>/system-prompt.txt`
+- 프롬프트는 파일로 넘긴다. npm 설치(`.cmd`)는 cmd.exe를 거쳐 실행하는데, cmd는 인자 안의 줄바꿈을 넘기지 못한다.
 - 이 모드의 MCP 엔드포인트와 토큰만 연결한다. 내장 도구는 모두 끄고 플레이 도구 네 개만 허용한다. 나머지(이미지 도구, `dev_layout` 등)는 묻지 않고 거부한다.
 - 작업 폴더: `%LOCALAPPDATA%\sts2-agent-mcp\chat`. Claude Code는 대화를 작업 폴더 기준으로 저장하므로 바꾸지 않는다.
-- 환경변수 정리: `ANTHROPIC_API_KEY`, `ANTHROPIC_AUTH_TOKEN`, `ANTHROPIC_BASE_URL`, `CLAUDE_CODE_USE_BEDROCK`, `CLAUDE_CODE_USE_VERTEX`, `CLAUDECODE`, `CLAUDE_CODE_ENTRYPOINT`, `CLAUDE_CODE_SESSION_ID`, `CLAUDE_CODE_SSE_PORT`. 3.1절에서 API 키 처리를 바꾼다.
+- 환경변수와 설정 폴더: 3.1절(`src/Chat/ClaudeCli.cs`).
 - 시스템 프롬프트: 조언이 기본이고 `act`는 요청할 때만, 판단 전에 `state` 확인, 짧게(표·코드 블록 없이), 게임에 표시된 이름 사용.
 - 프로세스 하나에 대화 하나. 메시지는 큐에 넣고 `result` 이벤트마다 한 턴씩 보낸다.
 - 처리하는 이벤트: `system/init`(세션 ID, 모델, MCP 연결 상태), `assistant`(글 → 말풍선, `tool_use` → 안내 줄), `result`(턴 종료, 오류 표시), `system/compact_boundary`(요약 안내).
 - claude가 종료되면 다음 메시지에서 같은 세션을 `--resume`으로 이어 다시 시작한다. 게임을 껐다 켜면 새 대화다.
-- Windows Job Object(KILL_ON_JOB_CLOSE)로 묶어서, 게임이 강제 종료돼도 claude가 남지 않는다.
+- Windows Job Object(KILL_ON_JOB_CLOSE)로 묶어서, 게임이 강제 종료돼도 claude가 남지 않는다. 판정용 짧은 실행도 같은 Job에 넣는다. 로그인·설치 콘솔 창은 사용자 것이므로 넣지 않는다.
 
 ## 3. 작업 계획
 
-### 3.1 로그인 분리 (다음 작업)
+### 3.1 로그인 분리 (구현함)
+
+구현(`src/Chat/ClaudeCli.cs` 실행 파일 찾기·실행·환경, `AuthCheck.cs` 판정, `ChatController.cs` 흐름과 감시, `ChatPanel.cs` 카드와 로그아웃 버튼):
+- 판정은 채팅창이 생길 때 한 번, 카드의 [다시 확인], 로그인 감지, 로그아웃 뒤에 한다. 시작할 때의 첫 판정은 카드 없이 뒤에서 돌고(머리글에 "연결 확인 중…"), 안 되면 카드를 띄운다. 카드가 떠 있으면 입력창을 막는다.
+- 판정이 끝나기 전에 보낸 메시지는 큐에서 기다렸다가 판정이 되면 보낸다.
+- 카드: 설치·계정·플랜 세 칸, 상태(확인 중/사용 불가/로그인 대기/설치 중/설치 확인), 문제 한 문장, [로그인]·[설치]·[다시 열기] 중 하나와 [다시 확인], API 키 안내. 카드는 손으로 배치한다(컨테이너에 넣으면 폭이 0일 때 줄바꿈 라벨이 커진 높이가 줄지 않아 카드가 화면 밖으로 밀렸다).
+- [설치]는 한 번 더 확인한다(설치 위치, 관리자 권한 불필요, 이어서 로그인). 확인하면 콘솔 창에서 공식 설치 스크립트와 `~/.local/bin/claude.exe auth login --claudeai`를 이어 실행한다.
+- [로그인]: `auth login --help`에 `--claudeai`가 있으면 붙인다. 콘솔 창은 `%LOCALAPPDATA%\sts2-agent-mcp\claude-login.cmd`(설치는 `claude-install.cmd`)를 써서 `cmd /c start`로 연다. 한 줄 명령으로 넘기면 cmd 따옴표 규칙 때문에 인자 안의 `|`가 바깥 cmd의 파이프가 된다.
+- 감시: 3초마다 실행 파일을 찾고 `auth status`(API 키 없이)로 저장된 로그인이 생겼는지 본다. 생기면 전체 판정을 다시 한다. 15분 뒤 멈춘다. 자격증명 파일은 읽지 않는다.
+- 로그아웃: 머리글 오른쪽 [로그아웃](구독일 때만). 한 번 누르면 "정말요?"로 바뀌고 4초 안에 다시 누르면 `auth logout`, 실행 중인 세션과 큐를 버린 뒤 다시 판정한다.
+- 대화 중 `result` 오류가 로그인 오류면 claude를 끝내고(세션 ID는 남겨 `--resume`) 안내 줄을 띄운 뒤 다시 판정한다.
+- 판정용 실제 요청은 `%LOCALAPPDATA%\sts2-agent-mcp\probe`에서 실행한다.
+
+확인한 것(2026-11-18, Claude Code 2.1.159, 실제 게임):
+- 전용 폴더가 비어 있으면 `auth status`는 `loggedIn: false`, 실제 요청은 `is_error: true`, `result: "Not logged in · Please run /login"`(종료 코드 1). 카드에 "로그인이 필요해요"와 [로그인]이 뜬다.
+- [다시 확인]을 가짜 클릭으로 눌러 확인 중 → 사용 불가로 돌아오는 것을 확인했다.
+- [로그인]을 누르면 별도 콘솔 창에서 `claude.exe auth login --claudeai`가 실행되고 카드가 "로그인 대기"로 바뀐다.
+- 2.1.159의 `auth login`에는 `--claudeai`(구독, 기본값)와 `--console`(API 사용 요금)이 있다.
+
+남은 확인:
+- 실제 로그인을 마친 뒤 감시가 로그인을 잡아 카드를 닫고 "구독(Max)"으로 대화가 되는지, 로그아웃.
+- 설치 버튼(이 PC에는 이미 설치되어 있어 실제로 실행하지 않았다), npm(`.cmd`) 설치에서 실행.
+- API 키 경로(키가 없어 시험하지 않았다).
+- 대화 중 로그인 만료.
 
 요구사항:
-- 게임 전용 설정 폴더로 Claude Code 로그인을 분리한다(`CLAUDE_CONFIG_DIR` = `%LOCALAPPDATA%\sts2-agent-mcp\claude-config`). 지금은 이 PC의 평소 로그인을 그대로 쓴다.
+- 게임 전용 설정 폴더로 Claude Code 로그인을 분리한다(`CLAUDE_CONFIG_DIR` = `%LOCALAPPDATA%\sts2-agent-mcp\claude-config`). 이 PC의 평소 Claude Code 로그인과 따로 로그인한다.
 - 구독과 API 키 모두 동작하게 한다. 둘 다 있으면 구독을 우선한다.
 - API 키는 모드가 입력받거나 저장하지 않는다. 사용자가 직접 설정한 `ANTHROPIC_API_KEY` 환경변수만 쓴다.
 - 둘 다 없으면 채팅창 가운데에 로그인 카드를 띄운다.
@@ -126,9 +150,9 @@
 7. 환경변수 정리 목록을 TH 기준으로 넓힌다. 추가: `CLAUDE_CODE_USE_FOUNDRY`, `CLAUDE_CODE_CHILD_SESSION`, `CLAUDE_CODE_SESSION_ATTENDED`, `CLAUDE_CODE_EXECPATH`, `CLAUDE_CODE_MESSAGING_SOCKET`, `CLAUDE_CODE_MESSAGING_TOKEN`, `CLAUDE_PID`, `CLAUDE_AGENT_SDK_VERSION`, `CLAUDE_EFFORT`. `CLAUDE_CONFIG_DIR`은 게임 폴더로 덮어쓴다. `ANTHROPIC_API_KEY`는 구독으로 실행할 때만 지운다.
 - 주의: 전용 설정 폴더를 쓰므로 평소 `~/.claude/settings.json`의 `apiKeyHelper`나 `env`는 적용되지 않는다. 실제 환경변수만 통한다.
 
-정할 것:
-- 설치 버튼: 설치되어 있지 않으면 공식 설치 스크립트(`irm https://claude.ai/install.ps1 | iex`)와 로그인을 한 콘솔 창에서 이어 실행하는 버튼을 둘지(TH에는 있다).
-- 로그아웃 버튼: 머리글에 두고 `claude auth logout` 후 실행 중인 세션을 끝내고 다시 확인할지(TH에는 없다).
+정한 것(2026-11-18):
+- 설치 버튼을 둔다. 설치되어 있지 않으면 공식 설치 스크립트(`irm https://claude.ai/install.ps1 | iex`)와 로그인을 한 콘솔 창에서 이어 실행한다(TH와 같다).
+- 로그아웃 버튼을 머리글에 둔다. `claude auth logout` 후 실행 중인 세션을 끝내고 다시 확인한다(TH에는 없다).
 
 배포 정책(2026-11-17 확인. 근거: [Claude Code legal-and-compliance](https://code.claude.com/docs/en/legal-and-compliance), [Agent SDK overview](https://code.claude.com/docs/en/agent-sdk/overview), [Usage Policy](https://www.anthropic.com/aup) 2026-11-12판):
 - 제3자 제품이 claude.ai 로그인을 "제공"하거나 사용자 대신 구독 자격증명으로 요청을 보내는 것은 금지다. 자격증명이나 세션 토큰을 수집·저장·중계하는 것도 금지다.
@@ -194,3 +218,4 @@ MCP 도구로 노출된다. 채팅용 Claude Code에는 허용하지 않는다.
 | `say` | 채팅 메시지 보내기 |
 | `shot` | 채팅창까지 포함한 창 전체 스크린샷 |
 | `probe` | `res://` 장면·자원 구조 보기(`text`에 경로, 디렉터리는 `/`로 끝낸다) |
+| `auth` | 로그인 판정과 카드 상태. `text`: `recheck`(다시 판정), `press:<버튼 글자>`(카드·머리글 버튼 누르기) |

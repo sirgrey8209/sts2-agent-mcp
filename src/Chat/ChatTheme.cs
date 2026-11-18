@@ -144,6 +144,53 @@ internal static class ChatTheme
         };
     }
 
+    public static readonly Color OkColor = new(0.55f, 0.85f, 0.55f, 1f);
+    public static readonly Color WaitColor = new(0.85f, 0.76f, 0.52f, 1f);
+    public static readonly Color PrimaryButton = new(0.18f, 0.36f, 0.42f, 1f);
+    public static readonly Color PlainButton = new(0.16f, 0.19f, 0.23f, 1f);
+    public static readonly Color DangerButton = new(0.42f, 0.18f, 0.16f, 1f);
+
+    /// <summary>Login card: the dialogue bubble, dark.</summary>
+    public static StyleBox CardStyle() => Box(new Color(0.12f, 0.15f, 0.18f, 1f), 30, 24);
+
+    /// <summary>A button in the bubble look: normal, hover (lighter), pressed (darker), disabled (dim).</summary>
+    public static void StyleButton(Button button, Color color, int fontSize = 22)
+    {
+        button.AddThemeStyleboxOverride("normal", Box(color, 22, 8));
+        button.AddThemeStyleboxOverride("hover", Box(color.Lightened(0.18f), 22, 8));
+        button.AddThemeStyleboxOverride("pressed", Box(color.Darkened(0.2f), 22, 8));
+        button.AddThemeStyleboxOverride("focus", new StyleBoxEmpty());
+        button.AddThemeStyleboxOverride("disabled", Box(color.Darkened(0.4f), 22, 8));
+        if (Regular != null) button.AddThemeFontOverride("font", Regular);
+        button.AddThemeFontSizeOverride("font_size", fontSize);
+        foreach (var key in new[] { "font_color", "font_hover_color", "font_pressed_color", "font_focus_color", "font_hover_pressed_color" })
+            button.AddThemeColorOverride(key, TextColor);
+        button.AddThemeColorOverride("font_disabled_color", new Color(TextColor, 0.4f));
+        button.AddThemeColorOverride("font_shadow_color", TextShadow);
+        button.AddThemeConstantOverride("shadow_offset_x", 2);
+        button.AddThemeConstantOverride("shadow_offset_y", 2);
+        button.FocusMode = Control.FocusModeEnum.None;
+    }
+
+    private static StyleBox Box(Color color, int marginH, int marginV)
+    {
+        if (Bubble != null)
+        {
+            return new StyleBoxTexture
+            {
+                Texture = Bubble,
+                TextureMarginLeft = PatchH, TextureMarginRight = PatchH, TextureMarginTop = PatchV, TextureMarginBottom = PatchV,
+                ContentMarginLeft = marginH, ContentMarginRight = marginH, ContentMarginTop = marginV, ContentMarginBottom = marginV,
+                ModulateColor = color,
+            };
+        }
+        return new StyleBoxFlat
+        {
+            BgColor = color, CornerRadiusTopLeft = 14, CornerRadiusTopRight = 14, CornerRadiusBottomLeft = 14, CornerRadiusBottomRight = 14,
+            ContentMarginLeft = marginH, ContentMarginRight = marginH, ContentMarginTop = marginV, ContentMarginBottom = marginV,
+        };
+    }
+
     /// <summary>Plain chat text (markdown-ish) to game BBCode: escape brackets, **bold**, bullets; headings and code marks dropped.</summary>
     public static string ToBbcode(string text)
     {

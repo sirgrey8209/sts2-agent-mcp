@@ -20,15 +20,16 @@ internal sealed class DevLayoutTool : ITool
     public string Name => "dev_layout";
 
     public string Description =>
-        "Development (in-game chat layout). action: info | on | off | hover | move | click | type. " +
-        "move/click take window pixel x, y; type takes text (ASCII letters, digits, space).";
+        "Development (in-game chat layout). action: info | on | off | hover | move | click | drag | type | probe | say | shot | auth. " +
+        "move/click take window pixel x, y; type takes text (ASCII letters, digits, space). " +
+        "auth: login state and card; text \"recheck\" checks again, \"press:<label>\" presses a card or header button.";
 
     public JsonObject InputSchema() => new()
     {
         ["type"] = "object",
         ["properties"] = new JsonObject
         {
-            ["action"] = new JsonObject { ["type"] = "string", ["enum"] = new JsonArray("info", "on", "off", "hover", "move", "click", "drag", "type", "probe", "say", "shot") },
+            ["action"] = new JsonObject { ["type"] = "string", ["enum"] = new JsonArray("info", "on", "off", "hover", "move", "click", "drag", "type", "probe", "say", "shot", "auth") },
             ["x"] = new JsonObject { ["type"] = "number" },
             ["y"] = new JsonObject { ["type"] = "number" },
             ["x2"] = new JsonObject { ["type"] = "number", ["description"] = "drag: end x" },
@@ -56,6 +57,7 @@ internal sealed class DevLayoutTool : ITool
                 return "sent";
             });
         if (action == "shot") return MainThread.Run<ToolOutput>(() => "whole window: " + Capture.Screenshot(0, wholeWindow: true).Path);
+        if (action == "auth") return MainThread.Run<ToolOutput>(() => Auth(args["text"]?.GetValue<string>() ?? ""));
 
         return MainThread.Run<ToolOutput>(() => action switch
         {
@@ -88,6 +90,23 @@ internal sealed class DevLayoutTool : ITool
         foreach (var layer in Ui.FindAll<CanvasLayer>(w).Where(l => l.GetViewport() == w))
             sb.AppendLine($"  L{layer.Layer} {Path(layer)} visible={layer.Visible} xf={Fmt(layer.Transform)}");
         return sb.ToString();
+    }
+
+    /// <summary>Login state and card (§3.1). text: "" shows it, "recheck" checks again, "press:&lt;label&gt;" presses a card/header button.</summary>
+    private static string Auth(string text)
+    {
+        var panel = ChatLayout.Panel ?? throw new ToolError("chat panel is off");
+        if (text == "recheck") ChatController.Recheck();
+        else if (text.StartsWith("press:"))
+        {
+            string label = text["press:".Length..];
+            if (!panel.Press(label)) throw new ToolError($"no visible button \"{label}\"");
+        }
+        else if (text.Length > 0) throw new ToolError("text: \"\" | recheck | press:<label>");
+        var (primary, secondary) = panel.CardButtons;
+        return $"auth: {ChatController.Auth}\nsetting up: {ChatController.SettingUp ?? "-"}\n" +
+               $"card: {(panel.CardVisible ? "shown" : "hidden")} buttons [{primary ?? "-"}] [{secondary ?? "-"}]\nnote: {panel.CardNote}\n{panel.CardDebug}\n" +
+               $"config dir: {ClaudeCli.ConfigDir}";
     }
 
     private static string Move(Vector2 p)

@@ -20,25 +20,21 @@ internal abstract record AgentEvent
     public sealed record ToolUse(string Name, JsonObject? Input) : AgentEvent;
     public sealed record Note(string Content, bool Error) : AgentEvent;
     public sealed record Busy(bool On) : AgentEvent;
+    /// <summary>The login stopped working mid-conversation.</summary>
+    public sealed record AuthLost(string Reason) : AgentEvent;
 }
 
 /// <summary>
 /// Runs Claude Code as a child process for the in-game chat (docs/in-game-chat.md §3):
 /// <c>claude -p --input-format stream-json --output-format stream-json</c>, connected only to this mod's MCP endpoint,
 /// built-in tools off, only the play tools allowed. One process holds one conversation; chat input is queued and written
-/// one turn at a time. Events are raised on a background thread.
+/// one turn at a time. It runs only once <see cref="Auth"/> is ready (subscription or the player's API key, §3.1),
+/// in the game's own Claude Code folder. Events are raised on a background thread.
 /// </summary>
 internal sealed class AgentSession
 {
     private static readonly string[] AllowedTools =
         { "mcp__sts2__state", "mcp__sts2__act", "mcp__sts2__info", "mcp__sts2__search" };
-
-    // Environment that would bill another account or make the child think it runs inside another Claude Code session.
-    private static readonly string[] ScrubbedEnv =
-    {
-        "ANTHROPIC_API_KEY", "ANTHROPIC_AUTH_TOKEN", "ANTHROPIC_BASE_URL", "CLAUDE_CODE_USE_BEDROCK", "CLAUDE_CODE_USE_VERTEX",
-        "CLAUDECODE", "CLAUDE_CODE_ENTRYPOINT", "CLAUDE_CODE_SESSION_ID", "CLAUDE_CODE_SSE_PORT",
-    };
 
     private const string SystemPrompt =
         "너는 Slay the Spire 2 게임 화면 왼쪽 채팅창에 있는 플레이 동료다. 플레이어와 한국어로 대화한다.\n" +
@@ -53,10 +49,10 @@ internal sealed class AgentSession
     private readonly ConcurrentQueue<string> _pending = new();
     private readonly object _gate = new();
     private Process? _process;
-    private JobObject? _job;
     private bool _busy;
     private string? _sessionId;
     private string? _connection;
+    private volatile AuthState? _auth;
 
     public AgentSession(Config config)
     {
@@ -67,6 +63,17 @@ internal sealed class AgentSession
     /// <summary>Raised on a background thread.</summary>
     public event Action<AgentEvent>? Event;
 
+    /// <summary>How to run Claude Code. Messages wait in the queue until it is ready.</summary>
+    public AuthState? Auth
+    {
+        get => _auth;
+        set
+        {
+            _auth = value;
+            if (value is { Ready: true }) Task.Run(Pump);
+        }
+    }
+
     /// <summary>Any thread. Queues a chat message; starts Claude Code if needed.</summary>
     public void Send(string text)
     {
@@ -74,16 +81,22 @@ internal sealed class AgentSession
         Task.Run(Pump);
     }
 
-    public void Stop()
+    /// <summary>Ends the running process. <paramref name="forget"/> also drops queued messages and the conversation
+    /// (after a logout the next login may be another account).</summary>
+    public void Stop(bool forget = false)
     {
         lock (_gate)
         {
             try { if (_process is { HasExited: false }) _process.Kill(entireProcessTree: true); }
             catch { /* already gone */ }
             _process = null;
-            _job?.Dispose();
-            _job = null;
             _busy = false;
+            _connection = null;
+            if (forget)
+            {
+                _pending.Clear();
+                _sessionId = null;
+            }
         }
     }
 
@@ -94,9 +107,10 @@ internal sealed class AgentSession
         lock (_gate)
         {
             if (_busy || _pending.IsEmpty) return;
+            if (_auth is not { Ready: true }) return; // waits for the login check
             if (_process == null || _process.HasExited)
             {
-                if (!StartProcess()) { _pending.Clear(); return; }
+                if (!StartProcess(_auth)) { _pending.Clear(); return; }
             }
             if (!_pending.TryDequeue(out next)) return;
             _busy = true;
@@ -127,16 +141,9 @@ internal sealed class AgentSession
         }
     }
 
-    private bool StartProcess()
+    private bool StartProcess(AuthState auth)
     {
-        string? exe = FindClaude();
-        if (exe == null)
-        {
-            Raise(new AgentEvent.Note("Claude Code(claude)를 찾지 못했어요. 설치 후 설정 파일의 claude_path를 지정해 주세요.", true));
-            Raise(new AgentEvent.Status("연결 안 됨"));
-            return false;
-        }
-
+        string exe = auth.Exe!;
         string dir = WorkDir();
         Directory.CreateDirectory(dir);
         string mcpConfig = Path.Combine(dir, "mcp.json");
@@ -153,44 +160,38 @@ internal sealed class AgentSession
             },
         }.ToJsonString());
 
-        var psi = new ProcessStartInfo(exe)
+        // The prompt goes through a file: an npm install starts through cmd.exe, which cannot pass line breaks.
+        string promptFile = Path.Combine(dir, "system-prompt.txt");
+        File.WriteAllText(promptFile, SystemPrompt, new UTF8Encoding(false));
+
+        var args = new List<string>
         {
-            WorkingDirectory = dir,
-            UseShellExecute = false,
-            CreateNoWindow = true,
-            RedirectStandardInput = true,
-            RedirectStandardOutput = true,
-            RedirectStandardError = true,
-            StandardOutputEncoding = new UTF8Encoding(false),
-            StandardErrorEncoding = new UTF8Encoding(false),
-            StandardInputEncoding = new UTF8Encoding(false),
+            "-p", "--input-format", "stream-json", "--output-format", "stream-json", "--verbose",
+            "--mcp-config", mcpConfig, "--strict-mcp-config",
+            "--tools", "",
+            "--allowedTools", string.Join(",", AllowedTools),
+            "--permission-mode", "dontAsk",
+            "--system-prompt-file", promptFile,
         };
-        foreach (var arg in new[]
-                 {
-                     "-p", "--input-format", "stream-json", "--output-format", "stream-json", "--verbose",
-                     "--mcp-config", mcpConfig, "--strict-mcp-config",
-                     "--tools", "",
-                     "--allowedTools", string.Join(",", AllowedTools),
-                     "--permission-mode", "dontAsk",
-                     "--system-prompt", SystemPrompt,
-                 })
-            psi.ArgumentList.Add(arg);
-        if (_sessionId != null)
-        {
-            psi.ArgumentList.Add("--resume");
-            psi.ArgumentList.Add(_sessionId);
-        }
-        foreach (var key in ScrubbedEnv) psi.Environment.Remove(key);
+        if (_sessionId != null) args.AddRange(new[] { "--resume", _sessionId });
+
+        var psi = ClaudeCli.StartInfo(exe, args, auth.ApiKey);
+        psi.WorkingDirectory = dir;
+        psi.RedirectStandardInput = true;
+        psi.RedirectStandardOutput = true;
+        psi.RedirectStandardError = true;
+        psi.StandardOutputEncoding = new UTF8Encoding(false);
+        psi.StandardErrorEncoding = new UTF8Encoding(false);
+        psi.StandardInputEncoding = new UTF8Encoding(false);
 
         try
         {
             var process = Process.Start(psi) ?? throw new InvalidOperationException("Process.Start returned null");
-            _job ??= JobObject.TryCreate();
-            _job?.Assign(process);
+            ClaudeCli.Adopt(process);
             _process = process;
             _ = Task.Run(() => ReadStdout(process));
             _ = Task.Run(() => ReadStderr(process));
-            Log.Info($"chat: started claude (pid {process.Id}){(_sessionId != null ? " resuming " + _sessionId : "")}");
+            Log.Info($"chat: started claude (pid {process.Id}, {auth.Method}){(_sessionId != null ? " resuming " + _sessionId : "")}");
             Raise(new AgentEvent.Status("연결 중…"));
             return true;
         }
@@ -262,7 +263,8 @@ internal sealed class AgentSession
                 var servers = (ev["mcp_servers"] as JsonArray)?.OfType<JsonObject>().ToList() ?? new List<JsonObject>();
                 var sts2 = servers.FirstOrDefault(s => Str(s["name"]) == "sts2");
                 string mcp = sts2 == null ? "게임 도구 없음" : Str(sts2["status"]) == "connected" ? "게임 연결됨" : "게임 도구 " + Str(sts2["status"]);
-                _connection = $"{mcp} · {model}";
+                string auth = _auth?.Label ?? "";
+                _connection = auth.Length > 0 ? $"{auth} · {mcp} · {model}" : $"{mcp} · {model}";
                 Raise(new AgentEvent.Status("생각 중… · " + _connection));
                 if (sts2 == null || Str(sts2["status"]) != "connected")
                     Raise(new AgentEvent.Note("게임 도구(MCP)에 연결되지 않았어요. 게임 상태를 볼 수 없어요.", true));
@@ -288,9 +290,17 @@ internal sealed class AgentSession
             case "result":
             {
                 bool isError = ev["is_error"] is JsonValue v && v.TryGetValue(out bool e) && e;
-                if (isError || subtype is not ("success" or ""))
-                    Raise(new AgentEvent.Note("오류: " + (Str(ev["result"]) is { Length: > 0 } r ? r : subtype), true));
+                string reason = Str(ev["result"]) is { Length: > 0 } r ? r : subtype;
                 lock (_gate) _busy = false;
+                if ((isError || subtype is not ("success" or "")) && ClaudeCli.IsLoginError(reason))
+                {
+                    // The controller checks the login again and shows the login card; the queue waits for it.
+                    Raise(new AgentEvent.Busy(false));
+                    Raise(new AgentEvent.AuthLost(reason));
+                    break;
+                }
+                if (isError || subtype is not ("success" or ""))
+                    Raise(new AgentEvent.Note("오류: " + reason, true));
                 Raise(new AgentEvent.Busy(false));
                 Raise(new AgentEvent.Status(_connection != null ? "대기 중 · " + _connection : "대기 중"));
                 Task.Run(Pump);
@@ -303,19 +313,6 @@ internal sealed class AgentSession
     {
         try { Event?.Invoke(ev); }
         catch (Exception ex) { Log.Error($"chat: event handler failed: {ex}"); }
-    }
-
-    private string? FindClaude()
-    {
-        if (!string.IsNullOrWhiteSpace(_config.ClaudePath) && File.Exists(_config.ClaudePath)) return _config.ClaudePath;
-        var dirs = (Environment.GetEnvironmentVariable("PATH") ?? "").Split(Path.PathSeparator, StringSplitOptions.RemoveEmptyEntries).ToList();
-        dirs.Add(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), ".local", "bin"));
-        foreach (var dir in dirs)
-        {
-            string candidate = Path.Combine(dir.Trim('"'), OperatingSystem.IsWindows() ? "claude.exe" : "claude");
-            if (File.Exists(candidate)) return candidate;
-        }
-        return null;
     }
 
     /// <summary>Claude Code keys conversations by working directory, so this must stay put for --resume.</summary>
