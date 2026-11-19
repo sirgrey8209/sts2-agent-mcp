@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using Sts2AgentMcp.Game;
 using Sts2AgentMcp.Host;
 using Sts2AgentMcp.Screens;
+using Sts2AgentMcp.View;
 
 namespace Sts2AgentMcp.Tools;
 
@@ -149,7 +150,8 @@ internal sealed class RenderCardsTool : ITool
     public string Description =>
         "Render cards with the game's card art into one PNG sheet and return its path (to forward to the user). " +
         $"Pick cards with `source` ({CardSources.Help}) or `cards` (combat ids like c3, or card ids/names like BASH). " +
-        "Captions show the id or index to use with `act`.";
+        "Captions show the id or index to use with `act`. The result also lists the card names as text " +
+        "(duplicates as xN; the draw pile sorted), so the image is only needed to see the cards.";
 
     public JsonObject InputSchema() => new()
     {
@@ -180,11 +182,26 @@ internal sealed class RenderCardsTool : ITool
         }
         if (source == null && ids.Count == 0) throw new ToolError("give `source` or `cards`");
 
-        var cards = await MainThread.Run(() =>
-            ids.Count > 0 ? CardSources.FromIds(ids) : CardSources.FromSource(GameCtx.Capture(), source!));
+        var (cards, names) = await MainThread.Run(() =>
+        {
+            var list = ids.Count > 0 ? CardSources.FromIds(ids) : CardSources.FromSource(GameCtx.Capture(), source!);
+            return (list, NameList(list, sorted: source == "draw"));
+        });
         if (cards.Count == 0) return "no cards to render";
 
         var capture = await Capture.RenderCards(cards, CaptureArgs.Int(args, "columns", 5), CaptureArgs.Int(args, "max_width", 1600));
-        return CaptureArgs.Result(capture, CaptureArgs.Attach(args), $"{cards.Count} card(s)");
+        var result = CaptureArgs.Result(capture, CaptureArgs.Attach(args), $"{cards.Count} card(s)");
+        return new ToolOutput(result.Text + "\ncards: " + names, result.Images);
+    }
+
+    /// <summary>
+    /// The cards as text (same labels as `state detail=full`), duplicates as "xN", so the sheet need not be read for
+    /// names alone. The draw pile is sorted (its order is hidden in the game); other sources keep their order.
+    /// </summary>
+    private static string NameList(List<SheetCard> cards, bool sorted)
+    {
+        var groups = cards.Select(c => Fmt.CardLabel(c.Card)).GroupBy(n => n);
+        if (sorted) groups = groups.OrderBy(g => g.Key);
+        return string.Join(", ", groups.Select(g => g.Count() > 1 ? $"{g.Key} x{g.Count()}" : g.Key));
     }
 }

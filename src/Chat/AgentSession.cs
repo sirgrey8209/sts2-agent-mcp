@@ -176,6 +176,9 @@ internal sealed class AgentSession
         if (_sessionId != null) args.AddRange(new[] { "--resume", _sessionId });
 
         var psi = ClaudeCli.StartInfo(exe, args);
+        // Wait for the game's MCP server before the first turn. Claude Code 2.1.159 connects MCP servers in the
+        // background with stream-json input, so the first turn started with the server "pending" and no game tools.
+        psi.Environment["MCP_CONNECTION_NONBLOCKING"] = "false";
         psi.WorkingDirectory = dir;
         psi.RedirectStandardInput = true;
         psi.RedirectStandardOutput = true;

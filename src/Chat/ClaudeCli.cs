@@ -171,7 +171,8 @@ internal static class ClaudeCli
 
     /// <summary>
     /// Opens a console window of its own that runs the lines one after the other, for the player to use (install,
-    /// login). It stays open at the end until a key is pressed. Not tied to the game's job: the player owns it.
+    /// login). It closes by itself when the last line succeeds and waits for a key when it fails, so the error can be
+    /// read. Not tied to the game's job: the player owns it.
     /// </summary>
     public static bool OpenConsole(string name, string title, params (string Exe, string[] Args)[] lines)
     {
@@ -187,7 +188,7 @@ internal static class ClaudeCli
             sb.Append("title ").Append(title.Replace("&", "and")).Append("\r\n");
             foreach (var (exe, args) in lines)
                 sb.Append(string.Join(" ", new[] { exe }.Concat(args).Select(Quote))).Append("\r\n");
-            sb.Append("echo.\r\npause\r\n");
+            sb.Append("if errorlevel 1 (\r\necho.\r\npause\r\n)\r\n");
             File.WriteAllText(script, sb.ToString(), new UTF8Encoding(false));
 
             var psi = new ProcessStartInfo(Path.Combine(Environment.SystemDirectory, "cmd.exe"))

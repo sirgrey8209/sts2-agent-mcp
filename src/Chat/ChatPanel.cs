@@ -62,8 +62,12 @@ internal sealed class ChatPanel
     private readonly HBoxContainer _cardButtons;
     private readonly Button _cardPrimary;
     private readonly Button _cardSecondary;
+    private readonly Button _cardAlt;
     private readonly Button _refresh;
-    private bool _lastLoginConsole;
+    // The login popup: the guidance first, then (after [확인]) the wait for the browser sign-in; it closes by itself.
+    private GamePopup? _loginPopup;
+    private string _loginTitle = "";
+    private bool _loginWaiting;
     private readonly Button _logout;
     private AuthState? _auth;
     private string? _settingUp;
@@ -164,7 +168,7 @@ internal sealed class ChatPanel
         _refresh = new Button { CustomMinimumSize = new Vector2(48, 48), TooltipText = "다시 확인", SizeFlagsVertical = Control.SizeFlags.ShrinkCenter };
         ChatTheme.StyleButton(_refresh, ChatTheme.PlainButton);
         _refresh.Draw += DrawRefreshIcon;
-        _refresh.Pressed += () => RecheckPressed?.Invoke();
+        _refresh.Pressed += () => { if (!_popupOpen) RecheckPressed?.Invoke(); };
         top.AddChild(title);
         top.AddChild(_cardPill);
         top.AddChild(_refresh);
@@ -214,6 +218,12 @@ internal sealed class ChatPanel
         _cardButtons.AddChild(_cardPrimary);
         _cardButtons.AddChild(_cardSecondary);
         body.AddChild(_cardButtons);
+        // While the browser login runs: the console window instead (a sign-in that asks for a code to paste).
+        _cardAlt = new Button { Text = LoginWindow, Visible = false, SizeFlagsHorizontal = Control.SizeFlags.ShrinkEnd };
+        ChatTheme.StyleButton(_cardAlt, ChatTheme.PlainButton, ChatTheme.SmallFontSize);
+        // Also while the login popup waits (the popup has room for two buttons only); it then closes.
+        _cardAlt.Pressed += () => { if (!_popupOpen || _loginWaiting) LoginWindowPressed?.Invoke(); };
+        body.AddChild(_cardAlt);
 
         // Codex: not supported yet; its card only says so.
         _codexCard = new PanelContainer { MouseFilter = Control.MouseFilterEnum.Stop, Visible = false };
@@ -253,6 +263,12 @@ internal sealed class ChatPanel
     public event Action<string>? Submitted;
     /// <summary>A login was chosen; the flag is "Anthropic Console (API)" instead of the subscription.</summary>
     public event Action<bool>? LoginPressed;
+    /// <summary>Open the sign-in page again (browser login).</summary>
+    public event Action? BrowserPressed;
+    /// <summary>Do the login in a console window instead.</summary>
+    public event Action? LoginWindowPressed;
+    /// <summary>Stop waiting for the login or install.</summary>
+    public event Action? CancelSetupPressed;
     public event Action? InstallPressed;
     public event Action? RecheckPressed;
     public event Action? LogoutPressed;
@@ -279,7 +295,7 @@ internal sealed class ChatPanel
     /// <summary>Presses a card or header button by its label (development tool). Returns whether one matched.</summary>
     public bool Press(string label)
     {
-        foreach (var button in new Button[] { _claudeStart, _codexStart, _cardPrimary, _cardSecondary, _refresh, _logout, _autoConnect })
+        foreach (var button in new Button[] { _claudeStart, _codexStart, _cardPrimary, _cardSecondary, _cardAlt, _refresh, _logout, _autoConnect })
         {
             if (!button.IsVisibleInTree() || button.Disabled) continue;
             if (button.Text != label && !(button == _refresh && label == "새로고침")) continue;
@@ -296,12 +312,14 @@ internal sealed class ChatPanel
     /// Shows how the chat can run. The card is up while it cannot (it stays up through a re-check once shown, but
     /// the first check at startup runs behind the chat without it). The header gets a logout button on a subscription.
     /// </summary>
-    /// <param name="settingUp">"login" / "install" while a console window opened from the card is at work.</param>
+    /// <param name="settingUp">"login" (browser login running), "login-window" / "install" (a console window opened from
+    /// the card is at work).</param>
     /// <param name="message">An error to show instead of the usual note.</param>
     public void ShowAuth(AuthState auth, string? settingUp, string? message = null)
     {
         _auth = auth;
         _settingUp = settingUp;
+        UpdateLoginPopup(auth, settingUp, message);
         // A check at startup (card not up yet) runs behind the chat; a re-check keeps the card up. The card stays up
         // until the player connects ([접속], or automatically when they chose so).
         if (!(auth.Checking && !_cardShown)) _cardShown = !(auth.Ready && _connected);
@@ -567,6 +585,7 @@ internal sealed class ChatPanel
         {
             "install" => ("Claude 설치", InstallGuide),
             "login" => ("구독으로 로그인", AccountGuide),
+            "wait" => ("구독으로 로그인", LoginWaitText),
             "console" => ("API로 로그인", AccountGuide),
             "connect" => ("Claude 접속", ConnectGuide),
             "api" => ("Claude 접속", ApiGuide),
@@ -580,6 +599,7 @@ internal sealed class ChatPanel
         var auth = _auth;
         if (auth == null || !_cardShown) return;
         _autoConnect.Visible = false;
+        _cardAlt.Visible = false;
         _refresh.Disabled = auth.Checking;
         _refresh.QueueRedraw();
 
@@ -603,12 +623,20 @@ internal sealed class ChatPanel
 
         if (_settingUp != null)
         {
-            Pill(_settingUp == "install" ? "설치 중" : "로그인 대기", ChatTheme.WaitColor);
-            Status(_settingUp == "install" ? NeedInstall : NeedLogin, ChatTheme.ErrorColor);
-            Note(message ?? (_settingUp == "install"
+            bool install = _settingUp == "install";
+            Pill(install ? "설치 중" : "로그인 대기", ChatTheme.WaitColor);
+            Status(install ? NeedInstall : NeedLogin, ChatTheme.ErrorColor);
+            if (_settingUp == "login")
+            {
+                Note(message ?? "브라우저에서 로그인을 마치면 자동으로 확인합니다. 브라우저가 열리지 않았다면 [브라우저 열기]를 눌러 주세요.", message != null);
+                Buttons("브라우저 열기", "취소");
+                _cardAlt.Visible = true;
+                return;
+            }
+            Note(message ?? (install
                 ? "열린 창에서 설치가 진행됩니다. 끝나면 자동으로 확인합니다."
                 : "열린 창과 브라우저에서 로그인을 마쳐 주세요. 마치면 자동으로 확인합니다."), message != null);
-            Buttons(kind.Length > 0 ? "다시 열기" : null, null);
+            Buttons("다시 열기", "취소");
             return;
         }
         Pill(null, default);
@@ -688,11 +716,14 @@ internal sealed class ChatPanel
                 if (await Confirm("Claude 설치", InstallGuide)) InstallPressed?.Invoke();
                 break;
             case LoginSubscription:
-                if (await Confirm(LoginSubscription, AccountGuide)) Login(false);
+                OpenLoginPopup(false);
                 break;
             case "다시 열기":
-                if (_settingUp == "install" || auth.CanInstall) InstallPressed?.Invoke();
-                else Login(_lastLoginConsole);
+                if (_settingUp == "install") InstallPressed?.Invoke();
+                else LoginWindowPressed?.Invoke();
+                break;
+            case "브라우저 열기":
+                BrowserPressed?.Invoke();
                 break;
             case "접속":
                 bool api = auth.Method == AuthMethod.Console;
@@ -706,18 +737,80 @@ internal sealed class ChatPanel
 
     private const string LoginSubscription = "구독으로 로그인";
     private const string LoginConsole = "API로 로그인";
+    private const string LoginWindow = "창에서 로그인하기";
 
-    private async void OnCardSecondary()
+    private void OnCardSecondary()
     {
         var auth = _auth;
         if (auth == null || auth.Checking || _popupOpen) return;
-        if (_cardSecondary.Text == LoginConsole && await Confirm(LoginConsole, AccountGuide)) Login(true);
+        if (_cardSecondary.Text == "취소") CancelSetupPressed?.Invoke();
+        else if (_cardSecondary.Text == LoginConsole) OpenLoginPopup(true);
     }
 
-    private void Login(bool console)
+    private const string LoginWaitText =
+        "브라우저에서 로그인해 주세요.\n로그인을 마치면 이 창은\n자동으로 닫힙니다.\n\n" +
+        "브라우저가 열리지 않았다면\n[브라우저 열기]를 눌러 주세요.";
+
+    /// <summary>
+    /// The login in one popup: the guidance with [취소]/[확인]; [확인] starts the login (browser) and the same popup
+    /// waits for it with [취소]/[브라우저 열기]. It closes by itself when the login is through, and shows the error
+    /// with [닫기] when it fails (see <see cref="UpdateLoginPopup"/>).
+    /// </summary>
+    private void OpenLoginPopup(bool console)
     {
-        _lastLoginConsole = console;
-        LoginPressed?.Invoke(console);
+        string title = console ? LoginConsole : LoginSubscription;
+        var popup = GamePopup.Open(title, AccountGuide, "확인", "취소");
+        if (popup == null)
+        {
+            Host.Log.Warn("chat: login popup unavailable; going ahead");
+            LoginPressed?.Invoke(console);
+            return;
+        }
+        _loginPopup = popup;
+        _loginTitle = title;
+        _loginWaiting = false;
+        _popupOpen = true;
+        bool started = false;
+        popup.Yes += () =>
+        {
+            if (_loginPopup != popup) return;
+            if (started) { BrowserPressed?.Invoke(); return; }
+            started = true;
+            _loginWaiting = true;
+            popup.Set(title, LoginWaitText, "브라우저 열기", "취소");
+            LoginPressed?.Invoke(console);
+        };
+        popup.No += () =>
+        {
+            if (_loginPopup != popup) return;
+            bool waiting = _loginWaiting;
+            EndLoginPopup();
+            if (waiting) CancelSetupPressed?.Invoke();
+        };
+    }
+
+    /// <summary>Follows the login on the popup: checking, then closed (through) or the error (failed).</summary>
+    private void UpdateLoginPopup(AuthState auth, string? settingUp, string? message)
+    {
+        if (_loginPopup is not { } popup || !_loginWaiting) return;
+        if (!popup.IsOpen) { EndLoginPopup(); return; }
+        if (settingUp == "login")
+        {
+            if (auth.Checking) popup.Set(_loginTitle, "로그인을 확인하고 있습니다.", null, null);
+            return;
+        }
+        // Through, cancelled, timed out, or moved to the console window: close. Failed: say why.
+        _loginWaiting = false;
+        if (message != null && settingUp == null) popup.Set(_loginTitle, message, null, "닫기");
+        else EndLoginPopup();
+    }
+
+    private void EndLoginPopup()
+    {
+        _loginPopup?.Close();
+        _loginPopup = null;
+        _loginWaiting = false;
+        _popupOpen = false;
     }
 
     /// <summary>A clockwise circular arrow, drawn over the refresh button.</summary>
