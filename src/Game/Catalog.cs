@@ -47,6 +47,21 @@ internal static class Catalog
     public static CardModel? FindCard(string query) =>
         Find(query).Select(e => e.Model).OfType<CardModel>().FirstOrDefault();
 
+    /// <summary>The model with exactly this id ("CARD.BASH" or "BASH"), or null. No name or partial matching.</summary>
+    public static AbstractModel? FindById(string id) =>
+        Index.FirstOrDefault(e => e.Id.Equals(id, StringComparison.OrdinalIgnoreCase) ||
+                                  e.EntryName.Equals(id, StringComparison.OrdinalIgnoreCase))?.Model;
+
+    /// <summary>The model whose displayed name is exactly this, or null (cards and relics first).</summary>
+    public static AbstractModel? FindByTitle(string title) =>
+        Index.Where(e => e.Title != null && e.Title.Equals(title, StringComparison.OrdinalIgnoreCase))
+            .OrderBy(e => e.Model is CardModel ? 0 : e.Model is RelicModel ? 1 : 2)
+            .FirstOrDefault()?.Model;
+
+    /// <summary>A canonical relic by id or displayed name, or null.</summary>
+    public static RelicModel? FindRelic(string query) =>
+        Find(query).Select(e => e.Model).OfType<RelicModel>().FirstOrDefault();
+
     public static string Describe(IReadOnlyList<string> queries)
     {
         var sb = new StringBuilder();

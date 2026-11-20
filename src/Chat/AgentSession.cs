@@ -22,46 +22,76 @@ internal abstract record AgentEvent
     public sealed record Busy(bool On) : AgentEvent;
     /// <summary>The login stopped working mid-conversation.</summary>
     public sealed record AuthLost(string Reason) : AgentEvent;
+    /// <summary>A turn ended; <paramref name="Reply"/> is all its text.</summary>
+    public sealed record TurnEnded(string Reply, bool Error) : AgentEvent;
 }
 
 /// <summary>
-/// Runs Claude Code as a child process for the in-game chat (docs/in-game-chat.md §3):
-/// <c>claude -p --input-format stream-json --output-format stream-json</c>, connected only to this mod's MCP endpoint,
-/// built-in tools off, only the play tools allowed. One process holds one conversation; chat input is queued and written
-/// one turn at a time. It runs only once <see cref="Auth"/> is ready (subscription or the player's API key, §3.1),
-/// in the game's own Claude Code folder. Events are raised on a background thread.
+/// Runs Claude Code as a child process for one chat conversation (docs/in-game-chat.md §3): the control session of the
+/// main menu, or the play session of one run (docs/chat-roadmap.md). <c>claude -p --input-format stream-json
+/// --output-format stream-json</c>, connected only to this mod's chat MCP endpoint (<c>/mcp/chat</c>: the play tools
+/// plus the in-game ones), built-in tools off. One process holds one conversation; input is queued and written one turn
+/// at a time; the conversation is resumed by id after the process ends. It runs only once <see cref="Auth"/> is ready
+/// (subscription or Console login, §3.1), in the game's own Claude Code folder, cut off from the player's own Claude
+/// Code setup (CLAUDE.md, skills, settings, env). Events are raised on a background thread.
 /// </summary>
 internal sealed class AgentSession
 {
-    private static readonly string[] AllowedTools =
-        { "mcp__sts2__state", "mcp__sts2__act", "mcp__sts2__info", "mcp__sts2__search" };
+    public static readonly string[] AllowedTools =
+    {
+        "mcp__sts2__state", "mcp__sts2__act", "mcp__sts2__info", "mcp__sts2__search",
+        "mcp__sts2__show_cards", "mcp__sts2__show_relics", "mcp__sts2__open_view", "mcp__sts2__map_route",
+        "mcp__sts2__notes", "mcp__sts2__play_level", "mcp__sts2__run_brief", "mcp__sts2__AskUserQuestion",
+        "mcp__sts2__wait_for_player",
+    };
 
-    private const string SystemPrompt =
-        "너는 Slay the Spire 2 게임 화면 왼쪽 채팅창에 있는 플레이 동료다. 플레이어와 한국어로 대화한다.\n" +
-        "- 게임은 sts2 MCP 도구로 본다. state: 현재 화면과 할 수 있는 행동, info: 카드·유물·포션·몬스터·이벤트 설명, " +
-        "search: 카드·유물·포션 검색, act: 행동 실행.\n" +
-        "- 플레이어가 직접 플레이한다. 기본은 조언이다. act는 플레이어가 해 달라고 할 때만 쓰고, 무엇을 할지 애매하면 먼저 묻는다.\n" +
-        "- 판단하기 전에 state로 지금 화면을 확인한다. 이전 대화의 상태를 그대로 믿지 않는다(플레이어가 그사이 진행했을 수 있다).\n" +
-        "- 채팅창이 좁다. 짧게 답한다(보통 1~4문장). 표, 코드 블록, 제목을 쓰지 않는다. 강조는 **굵게**만, 목록은 '- '만 쓴다.\n" +
-        "- 카드·유물·적 이름은 게임에 표시된 이름을 쓴다.";
+    // Fixed for now (docs/chat-roadmap.md): Sonnet at medium effort.
+    private const string Model = "sonnet";
+    private const string Effort = "medium";
+
+    private sealed record Turn(string Text, Action<string>? OnReply);
 
     private readonly Config _config;
-    private readonly ConcurrentQueue<string> _pending = new();
+    private readonly Func<string> _systemPrompt;
+    private readonly ConcurrentQueue<Turn> _pending = new();
     private readonly object _gate = new();
+    private readonly StringBuilder _reply = new();
+    private Turn? _current;
     private Process? _process;
     private bool _busy;
     private string? _sessionId;
     private string? _connection;
     private volatile AuthState? _auth;
 
-    public AgentSession(Config config)
+    /// <param name="sessionId">A conversation to resume (from an earlier game start), or null.</param>
+    /// <param name="systemPrompt">Read each time the process starts, so prompt changes apply on the next start.</param>
+    public AgentSession(Config config, ChatRole role, string? runKey, string? sessionId, Func<string> systemPrompt)
     {
         _config = config;
+        Role = role;
+        RunKey = runKey;
+        _sessionId = sessionId;
+        _systemPrompt = systemPrompt;
         AppDomain.CurrentDomain.ProcessExit += (_, _) => Stop();
+    }
+
+    public ChatRole Role { get; }
+    /// <summary>The run this play session belongs to (null for the control session).</summary>
+    public string? RunKey { get; }
+    public string? SessionId => _sessionId;
+    /// <summary>Whether anything was ever sent in this conversation (here or before a restart).</summary>
+    public bool Started => _sessionId != null || _sentAny;
+    private bool _sentAny;
+
+    public bool Idle
+    {
+        get { lock (_gate) return !_busy && _pending.IsEmpty; }
     }
 
     /// <summary>Raised on a background thread.</summary>
     public event Action<AgentEvent>? Event;
+    /// <summary>Raised when Claude Code reports the conversation id (to keep it for --resume).</summary>
+    public event Action<string>? SessionIdChanged;
 
     /// <summary>How to run Claude Code. Messages wait in the queue until it is ready.</summary>
     public AuthState? Auth
@@ -74,15 +104,24 @@ internal sealed class AgentSession
         }
     }
 
-    /// <summary>Any thread. Queues a chat message; starts Claude Code if needed.</summary>
-    public void Send(string text)
+    /// <summary>Any thread. Queues a message; starts Claude Code if needed. <paramref name="onReply"/> gets the
+    /// whole text of the turn's answer (background thread).</summary>
+    public void Send(string text, Action<string>? onReply = null)
     {
-        _pending.Enqueue(text);
+        _sentAny = true;
+        _pending.Enqueue(new Turn(text, onReply));
         Task.Run(Pump);
     }
 
-    /// <summary>Ends the running process. <paramref name="forget"/> also drops queued messages and the conversation
-    /// (after a logout the next login may be another account).</summary>
+    /// <summary>Ends the running process and drops the queued messages; the conversation can be resumed.</summary>
+    public void Halt()
+    {
+        _pending.Clear();
+        Stop();
+    }
+
+    /// <summary>Ends the running process (the conversation can be resumed). <paramref name="forget"/> also drops
+    /// queued messages and the conversation (after a logout the next login may be another account).</summary>
     public void Stop(bool forget = false)
     {
         lock (_gate)
@@ -91,6 +130,7 @@ internal sealed class AgentSession
             catch { /* already gone */ }
             _process = null;
             _busy = false;
+            _current = null;
             _connection = null;
             if (forget)
             {
@@ -102,7 +142,7 @@ internal sealed class AgentSession
 
     private void Pump()
     {
-        string? next;
+        Turn? next;
         Process? process;
         lock (_gate)
         {
@@ -114,6 +154,8 @@ internal sealed class AgentSession
             }
             if (!_pending.TryDequeue(out next)) return;
             _busy = true;
+            _current = next;
+            _reply.Clear();
             process = _process!;
         }
         Raise(new AgentEvent.Busy(true));
@@ -126,7 +168,7 @@ internal sealed class AgentSession
                 ["message"] = new JsonObject
                 {
                     ["role"] = "user",
-                    ["content"] = new JsonArray(new JsonObject { ["type"] = "text", ["text"] = next }),
+                    ["content"] = new JsonArray(new JsonObject { ["type"] = "text", ["text"] = next.Text }),
                 },
             };
             process.StandardInput.WriteLine(line.ToJsonString());
@@ -135,7 +177,7 @@ internal sealed class AgentSession
         catch (Exception ex)
         {
             Log.Error($"chat: write to claude failed: {ex.Message}");
-            lock (_gate) _busy = false;
+            lock (_gate) { _busy = false; _current = null; }
             Raise(new AgentEvent.Busy(false));
             Raise(new AgentEvent.Note("메시지를 보내지 못했어요: " + ex.Message, true));
         }
@@ -154,15 +196,17 @@ internal sealed class AgentSession
                 ["sts2"] = new JsonObject
                 {
                     ["type"] = "http",
-                    ["url"] = $"http://127.0.0.1:{_config.Port}/mcp",
+                    // The chat endpoint: the play tools plus the in-game ones (external clients use /mcp).
+                    ["url"] = $"http://127.0.0.1:{_config.Port}{HttpHost.ChatPath}",
                     ["headers"] = new JsonObject { ["Authorization"] = $"Bearer {_config.Token}" },
                 },
             },
         }.ToJsonString());
 
         // The prompt goes through a file: an npm install starts through cmd.exe, which cannot pass line breaks.
-        string promptFile = Path.Combine(dir, "system-prompt.txt");
-        File.WriteAllText(promptFile, SystemPrompt, new UTF8Encoding(false));
+        // One file per role, so a control and a play process never read each other's prompt.
+        string promptFile = Path.Combine(dir, $"system-prompt-{(Role == ChatRole.Control ? "control" : "play")}.txt");
+        File.WriteAllText(promptFile, _systemPrompt(), new UTF8Encoding(false));
 
         var args = new List<string>
         {
@@ -171,7 +215,14 @@ internal sealed class AgentSession
             "--tools", "",
             "--allowedTools", string.Join(",", AllowedTools),
             "--permission-mode", "dontAsk",
+            // The system prompt is given on every start (it is not kept in the conversation), so a resumed
+            // conversation runs on the current prompt.
             "--system-prompt-file", promptFile,
+            "--model", Model, "--effort", Effort,
+            // Nothing of the player's own setup: settings only from the game's config folder (no project/local
+            // settings), no skills or slash commands. CLAUDE.md discovery and auto-memory are off (ClaudeCli env).
+            "--setting-sources", "user",
+            "--disable-slash-commands",
         };
         if (_sessionId != null) args.AddRange(new[] { "--resume", _sessionId });
 
@@ -194,7 +245,8 @@ internal sealed class AgentSession
             _process = process;
             _ = Task.Run(() => ReadStdout(process));
             _ = Task.Run(() => ReadStderr(process));
-            Log.Info($"chat: started claude (pid {process.Id}, {auth.Method}){(_sessionId != null ? " resuming " + _sessionId : "")}");
+            Log.Info($"chat: started claude {Role}{(RunKey != null ? " " + RunKey : "")} (pid {process.Id}, {auth.Method})" +
+                     (_sessionId != null ? " resuming " + _sessionId : ""));
             Raise(new AgentEvent.Status("연결 중…"));
             return true;
         }
@@ -218,7 +270,7 @@ internal sealed class AgentSession
                 JsonObject? ev;
                 try { ev = JsonNode.Parse(line) as JsonObject; }
                 catch (JsonException) { Log.Warn($"chat: non-JSON line from claude: {Trim(line)}"); continue; }
-                if (ev != null) Handle(ev);
+                if (ev != null) Handle(ev, process);
             }
         }
         catch (Exception ex)
@@ -235,11 +287,16 @@ internal sealed class AgentSession
             _process = null;
             wasBusy = _busy;
             _busy = false;
+            _current = null;
         }
         Log.Warn($"chat: claude exited ({code})");
         Raise(new AgentEvent.Busy(false));
         Raise(new AgentEvent.Status("연결 끊김 · 다음 메시지에 다시 연결해요"));
-        if (wasBusy) Raise(new AgentEvent.Note($"Claude Code가 종료됐어요 (코드 {code}).", true));
+        if (wasBusy)
+        {
+            Raise(new AgentEvent.Note($"Claude Code가 종료됐어요 (코드 {code}).", true));
+            Raise(new AgentEvent.TurnEnded("", true));
+        }
     }
 
     private static async Task ReadStderr(Process process)
@@ -253,15 +310,20 @@ internal sealed class AgentSession
         catch { /* process gone */ }
     }
 
-    private void Handle(JsonObject ev)
+    private void Handle(JsonObject ev, Process process)
     {
+        lock (_gate) if (_process != process) return; // a stopped process's last words
         string type = Str(ev["type"]);
         string subtype = Str(ev["subtype"]);
         switch (type)
         {
             case "system" when subtype == "init":
             {
-                _sessionId = Str(ev["session_id"]) is { Length: > 0 } id ? id : _sessionId;
+                if (Str(ev["session_id"]) is { Length: > 0 } id && id != _sessionId)
+                {
+                    _sessionId = id;
+                    try { SessionIdChanged?.Invoke(id); } catch (Exception ex) { Log.Error($"chat: session id handler failed: {ex}"); }
+                }
                 string model = Str(ev["model"]);
                 var servers = (ev["mcp_servers"] as JsonArray)?.OfType<JsonObject>().ToList() ?? new List<JsonObject>();
                 var sts2 = servers.FirstOrDefault(s => Str(s["name"]) == "sts2");
@@ -282,6 +344,11 @@ internal sealed class AgentSession
                     switch (Str(block["type"]))
                     {
                         case "text" when Str(block["text"]).Trim() is { Length: > 0 } text:
+                            lock (_gate)
+                            {
+                                if (_reply.Length > 0) _reply.Append("\n\n");
+                                _reply.Append(text);
+                            }
                             Raise(new AgentEvent.Text(text));
                             break;
                         case "tool_use":
@@ -294,18 +361,32 @@ internal sealed class AgentSession
             {
                 bool isError = ev["is_error"] is JsonValue v && v.TryGetValue(out bool e) && e;
                 string reason = Str(ev["result"]) is { Length: > 0 } r ? r : subtype;
-                lock (_gate) _busy = false;
-                if ((isError || subtype is not ("success" or "")) && ClaudeCli.IsLoginError(reason))
+                Turn? turn;
+                string reply;
+                lock (_gate)
+                {
+                    _busy = false;
+                    turn = _current;
+                    _current = null;
+                    reply = _reply.ToString();
+                }
+                bool failed = isError || subtype is not ("success" or "");
+                if (failed && ClaudeCli.IsLoginError(reason))
                 {
                     // The controller checks the login again and shows the login card; the queue waits for it.
                     Raise(new AgentEvent.Busy(false));
                     Raise(new AgentEvent.AuthLost(reason));
                     break;
                 }
-                if (isError || subtype is not ("success" or ""))
-                    Raise(new AgentEvent.Note("오류: " + reason, true));
+                if (failed) Raise(new AgentEvent.Note("오류: " + reason, true));
                 Raise(new AgentEvent.Busy(false));
                 Raise(new AgentEvent.Status(_connection != null ? "대기 중 · " + _connection : "대기 중"));
+                if (turn?.OnReply != null)
+                {
+                    try { turn.OnReply(reply); }
+                    catch (Exception ex) { Log.Error($"chat: reply handler failed: {ex}"); }
+                }
+                Raise(new AgentEvent.TurnEnded(reply, failed));
                 Task.Run(Pump);
                 break;
             }

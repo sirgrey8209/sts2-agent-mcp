@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Text.Json.Nodes;
 using System.Threading.Tasks;
@@ -5,11 +6,44 @@ using Sts2AgentMcp.Session;
 
 namespace Sts2AgentMcp.Tools;
 
+/// <summary>An MCP client other than the in-game chat acting on the game (the in-game chat stops for it). Main thread.</summary>
+internal static class ExternalPlay
+{
+    private static int _running;
+
+    /// <summary>An outside client's act is running now.</summary>
+    public static bool Running => _running > 0;
+
+    /// <summary>Raised on the main thread when an outside client's act starts.</summary>
+    public static event Action? Started;
+
+    public static void Begin()
+    {
+        _running++;
+        try { Started?.Invoke(); }
+        catch (Exception ex) { Host.Log.Error($"external play handler failed: {ex}"); }
+    }
+
+    public static void End()
+    {
+        if (_running > 0) _running--;
+    }
+}
+
 internal sealed class ActTool : ITool
 {
     private readonly ActRunner _runner;
+    private readonly Func<string?>? _guard;
+    private readonly bool _external;
 
-    public ActTool(ActRunner runner) => _runner = runner;
+    /// <param name="external">An endpoint for outside clients: their acts are noted (<see cref="ExternalPlay"/>).</param>
+    /// <param name="guard">Checked before acting (main thread); a returned reason refuses the act.</param>
+    public ActTool(ActRunner runner, bool external = true, Func<string?>? guard = null)
+    {
+        _runner = runner;
+        _external = external;
+        _guard = guard;
+    }
 
     public string Name => "act";
 
@@ -52,6 +86,16 @@ internal sealed class ActTool : ITool
         }
 
         if (actions.Count == 0) throw new ToolError("`actions` must be a non-empty array of strings");
-        return await _runner.Run(actions);
+        if (_guard != null && await Host.MainThread.Run(_guard) is { } refused) throw new ToolError(refused);
+        if (!_external) return await _runner.Run(actions);
+        await Host.MainThread.Run(ExternalPlay.Begin);
+        try
+        {
+            return await _runner.Run(actions);
+        }
+        finally
+        {
+            await Host.MainThread.Run(ExternalPlay.End);
+        }
     }
 }

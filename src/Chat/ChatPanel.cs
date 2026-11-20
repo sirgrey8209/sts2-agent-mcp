@@ -10,13 +10,17 @@ namespace Sts2AgentMcp.Chat;
 /// Panel units: window pixels / u, with u chosen so the window is 1080 units tall; the layer maps them back to window
 /// pixels through the root's (non-uniform) stretch, so text is never distorted. Main thread only.
 /// </summary>
-internal sealed class ChatPanel
+internal sealed partial class ChatPanel
 {
     public const string NodeName = "AgentChatPanel";
 
     private const float Pad = 20;
     private const float HeaderHeight = 84;
-    private const float InputHeight = 64;
+    private const float InputHeight = 64;      // one line
+    private const int InputMaxLines = 6;       // taller input scrolls inside
+    private const float InputArtShift = 9;     // see FitInput
+    private float _inputHeight = InputHeight;
+    private readonly StyleBox[] _inputStyles;
     private const float IconSize = 52;
     private const float DividerHit = 12;   // grab area, panel units (inside the panel, at its right edge)
     private const float DividerLine = 2;
@@ -25,6 +29,10 @@ internal sealed class ChatPanel
 
     private readonly ColorRect _background;
     private readonly ColorRect[] _masks = new ColorRect[3];
+    // Over the game while an agent acts (AgentLock): the player's clicks wait.
+    private readonly ColorRect _busyCover;
+    private readonly Label _busyLabel;
+    private bool _agentBusy;
     private readonly ColorRect _headerBg;
     private readonly Control _headerIcon;
     private readonly Label _name;
@@ -86,6 +94,11 @@ internal sealed class ChatPanel
         Layer = new CanvasLayer { Name = NodeName, Layer = 120 };
         _background = Rect(ChatTheme.PanelColor);
         for (int i = 0; i < _masks.Length; i++) _masks[i] = Rect(new Color(0, 0, 0, 1));
+        _busyCover = Rect(new Color(0, 0, 0, 0.18f));
+        _busyCover.Visible = false;
+        _busyLabel = new Label { Text = "에이전트가 진행하는 중이에요", HorizontalAlignment = HorizontalAlignment.Center, MouseFilter = Control.MouseFilterEnum.Ignore };
+        ChatTheme.StyleText(_busyLabel, ChatTheme.SmallFontSize, ChatTheme.WaitColor);
+        _busyCover.AddChild(_busyLabel);
 
         _headerBg = Rect(ChatTheme.HeaderColor);
         _headerIcon = Icon(ChatTheme.AgentIcon, ChatTheme.AgentOutline, IconSize);
@@ -115,27 +128,40 @@ internal sealed class ChatPanel
             _stickToBottom = value >= bar.MaxValue - bar.Page - 4;
         };
 
-        Input = new LineEdit
+        // Several lines: Enter sends, Shift+Enter breaks the line. The box grows upward with its lines (up to
+        // InputMaxLines, then it scrolls inside), and the message list gives way.
+        Input = new TextEdit
         {
-            PlaceholderText = "메시지 입력 (Enter 전송, Esc 게임으로)",
-            KeepEditingOnTextSubmit = true,
+            PlaceholderText = InputHint,
             CaretBlink = true,
+            WrapMode = TextEdit.LineWrappingMode.Boundary,
+            ScrollFitContentHeight = false,
         };
         ChatTheme.StyleText(Input, 22);
         Input.AddThemeColorOverride("font_placeholder_color", new Color(1, 1, 1, 0.35f));
-        Input.AddThemeStyleboxOverride("normal", ChatTheme.InputStyle(false));
-        Input.AddThemeStyleboxOverride("focus", ChatTheme.InputStyle(true));
-        Input.AddThemeStyleboxOverride("read_only", ChatTheme.InputStyle(false));
-        Input.TextSubmitted += OnSubmitted;
+        Input.AddThemeColorOverride("background_color", new Color(0, 0, 0, 0));
+        _inputStyles = new[] { ChatTheme.InputStyle(false), ChatTheme.InputStyle(true), ChatTheme.InputStyle(false) };
+        Input.AddThemeStyleboxOverride("normal", _inputStyles[0]);
+        Input.AddThemeStyleboxOverride("focus", _inputStyles[1]);
+        Input.AddThemeStyleboxOverride("read_only", _inputStyles[2]);
         Input.GuiInput += ev =>
         {
-            if (ev is InputEventKey { Pressed: true, Keycode: Key.Escape })
+            if (ev is not InputEventKey { Pressed: true } key) return;
+            if (key.Keycode == Key.Escape)
             {
                 Input.ReleaseFocus();
                 Input.AcceptEvent();
             }
+            else if (key.Keycode is Key.Enter or Key.KpEnter)
+            {
+                if (key.ShiftPressed) Input.InsertTextAtCaret("\n");
+                else OnSubmitted(Input.Text);
+                Input.AcceptEvent();
+            }
         };
+        Input.TextChanged += FitInput;
         Layer.AddChild(Input);
+        Callable.From(FitInput).CallDeferred();
 
         _logout = new Button { Text = "로그아웃", Visible = false, ClipText = true };
         ChatTheme.StyleButton(_logout, ChatTheme.PlainButton, ChatTheme.SmallFontSize);
@@ -257,7 +283,9 @@ internal sealed class ChatPanel
     }
 
     public CanvasLayer Layer { get; }
-    public LineEdit Input { get; }
+    public TextEdit Input { get; }
+
+    private const string InputHint = "메시지 입력 (Enter 전송, Shift+Enter 줄바꿈, Esc 게임으로)";
 
     /// <summary>Raised with the text the player sent.</summary>
     public event Action<string>? Submitted;
@@ -326,7 +354,7 @@ internal sealed class ChatPanel
         // Logout whenever a login is saved: also the way to switch between the subscription and the API.
         _logoutShown = !auth.Checking && auth.LoggedIn;
         Input.Editable = !_cardShown;
-        Input.PlaceholderText = _cardShown ? "연결한 뒤 쓸 수 있어요" : "메시지 입력 (Enter 전송, Esc 게임으로)";
+        Input.PlaceholderText = _cardShown ? "연결한 뒤 쓸 수 있어요" : InputHint;
         if (_cardShown) Input.ReleaseFocus();
         ResetLogout();
         // The header's text widths depend on the logout button.
@@ -554,6 +582,7 @@ internal sealed class ChatPanel
         _scroll.Visible = _hasRoom && !_cardShown;
         _start.Visible = _hasRoom && _cardShown;
         _logout.Visible = _hasRoom && _logoutShown;
+        _busyCover.Visible = _hasRoom && _agentBusy;
     }
 
     // Status lines (docs/in-game-chat.md §3.1): red = cannot run yet, green = ready, yellow = billed per use.
@@ -902,6 +931,13 @@ internal sealed class ChatPanel
 
     public void SetVisible(bool visible) => Layer.Visible = visible;
 
+    /// <summary>Covers the game while an agent acts, so the player's clicks do not mix with its actions.</summary>
+    public void SetAgentBusy(bool busy)
+    {
+        _agentBusy = busy;
+        UpdateVisibility();
+    }
+
     // ---- messages ----
 
     public void AddUser(string text)
@@ -910,10 +946,16 @@ internal sealed class ChatPanel
         AddBubble(new BubbleRow(text, right: true, icon, outline, color));
     }
 
-    public void AddAgent(string text)
+    /// <summary>
+    /// An agent message (<see cref="Markup"/>: built once, when it arrives, so card ids still resolve when the transcript
+    /// is drawn again). Cards and relics named in backticks show as names with the game's tooltip on hover.
+    /// </summary>
+    public void AddAgent(Markup markup)
     {
         ShowTyping(false);
-        AddBubble(new BubbleRow(text, right: false, ChatTheme.AgentIcon, ChatTheme.AgentOutline, ChatTheme.AgentColor));
+        var row = new BubbleRow(markup.Bbcode, markup.Plain, right: false, ChatTheme.AgentIcon, ChatTheme.AgentOutline, ChatTheme.AgentColor);
+        row.MetaHover += (meta, on, label, mouse) => OnMetaHover(markup, meta, on, label, mouse);
+        AddBubble(row);
     }
 
     /// <summary>A small centered line: tool use, connection state, errors.</summary>
@@ -921,7 +963,7 @@ internal sealed class ChatPanel
     {
         var label = new Label
         {
-            Text = text,
+            Text = ChatTheme.KeepAll(text),
             HorizontalAlignment = HorizontalAlignment.Center,
             AutowrapMode = TextServer.AutowrapMode.WordSmart,
             SizeFlagsHorizontal = Control.SizeFlags.ExpandFill,
@@ -956,6 +998,15 @@ internal sealed class ChatPanel
         row.Fit(RowWidth);
     }
 
+    /// <summary>Removes every message (the chat switched to another session; its transcript is drawn again).</summary>
+    public void ClearMessages()
+    {
+        foreach (var child in _list.GetChildren()) child.QueueFree();
+        _bubbles.Clear();
+        _typing = null;
+        HideTip();
+    }
+
     private void Append(Control control)
     {
         // Keep the typing indicator last.
@@ -965,8 +1016,14 @@ internal sealed class ChatPanel
         ScrollToBottom();
     }
 
+    /// <summary>Scrolls to the end now and once more a frame later (tall rows such as question cards finish their
+    /// layout late, which left the newest message below the view).</summary>
     private void ScrollToBottom() =>
-        Callable.From(() => _scroll.ScrollVertical = (int)_scroll.GetVScrollBar().MaxValue).CallDeferred();
+        Callable.From(() =>
+        {
+            _scroll.ScrollVertical = (int)_scroll.GetVScrollBar().MaxValue;
+            Callable.From(() => { if (_stickToBottom) _scroll.ScrollVertical = (int)_scroll.GetVScrollBar().MaxValue; }).CallDeferred();
+        }).CallDeferred();
 
     private float RowWidth => Mathf.Max(80, _scroll.Size.X - 16);
 
@@ -978,7 +1035,31 @@ internal sealed class ChatPanel
         text = text.Trim();
         if (text.Length == 0) return;
         Input.Clear();
+        FitInput();
         Submitted?.Invoke(text);
+    }
+
+    /// <summary>The input's height for its lines (wrapped lines count), one to <see cref="InputMaxLines"/>; the layout
+    /// is redone when it changes.</summary>
+    private void FitInput()
+    {
+        int lines = 0;
+        for (int i = 0; i < Input.GetLineCount(); i++) lines += 1 + Input.GetLineWrapCount(i);
+        lines = Mathf.Clamp(lines, 1, InputMaxLines);
+        // TextEdit draws its lines from the top; equal top and bottom margins keep them (and the placeholder) in the
+        // middle of the box, also when one line is shorter than the box's minimum height.
+        float content = lines * Input.GetLineHeight();
+        float height = Mathf.Max(InputHeight, content + 28);
+        float margin = (height - content) / 2;
+        foreach (var style in _inputStyles)
+        {
+            // The bubble art sits low in its box (clear space at the top), so the text goes down a little with it.
+            style.SetContentMargin(Side.Top, margin + InputArtShift);
+            style.SetContentMargin(Side.Bottom, margin - InputArtShift);
+        }
+        if (Mathf.IsEqualApprox(height, _inputHeight)) return;
+        _inputHeight = height;
+        if (_lastLayout is { } l) Layout(l.Stretch, l.Win, l.Game);
     }
 
     // ---- layout ----
@@ -996,6 +1077,9 @@ internal sealed class ChatPanel
         Place(_masks[0], R(game.Position.X, 0, win.X, game.Position.Y));
         Place(_masks[1], R(game.Position.X, game.End.Y, win.X, win.Y));
         Place(_masks[2], R(game.End.X, 0, win.X, win.Y));
+        Place(_busyCover, R(game.Position.X, game.Position.Y, game.End.X, game.End.Y));
+        _busyLabel.Position = new Vector2(0, 16);
+        _busyLabel.Size = new Vector2(_busyCover.Size.X, 30);
 
         var strip = R(0, 0, game.Position.X, win.Y);
         Place(_background, strip);
@@ -1015,11 +1099,11 @@ internal sealed class ChatPanel
         _status.Size = new Vector2(Mathf.Max(0, strip.Size.X - textX - Pad - DividerHit - logoutRoom), 26);
 
         _scroll.Position = strip.Position + new Vector2(Pad, HeaderHeight + 12);
-        _scroll.Size = new Vector2(inner, Mathf.Max(0, strip.Size.Y - HeaderHeight - 12 - InputHeight - 2 * Pad));
+        _scroll.Size = new Vector2(inner, Mathf.Max(0, strip.Size.Y - HeaderHeight - 12 - _inputHeight - 2 * Pad));
         PlaceCard();
 
-        Input.Position = strip.Position + new Vector2(Pad, strip.Size.Y - InputHeight - Pad);
-        Input.Size = new Vector2(inner, InputHeight);
+        Input.Position = strip.Position + new Vector2(Pad, strip.Size.Y - _inputHeight - Pad);
+        Input.Size = new Vector2(inner, _inputHeight);
 
         _hasRoom = strip.Size.X >= 160;
         UpdateVisibility();
@@ -1106,9 +1190,14 @@ internal sealed class ChatPanel
         private readonly bool _hasIcon;
 
         public BubbleRow(string text, bool right, Texture2D? icon, Texture2D? outline, Color color)
+            : this(ChatTheme.ToBbcode(text), ChatTheme.ToPlain(text), right, icon, outline, color) { }
+
+        /// <param name="bbcode">The text as BBCode (links: `[url=meta]` spans, see <see cref="Markup"/>).</param>
+        /// <param name="plain">The text as displayed, for sizing.</param>
+        public BubbleRow(string bbcode, string plain, bool right, Texture2D? icon, Texture2D? outline, Color color)
         {
             _right = right;
-            _plain = ChatTheme.ToPlain(text);
+            _plain = plain;
             _hasIcon = icon != null;
 
             Row = new HBoxContainer
@@ -1138,7 +1227,8 @@ internal sealed class ChatPanel
             _text = new RichTextLabel
             {
                 BbcodeEnabled = true,
-                Text = ChatTheme.ToBbcode(text),
+                Text = bbcode,
+                MetaUnderlined = false,
                 FitContent = true,
                 ScrollActive = false,
                 AutowrapMode = TextServer.AutowrapMode.WordSmart,
@@ -1147,6 +1237,21 @@ internal sealed class ChatPanel
                 MouseFilter = Control.MouseFilterEnum.Pass,
             };
             ChatTheme.StyleText(_text);
+            // Selecting text focuses the label; Godot's default focus frame drew a white box around the text.
+            _text.AddThemeStyleboxOverride("focus", new StyleBoxEmpty());
+            _text.MetaClicked += meta => MetaClicked?.Invoke(meta.AsString());
+            // The mouse as the label got it (panel units): the global mouse position is off with the game's mouse remap.
+            _text.GuiInput += ev =>
+            {
+                if (ev is InputEventMouseMotion motion) _mouse = _text.GetGlobalTransform() * motion.Position;
+                // Copying selected text (Ctrl+C) takes the invisible word joiners along (ChatTheme.KeepAll).
+                else if (ev is InputEventKey { Pressed: true } key && (key.IsAction("ui_copy") || key.Keycode == Key.C && key.CtrlPressed))
+                    ChatTheme.CleanClipboardSoon();
+            };
+            // The same for "Copy" in the right-click menu.
+            _text.GetMenu().IdPressed += _ => ChatTheme.CleanClipboardSoon();
+            _text.MetaHoverStarted += meta => MetaHover?.Invoke(meta.AsString(), true, _text, _mouse);
+            _text.MetaHoverEnded += meta => MetaHover?.Invoke(meta.AsString(), false, _text, _mouse);
             textBox.AddChild(_text);
             dialogue.AddChild(textBox);
 
@@ -1166,6 +1271,12 @@ internal sealed class ChatPanel
         }
 
         public HBoxContainer Row { get; }
+
+        /// <summary>A `[url]` span was clicked (its meta).</summary>
+        public event Action<string>? MetaClicked;
+        /// <summary>The mouse entered (true) or left (false) a `[url]` span; the label is the bubble's text.</summary>
+        public event Action<string, bool, Control, Vector2>? MetaHover;
+        private Vector2 _mouse;
 
         /// <summary>Bubble hugs short text and wraps long text at the row's free width.</summary>
         public void Fit(float rowWidth)

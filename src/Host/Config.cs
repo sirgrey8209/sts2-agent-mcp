@@ -29,6 +29,8 @@ internal sealed class Config
     public bool ChatAutoConnect { get; private set; }
     /// <summary>Chat panel: the agent card opened last ("claude" / "codex"), opened again at start.</summary>
     public string? ChatAgent { get; private set; }
+    /// <summary>Chat: how much the agent does in a run (commentary / colow / cohigh / auto; docs/chat-roadmap.md).</summary>
+    public string ChatPlayLevel { get; private set; } = "colow";
     /// <summary>Registers development tools (dev_console: the game's cheat console). Off by default.</summary>
     public bool DevTools { get; private set; }
 
@@ -74,6 +76,8 @@ internal sealed class Config
             config.ChatAgent = agent;
         if (root["chat_auto_connect"] is JsonValue ac && ac.TryGetValue(out bool autoConnect))
             config.ChatAutoConnect = autoConnect;
+        if (root["chat_play_level"] is JsonValue pl && pl.TryGetValue(out string? level) && level is "commentary" or "colow" or "cohigh" or "auto")
+            config.ChatPlayLevel = level;
         if (root["dev_tools"] is JsonValue dt && dt.TryGetValue(out bool devTools))
             config.DevTools = devTools;
         if (root["claude_path"] is JsonValue cl && cl.TryGetValue(out string? claudePath) && !string.IsNullOrWhiteSpace(claudePath))
@@ -128,6 +132,13 @@ internal sealed class Config
     {
         ChatAgent = agent;
         Save("chat_agent", agent);
+    }
+
+    /// <summary>Remembers the chat's play level.</summary>
+    public void SaveChatPlayLevel(string level)
+    {
+        ChatPlayLevel = level;
+        Save("chat_play_level", level);
     }
 
     /// <summary>Writes one key to the config file, keeping the others as they are.</summary>

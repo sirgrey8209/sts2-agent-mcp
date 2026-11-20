@@ -96,13 +96,29 @@ internal static class ChatTheme
         }
     }
 
+    private static Font? _emphasis;
+
+    /// <summary>
+    /// **bold** in chat text. The Korean substitute font's bold face looked the same as its regular one, so the bold
+    /// face is drawn heavier (embolden) to make emphasis show.
+    /// </summary>
+    private static Font? EmphasisFont
+    {
+        get
+        {
+            if (_emphasis != null || Bold == null && Regular == null) return _emphasis;
+            _emphasis = new FontVariation { BaseFont = Bold ?? Regular, VariationEmbolden = 0.7f };
+            return _emphasis;
+        }
+    }
+
     /// <summary>A text label in the game's dialogue style.</summary>
     public static void StyleText(Control label, int size = FontSize, Color? color = null)
     {
         if (label is RichTextLabel rich)
         {
             if (Regular != null) rich.AddThemeFontOverride("normal_font", Regular);
-            if (Bold != null) rich.AddThemeFontOverride("bold_font", Bold);
+            if (EmphasisFont != null) rich.AddThemeFontOverride("bold_font", EmphasisFont);
             if (Italic != null) rich.AddThemeFontOverride("italics_font", Italic);
             foreach (var key in new[] { "normal_font_size", "bold_font_size", "italics_font_size", "bold_italics_font_size", "mono_font_size" })
                 rich.AddThemeFontSizeOverride(key, size);
@@ -120,6 +136,13 @@ internal static class ChatTheme
             label.AddThemeColorOverride("font_shadow_color", TextShadow);
             label.AddThemeConstantOverride("shadow_offset_x", 2);
             label.AddThemeConstantOverride("shadow_offset_y", 2);
+            if (label is LineEdit or TextEdit)
+            {
+                // The panel is drawn scaled down with the window (often under 1 pixel per unit); the default 1-unit
+                // caret came out thinner than a pixel and was not seen.
+                label.AddThemeConstantOverride("caret_width", 3);
+                label.AddThemeColorOverride("caret_color", TextColor);
+            }
         }
     }
 
@@ -197,13 +220,44 @@ internal static class ChatTheme
         };
     }
 
+    /// <summary>
+    /// Korean text that wraps only at spaces ("keep-all"). The game's text engine follows the Unicode line breaking
+    /// rules, which allow a break between any two Hangul syllables, so a word could split at a line end (타/격). A word
+    /// joiner (U+2060, invisible) between each pair of characters in a word that touches a Hangul syllable forbids that.
+    /// </summary>
+    public static string KeepAll(string text)
+    {
+        if (text.Length < 2) return text;
+        var sb = new System.Text.StringBuilder(text.Length * 2);
+        sb.Append(text[0]);
+        for (int i = 1; i < text.Length; i++)
+        {
+            char a = text[i - 1], b = text[i];
+            if (!char.IsWhiteSpace(a) && !char.IsWhiteSpace(b) && (IsHangul(a) || IsHangul(b)) && a != '\u2060' && b != '\u2060')
+                sb.Append('\u2060');
+            sb.Append(b);
+        }
+        return sb.ToString();
+    }
+
+    /// <summary>After the text control has put a copy on the clipboard (next frame), drops the word joiners from it,
+    /// so copied chat text is the plain text.</summary>
+    public static void CleanClipboardSoon() =>
+        Callable.From(() =>
+        {
+            string text = DisplayServer.ClipboardGet();
+            if (text.Contains('⁠')) DisplayServer.ClipboardSet(text.Replace("⁠", ""));
+        }).CallDeferred();
+
+    private static bool IsHangul(char c) => c is >= '\uAC00' and <= '\uD7A3' or >= '\u3131' and <= '\u318E';
+
     /// <summary>Plain chat text (markdown-ish) to game BBCode: escape brackets, **bold**, bullets; headings and code marks dropped.</summary>
     public static string ToBbcode(string text)
     {
         var sb = new System.Text.StringBuilder();
         foreach (var raw in text.Replace("\r", "").Split('\n'))
         {
-            string line = raw.TrimEnd();
+            string line = KeepAll(raw.TrimEnd());
             string trimmed = line.TrimStart();
             if (trimmed.StartsWith("#")) line = trimmed.TrimStart('#').TrimStart();
             else if (trimmed.StartsWith("- ") || trimmed.StartsWith("* ")) line = "• " + trimmed[2..];

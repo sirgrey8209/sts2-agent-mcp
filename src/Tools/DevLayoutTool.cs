@@ -20,7 +20,8 @@ internal sealed class DevLayoutTool : ITool
     public string Name => "dev_layout";
 
     public string Description =>
-        "Development (in-game chat layout). action: info | on | off | hover | move | click | drag | type | probe | say | shot | auth. " +
+        "Development (in-game chat layout). action: info | on | off | hover | move | click | drag | type | probe | say | agent | shot | auth. " +
+        "agent: shows `text` as an agent message (markup preview, nothing is sent). ask: previews an AskUserQuestion card from `text` (its JSON arguments; the answer is not sent). " +
         "move/click take window pixel x, y; type takes text (ASCII letters, digits, space). " +
         "auth: login state and card; text \"recheck\" checks again, \"press:<label>\" presses a card or header button (\"새로고침\" for the refresh icon), \"popup:install|login|wait|console|connect|api\" previews a guidance popup.";
 
@@ -29,7 +30,7 @@ internal sealed class DevLayoutTool : ITool
         ["type"] = "object",
         ["properties"] = new JsonObject
         {
-            ["action"] = new JsonObject { ["type"] = "string", ["enum"] = new JsonArray("info", "on", "off", "hover", "move", "click", "drag", "type", "probe", "say", "shot", "auth") },
+            ["action"] = new JsonObject { ["type"] = "string", ["enum"] = new JsonArray("info", "on", "off", "hover", "move", "click", "drag", "type", "probe", "say", "agent", "ask", "shot", "auth") },
             ["x"] = new JsonObject { ["type"] = "number" },
             ["y"] = new JsonObject { ["type"] = "number" },
             ["x2"] = new JsonObject { ["type"] = "number", ["description"] = "drag: end x" },
@@ -55,6 +56,25 @@ internal sealed class DevLayoutTool : ITool
                 if (ChatLayout.Panel == null) throw new ToolError("chat panel is off");
                 ChatLayout.Panel.Submit(args["text"]?.GetValue<string>() ?? "");
                 return "sent";
+            });
+        if (action == "agent")
+            return MainThread.Run<ToolOutput>(() =>
+            {
+                if (ChatLayout.Panel == null) throw new ToolError("chat panel is off");
+                // Shows text as an agent message (markup preview); nothing is sent to any session.
+                var markup = Markup.Parse(args["text"]?.GetValue<string>() ?? "");
+                ChatLayout.Panel.AddAgent(markup);
+                return $"shown: {markup.Tips.Count} name(s): {markup.Plain}";
+            });
+        if (action == "ask")
+            return MainThread.Run<ToolOutput>(() =>
+            {
+                if (ChatLayout.Panel == null) throw new ToolError("chat panel is off");
+                // Previews an AskUserQuestion card from `text` (its JSON arguments); the answer only shows as a bubble.
+                var questions = AskUserQuestionTool.Parse(System.Text.Json.Nodes.JsonNode.Parse(args["text"]?.GetValue<string>() ?? "{}") as JsonObject ?? new JsonObject());
+                var panel = ChatLayout.Panel;
+                panel.AddQuestions(questions, (text, _) => Host.Log.Info($"dev ask answered: {text.Replace('\n', '/')}"), null);
+                return $"shown {questions.Count} question(s)";
             });
         if (action == "shot") return MainThread.Run<ToolOutput>(() => "whole window: " + Capture.Screenshot(0, wholeWindow: true).Path);
         if (action == "auth") return MainThread.Run<ToolOutput>(() => Auth(args["text"]?.GetValue<string>() ?? ""));
@@ -154,15 +174,28 @@ internal sealed class DevLayoutTool : ITool
 
     private static async Task<ToolOutput> Type(string text)
     {
-        foreach (char ch in text)
+        if (text == "ctrl+c")
         {
-            Key key = char.IsLetter(ch) ? Key.A + (char.ToUpperInvariant(ch) - 'A')
-                : char.IsDigit(ch) ? Key.Key0 + (ch - '0')
-                : ch == ' ' ? Key.Space : Key.None;
             foreach (bool pressed in new[] { true, false })
             {
                 await MainThread.Run(() => RootWindow.PushInput(new InputEventKey
-                    { Keycode = key, PhysicalKeycode = key, Unicode = pressed ? ch : 0, Pressed = pressed }));
+                    { Keycode = Key.C, PhysicalKeycode = Key.C, CtrlPressed = true, Pressed = pressed }));
+                await Task.Delay(60);
+            }
+            return await MainThread.Run(() => $"pressed ctrl+c; clipboard: \"{DisplayServer.ClipboardGet()}\" ({DisplayServer.ClipboardGet().Count(c => c == '⁠')} word joiners)");
+        }
+        foreach (char ch in text)
+        {
+            // "\n" presses Enter, "\r" Shift+Enter.
+            Key key = char.IsLetter(ch) ? Key.A + (char.ToUpperInvariant(ch) - 'A')
+                : char.IsDigit(ch) ? Key.Key0 + (ch - '0')
+                : ch == ' ' ? Key.Space : ch is '\n' or '\r' ? Key.Enter : Key.None;
+            long unicode = ch is '\n' or '\r' ? 0 : ch;
+            bool shift = ch == '\r';
+            foreach (bool pressed in new[] { true, false })
+            {
+                await MainThread.Run(() => RootWindow.PushInput(new InputEventKey
+                    { Keycode = key, PhysicalKeycode = key, Unicode = pressed ? unicode : 0, Pressed = pressed, ShiftPressed = shift }));
                 await Task.Delay(40);
             }
         }

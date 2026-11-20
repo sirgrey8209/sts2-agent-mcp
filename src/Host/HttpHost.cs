@@ -8,22 +8,26 @@ using System.Threading.Tasks;
 namespace Sts2AgentMcp.Host;
 
 /// <summary>
-/// Localhost-only HTTP server exposing a single MCP endpoint (POST /mcp).
+/// Localhost-only HTTP server exposing the MCP endpoints: POST /mcp (every MCP client) and POST /mcp/chat (the in-game
+/// chat's own sessions: the same tools plus in-game ones, docs/chat-roadmap.md step 2).
 /// Browser requests are rejected (any Origin header), no CORS headers are sent, and a bearer token is required.
 /// </summary>
 internal sealed class HttpHost
 {
+    public const string ChatPath = "/mcp/chat";
     private const int MaxBodyBytes = 1 << 20;
 
     private readonly Config _config;
     private readonly McpEndpoint _endpoint;
+    private readonly McpEndpoint _chatEndpoint;
     private readonly byte[] _tokenBytes;
     private HttpListener? _listener;
 
-    public HttpHost(Config config, McpEndpoint endpoint)
+    public HttpHost(Config config, McpEndpoint endpoint, McpEndpoint chatEndpoint)
     {
         _config = config;
         _endpoint = endpoint;
+        _chatEndpoint = chatEndpoint;
         _tokenBytes = Encoding.UTF8.GetBytes(config.Token);
     }
 
@@ -64,7 +68,9 @@ internal sealed class HttpHost
                 await Send(res, 403, "browser requests are not allowed");
                 return;
             }
-            if (req.Url?.AbsolutePath != "/mcp")
+            string path = req.Url?.AbsolutePath ?? "";
+            McpEndpoint? endpoint = path == "/mcp" ? _endpoint : path == ChatPath ? _chatEndpoint : null;
+            if (endpoint == null)
             {
                 await Send(res, 404, "not found");
                 return;
@@ -105,7 +111,7 @@ internal sealed class HttpHost
                 body = new string(buffer, 0, read);
             }
 
-            string? response = await _endpoint.Handle(body);
+            string? response = await endpoint.Handle(body);
             if (response == null)
             {
                 res.StatusCode = 202;

@@ -407,7 +407,7 @@ internal sealed class CrystalSphereHandler : IScreenHandler
         if (game == null) return view.Add("  (minigame not available)");
 
         view.Add($"divinations left {game.DivinationCount} · tool {game.CrystalSphereTool}");
-        view.Add("grid (x→, y↓): # hidden, . empty, G good item, B bad item");
+        view.Add("grid (x→, y↓): # hidden, . empty, letter = revealed part of that item (listed below)");
         var size = game.GridSize;
         for (int y = 0; y < size.Y; y++)
         {
@@ -415,10 +415,25 @@ internal sealed class CrystalSphereHandler : IScreenHandler
             for (int x = 0; x < size.X; x++)
             {
                 var cell = game.cells[x, y];
-                row.Append(cell.IsHidden ? '#' : cell.Item == null ? '.' : cell.Item.IsGood ? 'G' : 'B');
+                row.Append(cell.IsHidden ? '#' : cell.Item == null ? '.' : Label(game, cell.Item));
             }
             view.Add($"  y{y,-2} {row}");
         }
+
+        // The game draws each item's picture in its revealed cells, so its kind and extent there are visible to the player.
+        var seen = game.Items.Select(item => (item, revealed: Revealed(game, item))).Where(s => s.revealed > 0).ToList();
+        if (seen.Count == 0) view.Add("items seen: none yet");
+        else
+        {
+            view.Add("items seen (only fully revealed items are won):");
+            foreach (var (item, revealed) in seen)
+            {
+                int total = item.Size.X * item.Size.Y;
+                string status = revealed < total ? "" : item.IsGood ? " · won" : " · revealed: added to deck";
+                view.Add($"  {Label(game, item)} {ItemName(item)} {item.Size.X}×{item.Size.Y} · revealed {revealed}/{total}{status}");
+            }
+        }
+        view.Add($"won so far: {WonText(game)}");
 
         var actions = new List<string>();
         if (!game.IsFinished) actions.Add("tool big|small · reveal <x> <y>");
@@ -456,12 +471,60 @@ internal sealed class CrystalSphereHandler : IScreenHandler
             {
                 if (Ui.GetField(screen, "_proceedButton") is not NClickableControl proceed || !Ui.IsActionable(proceed))
                     return ExecResult.Fail("proceed is not available yet");
+                // With nothing won the game goes straight on without a reward screen; say so.
+                string? note = game == null ? null
+                    : Won(game).Any() ? $"crystal sphere won: {WonText(game)}"
+                    : "crystal sphere: no item was fully revealed, nothing won";
                 proceed.ForceClick();
-                return ExecResult.Ok(SettleMode.ScreenChange);
+                return ExecResult.Ok(SettleMode.ScreenChange, note);
             }
             default:
                 return ExecResult.Fail($"unknown crystal sphere action '{action.Verb}'");
         }
+    }
+
+    /// <summary>One letter per item, by its place in the game's item list (stable while the minigame lasts).</summary>
+    private static char Label(CrystalSphereMinigame game, CrystalSphereItem item)
+    {
+        int i = 0;
+        foreach (var other in game.Items)
+        {
+            if (ReferenceEquals(other, item)) break;
+            i++;
+        }
+        return i < 26 ? (char)('A' + i) : '?';
+    }
+
+    private static int Revealed(CrystalSphereMinigame game, CrystalSphereItem item)
+    {
+        int n = 0;
+        for (int dx = 0; dx < item.Size.X; dx++)
+        for (int dy = 0; dy < item.Size.Y; dy++)
+            if (!game.cells[item.Position.X + dx, item.Position.Y + dy].IsHidden) n++;
+        return n;
+    }
+
+    private static IEnumerable<CrystalSphereItem> Won(CrystalSphereMinigame game) =>
+        game.Items.Where(item => Revealed(game, item) == item.Size.X * item.Size.Y);
+
+    private static string WonText(CrystalSphereMinigame game)
+    {
+        var won = Won(game).Select(item => $"{Label(game, item)} {ItemName(item)}{(item.IsGood ? "" : " (bad)")}").ToList();
+        return won.Count == 0 ? "nothing" : string.Join(", ", won);
+    }
+
+    private static string ItemName(CrystalSphereItem item)
+    {
+        var s = item.ToSerializable();
+        return s.type switch
+        {
+            CrystalSphereItemType.Relic => "relic",
+            CrystalSphereItemType.Potion => $"{s.potionRarity.ToString().ToLowerInvariant()} potion",
+            CrystalSphereItemType.CardReward => $"{s.cardRarity.ToString().ToLowerInvariant()} card reward",
+            CrystalSphereItemType.Gold => s.isBigGold ? "gold 30" : "gold 10",
+            CrystalSphereItemType.Curse => "curse Doubt",
+            _ => s.type.ToString(),
+        };
     }
 }
 

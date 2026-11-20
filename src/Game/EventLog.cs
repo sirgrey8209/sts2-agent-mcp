@@ -188,16 +188,18 @@ internal static class EventLog
     }
 
     /// <summary>Main thread only.</summary>
-    public static long Mark()
+    /// <param name="flush">False for watchers that only peek: they must not end a draw group early, which would
+    /// split the "draw a, b" line that `act` reports.</param>
+    public static long Mark(bool flush = true)
     {
-        FlushDraws();
+        if (flush) FlushDraws();
         return _dropped + Lines.Count;
     }
 
     /// <summary>Main thread only.</summary>
-    public static List<string> Since(long mark)
+    public static List<string> Since(long mark, bool flush = true)
     {
-        FlushDraws();
+        if (flush) FlushDraws();
         long start = Math.Max(0, mark - _dropped);
         return start >= Lines.Count ? new List<string>() : Collapse(Lines.Skip((int)start));
     }

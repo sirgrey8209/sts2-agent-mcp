@@ -50,7 +50,17 @@ public static class ModEntry
                 .Add(new DevLayoutTool());
             if (config.DevTools) tools.Add(new DevConsoleTool());
 
-            _host = new HttpHost(config, new McpEndpoint(tools));
+            // The in-game chat's sessions get the same tools plus their own (showing cards, opening views, notes...);
+            // the endpoint every other client uses stays as it is.
+            var chatTools = tools.Extend(new ITool[]
+            {
+                new ShowCardsTool(), new ShowRelicsTool(), new OpenViewTool(), new MapRouteTool(),
+                new NotesTool(), new PlayLevelTool(), new RunBriefTool(), new AskUserQuestionTool(),
+                new WaitForPlayerTool(),
+            });
+            // The chat's own act: not noted as outside play, and checked against the chat's rules first.
+            chatTools.Replace(new ActTool(runner, external: false, guard: ChatSessions.ActRefusal));
+            _host = new HttpHost(config, new McpEndpoint(tools), new McpEndpoint(chatTools));
             _host.Start();
             Log.Info($"ready (config: {config.FilePath})");
         }

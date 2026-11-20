@@ -52,6 +52,8 @@ internal static class Ui
     private static void Walk<T>(Node node, List<T> found) where T : Node
     {
         if (!IsLive(node)) return;
+        // The in-game chat panel is not part of the game: its texts and buttons must not show up as the game's.
+        if (node.Name == Chat.ChatPanel.NodeName) return;
         if (node is T match) found.Add(match);
         try
         {

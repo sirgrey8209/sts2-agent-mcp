@@ -23,7 +23,21 @@ internal sealed class ActRunner
 
     public Task<string> RenderCurrent(bool full) => MainThread.Run(() => Render(full));
 
+    /// <summary>Runs the actions under the <see cref="AgentLock"/> (card selections go to the agent meanwhile).</summary>
     public async Task<string> Run(IReadOnlyList<string> actions)
+    {
+        await MainThread.Run(AgentLock.Enter);
+        try
+        {
+            return await RunCore(actions);
+        }
+        finally
+        {
+            await MainThread.Run(AgentLock.Exit);
+        }
+    }
+
+    private async Task<string> RunCore(IReadOnlyList<string> actions)
     {
         var output = new StringBuilder();
         // Followup = step produced by a macro (e.g. new_run); those continue through screen changes.

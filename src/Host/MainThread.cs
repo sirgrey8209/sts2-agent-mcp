@@ -73,6 +73,34 @@ internal static class MainThread
         return waiter.Task;
     }
 
+    /// <summary>Runs <paramref name="action"/> on the main thread every <paramref name="interval"/>, for good.</summary>
+    public static void Every(TimeSpan interval, Action action) =>
+        Queue.Enqueue(() => Waiters.Add(new Repeater(interval, action)));
+
+    private sealed class Repeater : IFrameWaiter
+    {
+        private readonly TimeSpan _interval;
+        private readonly Action _action;
+        private DateTime _next = DateTime.UtcNow;
+
+        public Repeater(TimeSpan interval, Action action)
+        {
+            _interval = interval;
+            _action = action;
+        }
+
+        public bool Tick()
+        {
+            if (DateTime.UtcNow < _next) return false;
+            _next = DateTime.UtcNow + _interval;
+            try { _action(); }
+            catch (Exception ex) { Log.Error($"repeating work failed: {ex}"); }
+            return false;
+        }
+
+        public void Fail(Exception ex) { }
+    }
+
     private interface IFrameWaiter
     {
         bool Tick();

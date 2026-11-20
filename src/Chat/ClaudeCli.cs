@@ -21,17 +21,18 @@ internal static class ClaudeCli
 {
     private static readonly string[] Extensions = { ".exe", ".cmd", ".bat" };
 
-    // What the child must not inherit: settings that bill another account or provider, and the marks of a Claude
-    // Code session the game was started from (which would make the child run as that session's child).
-    // The player's ANTHROPIC_API_KEY is never passed on: the API way is Claude Code's own Console login.
-    private static readonly string[] ScrubbedEnv =
+    // The child inherits nothing of the player's own Claude Code setup: every ANTHROPIC_*, CLAUDE_* and MCP_* variable
+    // is dropped (other accounts or providers, a model or effort override, the marks of a Claude Code session the game
+    // was started from, the player's ANTHROPIC_API_KEY: the API way is Claude Code's own Console login).
+    private static readonly string[] ScrubbedPrefixes = { "ANTHROPIC_", "CLAUDE_", "CLAUDECODE", "MCP_" };
+
+    // Set on every child: the game's own config folder, and no CLAUDE.md / AGENTS.md discovery or auto-memory. Without
+    // these the chat read the player's ~/.claude/CLAUDE.md (2.1.328 loads it whatever CLAUDE_CONFIG_DIR is) and any
+    // CLAUDE.md in a parent folder of its working folder.
+    private static readonly (string Key, string Value)[] IsolationEnv =
     {
-        "ANTHROPIC_API_KEY", "ANTHROPIC_AUTH_TOKEN", "ANTHROPIC_BASE_URL",
-        "CLAUDE_CODE_USE_BEDROCK", "CLAUDE_CODE_USE_VERTEX", "CLAUDE_CODE_USE_FOUNDRY",
-        "CLAUDECODE", "CLAUDE_CODE_ENTRYPOINT", "CLAUDE_CODE_SESSION_ID", "CLAUDE_CODE_SSE_PORT",
-        "CLAUDE_CODE_CHILD_SESSION", "CLAUDE_CODE_SESSION_ATTENDED", "CLAUDE_CODE_EXECPATH",
-        "CLAUDE_CODE_MESSAGING_SOCKET", "CLAUDE_CODE_MESSAGING_TOKEN", "CLAUDE_PID", "CLAUDE_AGENT_SDK_VERSION",
-        "CLAUDE_EFFORT", "CLAUDE_CONFIG_DIR",
+        ("CLAUDE_CODE_DISABLE_CLAUDE_MDS", "1"),
+        ("CLAUDE_CODE_DISABLE_AUTO_MEMORY", "1"),
     };
 
     private static readonly Regex LoginError =
@@ -115,9 +116,10 @@ internal static class ClaudeCli
     private static void ApplyEnv(ProcessStartInfo psi)
     {
         foreach (var key in psi.Environment.Keys.ToList())
-            if (ScrubbedEnv.Contains(key, StringComparer.OrdinalIgnoreCase)) psi.Environment.Remove(key);
+            if (ScrubbedPrefixes.Any(p => key.StartsWith(p, StringComparison.OrdinalIgnoreCase))) psi.Environment.Remove(key);
         Directory.CreateDirectory(ConfigDir);
         psi.Environment["CLAUDE_CONFIG_DIR"] = ConfigDir;
+        foreach (var (key, value) in IsolationEnv) psi.Environment[key] = value;
     }
 
     /// <summary>Puts a child in the job that dies with the game (even if the game is killed).</summary>

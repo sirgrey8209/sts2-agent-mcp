@@ -15,6 +15,11 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <!-- Chat prompt fragments (docs/chat-roadmap.md, step 1), read as "prompts.<name>.md". -->
+    <EmbeddedResource Include="prompts\*.md" LogicalName="prompts.%(Filename).md" />
+  </ItemGroup>
+
+  <ItemGroup>
     <Reference Include="sts2">
       <HintPath>$(STS2GameDataDir)/sts2.dll</HintPath>
       <Private>false</Private>

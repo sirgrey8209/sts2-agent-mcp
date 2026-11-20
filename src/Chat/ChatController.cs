@@ -8,16 +8,16 @@ using Sts2AgentMcp.Host;
 namespace Sts2AgentMcp.Chat;
 
 /// <summary>
-/// Connects the chat panel to the Claude Code session: player messages out, agent events in (main thread), and the
-/// login (docs/in-game-chat.md §3.1): checks how the chat can run when the panel appears, shows the login card when
-/// it cannot, opens Claude Code's own login or installer in a console window and watches for the result.
+/// Connects the chat panel to the chat's sessions (<see cref="ChatSessions"/>: player messages out, agent events in)
+/// and runs the login (docs/in-game-chat.md §3.1): checks how the chat can run when the panel appears, shows the login
+/// card when it cannot, runs Claude Code's own login or installer and watches for the result.
 /// </summary>
 internal static class ChatController
 {
     private static readonly TimeSpan WatchLimit = TimeSpan.FromMinutes(15);
     private static readonly TimeSpan WatchInterval = TimeSpan.FromSeconds(3);
 
-    private static AgentSession? _session;
+    private static bool _attached;
     private static ChatPanel? _panel;
     private static Config? _config;
     private static AuthState _auth = AuthState.CheckingNow;
@@ -39,14 +39,11 @@ internal static class ChatController
         if (_panel == panel) return;
         _panel = panel;
         _config = config;
-        bool first = _session == null;
-        _session ??= new AgentSession(config);
-        if (first) _session.Event += ev => MainThread.Run(() => Show(ev));
-        panel.Submitted += text =>
-        {
-            panel.AddUser(text);
-            _session.Send(text);
-        };
+        bool first = !_attached;
+        _attached = true;
+        ChatSessions.Attach(panel, config);
+        if (first) ChatSessions.AuthLost += OnAuthLost;
+        panel.Submitted += ChatSessions.UserMessage;
         panel.LoginPressed += OpenLogin;
         panel.BrowserPressed += OpenBrowser;
         panel.LoginWindowPressed += OpenLoginWindow;
@@ -92,7 +89,7 @@ internal static class ChatController
     {
         _auth = state;
         if (state.Ready) _settingUp = null;
-        if (_session != null) _session.Auth = state;
+        ChatSessions.SetAuth(state);
         // "Connect automatically" skips the card's [접속] once the login works.
         if (state.Ready && _config?.ChatAutoConnect == true) _panel?.SetConnected(true);
         _panel?.ShowAuth(state, _settingUp);
@@ -294,9 +291,9 @@ internal static class ChatController
 
     private static void Logout()
     {
-        if (_auth.Exe is not { } exe || _session == null) return;
+        if (_auth.Exe is not { } exe) return;
         StopLogin();
-        _session.Stop(forget: true);
+        ChatSessions.StopAll(forget: true);
         _panel?.ShowTyping(false);
         _panel?.SetConnected(false);
         _panel?.AddNote("로그아웃했어요.");
@@ -311,42 +308,12 @@ internal static class ChatController
 
     // ---- agent events ----
 
-    private static void Show(AgentEvent ev)
+    private static void OnAuthLost(string reason)
     {
-        var panel = _panel;
-        if (panel == null) return;
-        switch (ev)
-        {
-            case AgentEvent.Status s: if (_auth.Ready) panel.SetStatus(s.Message); break;
-            case AgentEvent.Text t: panel.AddAgent(t.Content); break;
-            case AgentEvent.ToolUse u: panel.AddNote(Describe(u.Name, u.Input)); break;
-            case AgentEvent.Note n: panel.AddNote(n.Content, n.Error); break;
-            case AgentEvent.Busy b: panel.ShowTyping(b.On); break;
-            case AgentEvent.AuthLost lost:
-                Log.Warn($"chat: login lost: {lost.Reason}");
-                _session?.Stop();
-                panel.SetConnected(false);
-                panel.AddNote("로그인이 만료됐어요. 다시 로그인한 뒤 메시지를 보내 주세요.", true);
-                Recheck();
-                break;
-        }
-    }
-
-    /// <summary>One short line per tool call (the game font has no emoji, so plain marks only).</summary>
-    private static string Describe(string name, JsonObject? input)
-    {
-        string tool = name.StartsWith("mcp__sts2__") ? name["mcp__sts2__".Length..] : name;
-        string List(string key) => input?[key] is JsonArray a ? string.Join(", ", a.Select(x => x?.ToString())) : "";
-        string text = tool switch
-        {
-            "state" => "상황 확인",
-            "act" => "행동: " + List("actions"),
-            "info" => "정보 조회: " + List("ids"),
-            "search" => "검색: " + string.Join(" ", new[] { "query", "kind", "pool", "type", "rarity" }
-                .Select(k => input?[k]?.ToString()).Where(v => !string.IsNullOrEmpty(v))),
-            _ => tool,
-        };
-        if (text.Length > 120) text = text[..120] + "…";
-        return "· " + text + " ·";
+        Log.Warn($"chat: login lost: {reason}");
+        _panel?.ShowTyping(false);
+        _panel?.SetConnected(false);
+        _panel?.AddNote("로그인이 만료됐어요. 다시 로그인한 뒤 메시지를 보내 주세요.", true);
+        Recheck();
     }
 }

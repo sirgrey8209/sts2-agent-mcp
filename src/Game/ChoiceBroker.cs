@@ -39,6 +39,9 @@ internal sealed class PendingChoice
 /// Answers the game's card-selection prompts through the official selector hook (CardSelectCmd.PushSelector),
 /// so they become agent decisions instead of UI clicks. Card rewards, relic and bundle choices are not routed here
 /// by the game and stay UI-driven.
+/// When it intercepts: always without the in-game chat (an MCP client plays the game). With the chat panel
+/// (<see cref="AlwaysIntercept"/> off), only while an agent's `act` runs (<see cref="AgentLock"/>), plus until a
+/// selection asked for then is answered; the rest of the time the player plays and the game shows its own screens.
 /// </summary>
 internal sealed class ChoiceBroker : ICardSelector
 {
@@ -46,21 +49,52 @@ internal sealed class ChoiceBroker : ICardSelector
 
     private ChoiceBroker() { }
 
+    private IDisposable? _scope;
+    private bool _always = true;
+
     /// <summary>Main thread only.</summary>
     public PendingChoice? Pending { get; private set; }
 
     public static void Install()
     {
-        RunManager.Instance.RunStarted += _ => Instance.EnsureRegistered();
-        if (RunManager.Instance.IsInProgress) Instance.EnsureRegistered();
+        RunManager.Instance.RunStarted += _ =>
+        {
+            Instance.Pending = null; // anything pending belonged to a previous run
+            Instance.Refresh();
+        };
+        if (RunManager.Instance.IsInProgress) Instance.Refresh();
     }
 
-    private void EnsureRegistered()
+    /// <summary>Main thread. True (the default): every card selection waits for an agent's `choose`. The in-game chat
+    /// turns it off: then only selections asked for while an agent acts.</summary>
+    public bool AlwaysIntercept
     {
-        Pending = null; // anything pending belonged to a previous run
-        if (ReferenceEquals(CardSelectCmd.Selector, this)) return;
-        CardSelectCmd.PushSelector(this);
-        Log.Info("card selector registered");
+        get => _always;
+        set
+        {
+            _always = value;
+            Refresh();
+        }
+    }
+
+    /// <summary>Main thread. Puts the selector on or takes it off as the moment needs (never while a selection it
+    /// took is still waiting for its answer).</summary>
+    public void Refresh()
+    {
+        if (!RunManager.Instance.IsInProgress) return;
+        bool want = _always || AgentLock.Held || Pending != null;
+        bool registered = ReferenceEquals(CardSelectCmd.Selector, this);
+        if (want && !registered)
+        {
+            _scope = CardSelectCmd.PushSelector(this);
+            Log.Info("card selector registered");
+        }
+        else if (!want && registered)
+        {
+            _scope?.Dispose();
+            _scope = null;
+            Log.Info("card selector off: the player picks on the game's screens");
+        }
     }
 
     public Task<IEnumerable<CardModel>> GetSelectedCards(IEnumerable<CardModel> options, int minSelect, int maxSelect)
@@ -92,6 +126,7 @@ internal sealed class ChoiceBroker : ICardSelector
 
         Pending = null;
         choice.Completion.TrySetResult(distinct.Select(i => choice.Options[i]).ToList());
+        Refresh();
         return null;
     }
 
@@ -102,6 +137,7 @@ internal sealed class ChoiceBroker : ICardSelector
         if (choice == null) return "no choice is pending";
         Pending = null;
         choice.Completion.TrySetResult(Array.Empty<CardModel>());
+        Refresh();
         return null;
     }
 
