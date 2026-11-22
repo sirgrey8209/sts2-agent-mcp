@@ -6,28 +6,25 @@ using Sts2AgentMcp.Session;
 
 namespace Sts2AgentMcp.Tools;
 
-/// <summary>An MCP client other than the in-game chat acting on the game (the in-game chat stops for it). Main thread.</summary>
+/// <summary>
+/// An outside MCP client (STS2AgentMcp's endpoint) acting on the game; the in-game chat (STS2AgentChat) stops for it.
+/// Kept in <see cref="Host.Bridge"/> so the chat mod sees the other mod's acts. Main thread.
+/// </summary>
 internal static class ExternalPlay
 {
-    private static int _running;
-
     /// <summary>An outside client's act is running now.</summary>
-    public static bool Running => _running > 0;
+    public static bool Running => Host.Bridge.ExternalActing;
 
     /// <summary>Raised on the main thread when an outside client's act starts.</summary>
-    public static event Action? Started;
-
-    public static void Begin()
+    public static event Action? Started
     {
-        _running++;
-        try { Started?.Invoke(); }
-        catch (Exception ex) { Host.Log.Error($"external play handler failed: {ex}"); }
+        add { if (value != null) Host.Bridge.OnExternalAct(begun => { if (begun) value(); }); }
+        remove { /* listeners live as long as the game */ }
     }
 
-    public static void End()
-    {
-        if (_running > 0) _running--;
-    }
+    public static void Begin() => Host.Bridge.ExternalActBegin();
+
+    public static void End() => Host.Bridge.ExternalActEnd();
 }
 
 internal sealed class ActTool : ITool

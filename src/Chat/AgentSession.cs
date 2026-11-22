@@ -197,7 +197,7 @@ internal sealed class AgentSession
                 {
                     ["type"] = "http",
                     // The chat endpoint: the play tools plus the in-game ones (external clients use /mcp).
-                    ["url"] = $"http://127.0.0.1:{_config.Port}{HttpHost.ChatPath}",
+                    ["url"] = $"http://127.0.0.1:{_config.Port}{Host.ModEntry.ChatPath}",
                     ["headers"] = new JsonObject { ["Authorization"] = $"Bearer {_config.Token}" },
                 },
             },

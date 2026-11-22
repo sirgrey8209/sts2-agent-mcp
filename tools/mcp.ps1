@@ -1,6 +1,7 @@
 <#
 .SYNOPSIS
-    Calls the in-game MCP endpoint directly (for development/testing without an MCP client).
+    Calls a mod's MCP endpoint directly (for development/testing without an MCP client): STS2AgentMcp's /mcp by
+    default, STS2AgentChat's /mcp/dev with -Dev or /mcp/chat with -Chat.
 
 .EXAMPLE
     .\mcp.ps1 init
@@ -11,16 +12,22 @@
     .\mcp.ps1 info BASH CARD.STRIKE_IRONCLAD
     .\mcp.ps1 call screenshot '{}'
     .\mcp.ps1 call render_cards '{"source":"hand"}'
+    .\mcp.ps1 -Dev call dev_layout '{"action":"auth"}'
+    .\mcp.ps1 -Chat list
 #>
 param(
     [Parameter(Mandatory = $true, Position = 0)][ValidateSet("init", "list", "state", "act", "info", "call")][string]$Command,
     [Parameter(Position = 1, ValueFromRemainingArguments = $true)][string[]]$Rest,
-    [string]$GameDir = $(if ($env:STS2_GAME_DIR) { $env:STS2_GAME_DIR } else { "D:\SteamLibrary\steamapps\common\Slay the Spire 2" })
+    [string]$GameDir = $(if ($env:STS2_GAME_DIR) { $env:STS2_GAME_DIR } else { "D:\SteamLibrary\steamapps\common\Slay the Spire 2" }),
+    [switch]$Dev,
+    [switch]$Chat
 )
 
 $ErrorActionPreference = "Stop"
-$conf = Get-Content (Join-Path $GameDir "mods\STS2AgentMcp.conf") -Raw | ConvertFrom-Json
-$uri = "http://127.0.0.1:$($conf.port)/mcp"
+$confName = if ($Dev -or $Chat) { "STS2AgentChat.conf" } else { "STS2AgentMcp.conf" }
+$path = if ($Dev) { "/mcp/dev" } elseif ($Chat) { "/mcp/chat" } else { "/mcp" }
+$conf = Get-Content (Join-Path $GameDir "mods\$confName") -Raw | ConvertFrom-Json
+$uri = "http://127.0.0.1:$($conf.port)$path"
 
 switch ($Command) {
     "init"  { $method = "initialize"; $params = @{ protocolVersion = "2025-06-18"; capabilities = @{}; clientInfo = @{ name = "mcp.ps1"; version = "1" } } }

@@ -22,6 +22,7 @@
 
 ```
 [에이전트] ── MCP (Streamable HTTP, JSON 응답) ── [게임 모드: STS2AgentMcp.dll]
+[채팅창의 Claude Code] ── MCP ── [게임 모드: STS2AgentChat.dll] (15절)
 
  Host       HTTP 수신, 인증, MCP JSON-RPC, 메인 스레드 스케줄러
  Tools      state / act / info, 이미지 도구, export_loc  (도구 정의와 인자 파싱만)
@@ -39,16 +40,20 @@
 
 ```
 (repo root)
-  DESIGN.md  README.md  build.ps1  STS2AgentMcp.csproj  mod_manifest.json
-  tools/mcp.ps1        개발용: MCP 클라이언트 없이 엔드포인트 직접 호출
-  tools/redeploy.ps1   개발용: 빌드 → 게임 종료 → 설치 → 실행 → 준비될 때까지 대기
+  DESIGN.md  README.md  build.ps1  Directory.Build.props (두 모드 공통 빌드 설정, src/Common 포함)
+  tools/mcp.ps1        개발용: MCP 클라이언트 없이 엔드포인트 직접 호출 (macOS: mcp.sh)
+  tools/redeploy.ps1   개발용: 빌드 → 게임 종료 → 설치 → 실행 → 준비될 때까지 대기 (macOS: redeploy.sh)
   tools/autofight.ps1  개발용: 단순 규칙으로 전투를 끝내서 다른 화면까지 빨리 이동 (플레이 에이전트 아님)
   tools/kb-*.ps1       지식 베이스 관리: kb-check(원본 변경 검사), kb-stamp(해시 기록), kb-glossary(게임 용어 정리)
-  kb/                  몬스터와 이벤트 문서 (14절). 설치 시 DLL 옆 STS2AgentMcp-kb/로 복사
-  src/
-    Host/      ModEntry  HttpHost  McpEndpoint  MainThread  Config  Features  Log
-    Tools/     ToolRegistry  StateTool  ActTool  InfoTool  SearchTool  CaptureTools (screenshot, render_cards, render_map)  ExportLocTool
-               DevLayoutTool (dev_layout: 채팅창 개발용)  ScenePeek (장면·자원 구조 보기)
+  kb/                  몬스터와 이벤트 문서 (14절). 설치 시 모드마다 DLL 옆 <모드 id>-kb/로 복사
+  src/External/  외부 MCP 모드 STS2AgentMcp (STS2AgentMcp.csproj, mod_manifest.json)
+               ModEntry (/mcp, 15527)  Config  ModInfo  ExportLocTool  DevConsoleTool
+  src/Chat/      채팅 모드 STS2AgentChat (STS2AgentChat.csproj, mod_manifest.json): 15절
+               ModEntry (/mcp/chat, /mcp/dev, 15528)  Config  ModInfo  채팅창 전부
+               Tools/ (ChatTools, DevLayoutTool, ScenePeek)  Game/ (InputLock, MouseRemap)
+  src/Common/    두 모드가 각자 자기 DLL에 컴파일하는 공통 소스 (실행 중에는 서로 독립)
+    Host/      HttpHost  McpEndpoint  MainThread  Features  Log  Startup  Bridge (두 모드가 함께 켜졌을 때 공유하는 상태)
+    Tools/     ToolRegistry  StateTool  ActTool  InfoTool  SearchTool  CaptureTools (screenshot, render_cards, render_map)
     Session/   ActRunner (행동 실행 → 안정 대기 → 이벤트 수집 → 렌더)
     Screens/   Core (ActionSpec, ExecResult, ScreenView, IScreenHandler, ScreenRegistry)
                CombatHandler  ChoiceHandler  RewardHandlers (rewards, card_reward)
@@ -58,13 +63,12 @@
     View/      Fmt (출력 형식 전부 + 캐릭터 자원 제공자 Resources)
     Game/      GameCtx  Observation  Settle  TurnTracker  ChoiceBroker  EventLog  Ids  Ui  Text  Catalog
                Search (카드·유물·포션 검색)  MonsterInfo (행동 상태 기계 요약)  KbDocs (kb 문서 읽기)  Capture  MapRender (이미지 생성)
-               MouseRemap (채팅창 배치에서 마우스 좌표 보정)
-    Chat/      게임 안 채팅창 (15절): ChatLayout (화면 배치)  ChatPanel  ChatTheme (게임 말풍선 자원)
-               AgentSession (Claude Code 실행)  ChatController  JobObject
 ```
 (구현하면서 파일을 합쳤다: 처음 안의 `ScreenProbe`·`IdMap`·`TextEncoder`는 각각 `Observation`·`Ids`·`Fmt`가 맡는다. 게임 없이 돌리는 단위 테스트는 아직 없다.)
 
-모드 id `STS2AgentMcp`, 기본 포트 `15527`을 써서 기존 모드(id `STS2_MCP`, 포트 15526)와 함께 설치돼도 충돌하지 않게 한다.
+모드 id `STS2AgentMcp`, 기본 포트 `15527`을 써서 기존 모드(id `STS2_MCP`, 포트 15526)와 함께 설치돼도 충돌하지 않게 한다. 채팅 모드는 id `STS2AgentChat`, 포트 `15528`이다.
+
+두 모드는 소스(`src/Common`)를 공유하지만 별개의 어셈블리라 정적 상태가 따로다. 함께 켜졌을 때 맞물려야 하는 것은 `Bridge`가 프로세스 전역 슬롯(AppDomain 데이터, 기본 라이브러리 타입만)에 둔다. 도구 호출 직렬화(gate), 외부 클라이언트의 행동 여부(채팅이 멈추고 화면을 덮고 입력을 잠근다), 채팅 모드 존재 여부(외부 모드는 자기 행동 중에만 카드 선택을 가로챈다), 게임이 그려지는 영역(스크린샷 자르기)이다.
 
 ## 3. 실행 모델
 
@@ -395,4 +399,5 @@ interface IResourceProvider { bool Applies(PlayerCtx p); IEnumerable<ResourceVie
 
 - 화면 왼쪽에 에이전트 채팅창을 두고 게임은 나머지 영역에 전체 높이로 그린다. 게임은 그 영역의 비율에 맞춰 UI를 다시 배치한다. 모드가 Claude Code를 직접 실행하고, Claude Code는 이 모드의 MCP 도구로 게임을 본다.
 - 1차 구현 완료(배치, 입력 보정, 메신저 패널, Claude Code 연결). 구현 방식, 버린 방법, 작업 계획: [docs/in-game-chat.md](docs/in-game-chat.md)
-- 이 기능은 Harmony 패치를 쓴다(`Viewport.GetMousePosition`, 게임의 화면 비율 처리기 두 곳, `NGame.ApplyDisplaySettings`). 설정 `chat_panel`이 꺼져 있으면 패치하지 않는다.
+- 별도 모드 `STS2AgentChat`(src/Chat)다. 외부 MCP 모드만 설치하면 채팅창도 Harmony 패치도 없다.
+- 이 기능은 Harmony 패치를 쓴다(`Viewport.GetMousePosition`, 게임의 화면 비율 처리기 두 곳, `NGame.ApplyDisplaySettings`, 입력 잠금).

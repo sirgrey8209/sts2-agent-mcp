@@ -46,7 +46,7 @@ internal static class ClaudeCli
     public static string ConfigDir =>
         Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "sts2-agent-mcp", "claude-config");
 
-    /// <summary>Where Anthropic's installer puts Claude Code on Windows.</summary>
+    /// <summary>Where Anthropic's installer puts Claude Code (Windows and macOS).</summary>
     public static string NativeInstallPath =>
         Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), ".local", "bin", OperatingSystem.IsWindows() ? "claude.exe" : "claude");
 
@@ -65,6 +65,8 @@ internal static class ClaudeCli
         dirs.Add(Path.Combine(appData, "npm"));                                  // npm install -g
         dirs.Add(Path.Combine(home, ".claude", "local"));                        // older per-user install
         dirs.Add(Path.Combine(localAppData, "Microsoft", "WinGet", "Links"));    // winget
+        // A game started from Steam on macOS gets only the system PATH: add the package managers' folders.
+        if (OperatingSystem.IsMacOS()) { dirs.Add("/opt/homebrew/bin"); dirs.Add("/usr/local/bin"); }
         foreach (var dir in dirs)
         {
             string clean = dir.Trim().Trim('"');
@@ -122,9 +124,17 @@ internal static class ClaudeCli
         foreach (var (key, value) in IsolationEnv) psi.Environment[key] = value;
     }
 
-    /// <summary>Puts a child in the job that dies with the game (even if the game is killed).</summary>
+    /// <summary>
+    /// Ties a child to the game: on Windows a job that dies with the game (even if the game is killed), elsewhere
+    /// <see cref="ChildReaper"/> (a normal exit only).
+    /// </summary>
     public static void Adopt(Process process)
     {
+        if (!OperatingSystem.IsWindows())
+        {
+            ChildReaper.Track(process);
+            return;
+        }
         lock (JobGate)
         {
             if (!_jobTried) { _jobTried = true; _job = JobObject.TryCreate(); }
@@ -172,12 +182,77 @@ internal static class ClaudeCli
     }
 
     /// <summary>
+    /// Runs a setup command without a window (the installer outside Windows), its output going to the log.
+    /// <paramref name="onExit"/> gets the exit code and the last error line, on a worker thread. Null if it could not
+    /// start. Tied to the game like Claude Code (<see cref="Adopt"/>).
+    /// </summary>
+    public static Process? StartHidden(string name, string file, string[] args, Action<int, string?> onExit)
+    {
+        try
+        {
+            var psi = new ProcessStartInfo(file);
+            foreach (var arg in args) psi.ArgumentList.Add(arg);
+            psi.UseShellExecute = false;
+            psi.CreateNoWindow = true;
+            psi.RedirectStandardInput = true;
+            psi.RedirectStandardOutput = true;
+            psi.RedirectStandardError = true;
+            psi.StandardOutputEncoding = new UTF8Encoding(false);
+            psi.StandardErrorEncoding = new UTF8Encoding(false);
+            ApplyEnv(psi);
+            var process = Process.Start(psi) ?? throw new InvalidOperationException("Process.Start returned null");
+            Adopt(process);
+            process.StandardInput.Close();
+            string? lastError = null;
+            var stdout = Pump(process.StandardOutput, line => Log.Info($"chat: {name}: {line}"));
+            var stderr = Pump(process.StandardError, line => { lastError = line; Log.Info($"chat: {name} (err): {line}"); });
+            Task.Run(async () =>
+            {
+                int code = -1;
+                try
+                {
+                    await process.WaitForExitAsync();
+                    await Task.WhenAll(stdout, stderr);
+                    code = process.ExitCode;
+                }
+                catch (Exception ex) { lastError = ex.Message; }
+                Log.Info($"chat: {name} ended ({code})");
+                onExit(code, lastError);
+            });
+            return process;
+        }
+        catch (Exception ex)
+        {
+            Log.Error($"chat: could not start {name}: {ex.Message}");
+            return null;
+        }
+    }
+
+    // Installer output carries terminal colour codes; they are dropped for the log and the card.
+    private static readonly Regex AnsiEscape = new(@"\x1B\[[0-9;?]*[ -/]*[@-~]", RegexOptions.Compiled);
+
+    private static Task Pump(StreamReader reader, Action<string> onLine) => Task.Run(async () =>
+    {
+        string? line;
+        while ((line = await reader.ReadLineAsync()) != null)
+        {
+            string clean = AnsiEscape.Replace(line, "").Trim();
+            if (clean.Length > 0) onLine(clean);
+        }
+    });
+
+    /// <summary>
     /// Opens a console window of its own that runs the lines one after the other, for the player to use (install,
     /// login). It closes by itself when the last line succeeds and waits for a key when it fails, so the error can be
     /// read. Not tied to the game's job: the player owns it.
     /// </summary>
     public static bool OpenConsole(string name, string title, params (string Exe, string[] Args)[] lines)
     {
+        if (!OperatingSystem.IsWindows())
+        {
+            Log.Warn($"chat: no console window outside Windows ({name})");
+            return false;
+        }
         try
         {
             // A batch file instead of one nested command line: cmd's quoting of "start ... cmd /c "..."" leaves the

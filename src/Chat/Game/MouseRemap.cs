@@ -25,7 +25,7 @@ internal static class MouseRemap
         if (_installed) return true;
         Features.Try("mouse-remap", () =>
         {
-            var harmony = new Harmony("sirgrey8209.STS2AgentMcp");
+            var harmony = new Harmony("sirgrey8209.STS2AgentChat");
             var original = AccessTools.Method(typeof(Viewport), nameof(Viewport.GetMousePosition));
             harmony.Patch(original, postfix: new HarmonyMethod(typeof(MouseRemap), nameof(Postfix)));
             _installed = true;

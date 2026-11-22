@@ -17,14 +17,14 @@
 |---|---|---|
 | 0. 바탕 | 구현, 미끼 시험 통과, 게임 시험 전 | `ClaudeCli.cs`, `AgentSession.cs` |
 | 1. 관제/플레이 세션 | 구현, 시험 전 | `ChatSessions.cs`, `SessionStore.cs`, `Prompts.cs`, `prompts/*.md`, `GameWatch.cs` |
-| 2. 전용 통로 | 구현, 시험 전 | `HttpHost.cs`(`/mcp/chat`), `ToolRegistry.Extend`, `ModEntry.cs` |
+| 2. 전용 통로 | 별도 모드로 분리(2026-11-22) | `src/Chat/ModEntry.cs`(`/mcp/chat`, `/mcp/dev`, 포트 15528), `src/Common/Host/Bridge.cs` |
 | 3. 선택지 버튼 | 구현, 시험 전 | `ChatPanel.Media.cs`(`Choices`, `AddChoices`) |
 | 4. 화면 정보 동등 | 안 함: 실제 게임 화면과 나란히 놓고 조사해야 한다 | |
 | 5. 기록 첨부 | 구현, 시험 전 | `ChatSessions.GameLog`, `GameWatch`(화면 열기 감지) |
 | 6. 자동 반응 | 구현, 시험 전 | `ChatSessions.TryAuto`·`AfterTurn` |
 | 7. 보여 주기 | 구현, 시험 전 | `ChatTools.cs`, `GameViews.cs`, `ChatPanel.Media.cs` |
 
-외부 채팅 회귀 확인: `tools/check-external.ps1`(`/mcp` 도구 목록이 그대로인지, 읽기 전용 호출이 되는지, 전용 도구가 `/mcp/chat`에만 있는지).
+외부 채팅 회귀 확인: `tools/check-external.ps1`(외부 모드 `/mcp` 도구 목록이 그대로인지, 읽기 전용 호출이 되는지, 채팅 모드가 있으면 `/mcp/chat`에 채팅 도구가 다 있는지).
 
 ### 만든 구조
 

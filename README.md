@@ -2,6 +2,15 @@
 
 Slay the Spire 2 게임 안에서 MCP 서버를 실행하는 모드다. AI 에이전트가 이 서버에 접속해 싱글플레이 런을 진행한다. 사람과 채팅하며 함께 플레이할 수도 있다.
 
+모드는 두 개로 나뉘어 있다. 따로 설치할 수도 있고 함께 설치할 수도 있다.
+
+| 모드 | 하는 일 | 포트 | 설정 파일 |
+|---|---|---|---|
+| `STS2AgentMcp` | 외부 MCP 클라이언트용 엔드포인트(`/mcp`). 채팅창은 없다. | 15527 | `STS2AgentMcp.conf` |
+| `STS2AgentChat` | 게임 안 채팅창과 Claude Code 세션. 자체 엔드포인트(`/mcp/chat`: 채팅 에이전트용, `/mcp/dev`: 개발용)를 쓴다. | 15528 | `STS2AgentChat.conf` |
+
+둘을 함께 켜면, 외부 클라이언트가 행동하는 동안 채팅 에이전트는 멈추고 게임 화면을 덮는다(외부가 먼저다). 카드 선택은 외부 클라이언트가 행동할 때만 가로채고, 그 밖에는 플레이어가 게임 화면에서 고른다.
+
 - **판단 한 번을 호출 한 번으로 처리한다.** `act(["play c3 @e1", "play c7", "end"])`를 한 번 호출하면 카드 두 장을 내고 턴을 끝낸다. 서버는 적 턴이 끝날 때까지 기다렸다가, 그동안 일어난 일과 다음 손패를 함께 돌려준다. 상태를 반복해서 조회할 필요가 없다.
 - **게임이 계산한 수치를 보여 준다.** 카드 설명과 숫자는 게임의 문구 그대로이고, 힘, 취약, 약화, 손상 같은 보정이 이미 적용돼 있다. 대상에 따라 값이 달라지면 대상별로 보여 준다. 유물 설명이나 키워드처럼 바뀌지 않는 문구는 `info`로 필요할 때만 조회한다.
 - **중계 프로세스가 없다.** 모드가 HTTP로 MCP를 직접 제공한다(`http://127.0.0.1:15527/mcp`).
@@ -16,13 +25,17 @@ Slay the Spire 2 버전 **v0.111.1**에서 시험했다. 설계 문서는 [DESIG
 .NET 9 SDK와 게임이 필요하다.
 
 ```powershell
-.\build.ps1 -Install          # out\STS2AgentMcp.dll을 빌드하고 <게임>\mods\에 DLL, 매니페스트, kb 문서를 복사한다
+.\build.ps1 -Install                 # 두 모드를 빌드하고 <게임>\mods\에 DLL, 매니페스트, kb 문서를 복사한다
+.\build.ps1 -Mods mcp -Install       # 외부 MCP 모드만 (채팅 모드는 mods 폴더에서 뺀다. .conf는 남긴다)
+.\build.ps1 -Mods chat -Install      # 채팅 모드만
 # 게임 경로 지정:  .\build.ps1 -GameDir "D:\...\Slay the Spire 2" -Install
 ```
 
 게임 경로를 지정하지 않으면 환경 변수 `STS2_GAME_DIR`를 쓰고, 그것도 없으면 `D:\SteamLibrary\steamapps\common\Slay the Spire 2`를 사용한다.
 
-게임이 실행 중이면 DLL 파일을 덮어쓸 수 없다. 게임을 끄고 설치한 뒤 다시 실행한다. 게임이 모드 사용 여부를 물으면 모드 설정에서 켠다. 처음 실행하면 모드가 `<게임>\mods\STS2AgentMcp.conf`를 만든다. 이 파일의 내용은 다음과 같다.
+macOS에서는 `tools/redeploy.sh [mcp] [chat]`로 빌드부터 설치와 실행까지 한다(.NET 9 SDK, 예: `~/.dotnet`). mods 폴더는 `SlayTheSpire2.app/Contents/MacOS/mods`, 참조 DLL은 `SlayTheSpire2.app/Contents/Resources/data_sts2_macos_arm64`(빌드 인자 `-p:STS2GameDataDir=...`), 게임 로그는 `~/Library/Application Support/SlayTheSpire2/logs/godot.log`다.
+
+게임이 실행 중이면 DLL 파일을 덮어쓸 수 없다. 게임을 끄고 설치한 뒤 다시 실행한다. 게임이 모드 사용 여부를 물으면 모드 설정에서 켠다. 처음 실행하면 외부 MCP 모드가 `<게임>\mods\STS2AgentMcp.conf`를 만든다. 이 파일의 내용은 다음과 같다.
 
 ```json
 { "port": 15527, "token": "<무작위 값>", "fast_mode": "instant" }
@@ -32,7 +45,8 @@ Slay the Spire 2 버전 **v0.111.1**에서 시험했다. 설계 문서는 [DESIG
 - `fast_mode`: `instant`(기본값)이면 게임이 시작된 뒤 모드가 애니메이션 속도를 '즉시'로 바꾼다. `keep`이면 사용자 설정을 그대로 둔다.
 - `capture_dir`(선택): 스크린샷과 이미지 파일을 저장할 폴더다. 기본값은 `%TEMP%\sts2-agent-mcp`이고, 최근 파일 60개만 보관한다.
 - `dev_tools`(선택, 기본값 `false`): 개발과 시험용 도구 `dev_console`을 켠다. 게임의 개발자 콘솔 명령(방 이동, 이벤트 이동, 카드와 유물 추가 등 치트)을 실행하는 도구라서 평소 플레이에서는 켜지 않는다.
-- `chat_panel`, `chat_width`, `chat_agent`, `chat_auto_connect`, `claude_path`(선택, 개발 중): 게임 안 채팅창 설정이다. 아래 "게임 안 채팅창"을 참고한다.
+
+채팅 모드는 `<게임>\mods\STS2AgentChat.conf`를 만든다(`port` 15528, `token`, `fast_mode`, `capture_dir`에 더해 `chat_width`, `chat_agent`, `chat_auto_connect`, `chat_play_level`, `claude_path`). 처음 만들 때 예전 `STS2AgentMcp.conf`에 있던 채팅 설정을 옮겨 온다. 아래 "게임 안 채팅창"을 참고한다.
 
 ## MCP 클라이언트 연결
 
@@ -71,9 +85,9 @@ Claude Code에서는 `.mcp.json`에 다음과 같이 적는다.
 
 ### 게임 안 채팅창 (개발 중)
 
-설정에 `"chat_panel": true`를 넣으면 게임 화면 왼쪽에 채팅창이 생기고, 게임은 나머지 영역에 전체 높이로 그려진다. 게임은 그 영역의 비율에 맞춰 UI를 스스로 다시 배치한다. 채팅창 오른쪽 경계선을 끌어서 폭을 바꿀 수 있다.
+채팅 모드(`STS2AgentChat`)를 설치하면 게임 화면 왼쪽에 채팅창이 생기고, 게임은 나머지 영역에 전체 높이로 그려진다. 게임은 그 영역의 비율에 맞춰 UI를 스스로 다시 배치한다. 채팅창 오른쪽 경계선을 끌어서 폭을 바꿀 수 있다.
 
-채팅창에 메시지를 보내면 모드가 Claude Code(`claude`)를 직접 실행한다. Claude Code는 이 모드의 MCP 도구(state, act, info, search)로 게임을 보고 답한다. 말풍선은 게임의 대화 말풍선과 글꼴을 쓴다. 로그인은 이 게임 전용 폴더(`%LOCALAPPDATA%\sts2-agent-mcp\claude-config`)에 따로 한다. 로그인이 없으면 채팅창에 로그인 카드가 뜬다. 로그인은 두 가지 중에서 고른다. [구독으로 로그인]은 Claude 구독(Pro 이상)으로, [API로 로그인]은 Anthropic Console 계정으로 로그인하며 API 사용량만큼 요금이 나간다. 버튼을 누르면 Claude Code의 로그인이 별도 창에서 열린다. Claude Code가 설치되어 있지 않으면 카드에서 공식 설치를 먼저 한다. 실행 파일을 찾지 못하면 `claude_path`에 경로를 적는다. 구현 방식과 작업 계획은 [docs/in-game-chat.md](docs/in-game-chat.md)에 있다.
+채팅창에 메시지를 보내면 모드가 Claude Code(`claude`)를 직접 실행한다. Claude Code는 채팅 모드의 엔드포인트(`/mcp/chat`)에 있는 도구로 게임을 보고 답한다. 말풍선은 게임의 대화 말풍선과 글꼴을 쓴다. 로그인은 이 게임 전용 폴더(`%LOCALAPPDATA%\sts2-agent-mcp\claude-config`)에 따로 한다. 로그인이 없으면 채팅창에 로그인 카드가 뜬다. 로그인은 두 가지 중에서 고른다. [구독으로 로그인]은 Claude 구독(Pro 이상)으로, [API로 로그인]은 Anthropic Console 계정으로 로그인하며 API 사용량만큼 요금이 나간다. 버튼을 누르면 Claude Code의 로그인이 브라우저에서 열린다. Claude Code가 설치되어 있지 않으면 카드에서 공식 설치를 먼저 한다(Windows는 설치 창이 열리고, macOS는 게임 안에서 창 없이 설치한다). 실행 파일을 찾지 못하면 `claude_path`에 경로를 적는다. 구현 방식과 작업 계획은 [docs/in-game-chat.md](docs/in-game-chat.md)에 있다.
 
 ### 행동 (화면별로 받는 행동)
 
@@ -132,13 +146,14 @@ actions: play <card> [@<target>] · potion <slot> [@<target>] · discard_potion 
 
 문서는 로컬에서 디컴파일한 게임 코드를 보고 썼다. 디컴파일한 코드는 저장소에 넣지 않는다. 문서마다 근거로 삼은 원본 파일의 해시를 기록해 두었다. 덕분에 게임이 업데이트되면 `tools\kb-check.ps1`이 원본이 바뀐 문서를 찾아 준다. 문서를 쓴 게임 버전이 실행 중인 버전과 다르면, `info`가 문서 앞에 "오래된 내용일 수 있다"는 안내를 함께 보여 준다. 문서 형식과 업데이트 절차는 [kb/README.md](kb/README.md)에 있다.
 
-`build.ps1 -Install`과 `tools\redeploy.ps1`은 문서를 DLL 옆 `STS2AgentMcp-kb\` 폴더에 설치한다.
+`build.ps1 -Install`과 `tools\redeploy.ps1`은 문서를 모드마다 DLL 옆 `<모드 id>-kb\` 폴더(`STS2AgentMcp-kb\`, `STS2AgentChat-kb\`)에 설치한다.
 
 ## 개발
 
 ```powershell
-.\tools\redeploy.ps1                       # 빌드 → 게임 종료 → 설치 → Steam으로 실행 → 준비될 때까지 대기
-.\tools\mcp.ps1 state                      # MCP 클라이언트 없이 엔드포인트 호출
+.\tools\redeploy.ps1                       # 빌드 → 게임 종료 → 설치 → Steam으로 실행 → 준비될 때까지 대기 (-Mods mcp|chat)
+.\tools\mcp.ps1 state                      # MCP 클라이언트 없이 엔드포인트 호출 (외부 모드 /mcp)
+.\tools\mcp.ps1 -Dev call dev_layout '{"action":"auth"}'   # 채팅 모드의 개발용 엔드포인트 /mcp/dev
 .\tools\mcp.ps1 act "play c3 @e1" "end"
 .\tools\mcp.ps1 info BASH
 .\tools\autofight.ps1                      # 단순한 규칙으로 현재 전투를 끝낸다 (시험용 도구, 플레이 에이전트가 아니다)
@@ -152,7 +167,9 @@ actions: play <card> [@<target>] · potion <slot> [@<target>] · discard_potion 
 .\tools\kb-glossary.ps1 -Loc <현지화 문구 폴더>                   # 문서별 게임 용어 목록 생성, 게임 이름과 다른 이름 보고
 ```
 
-게임 로그는 `%APPDATA%\SlayTheSpire2\logs\godot.log`에 있고, 이 모드가 남긴 줄은 `[STS2 Agent MCP]`로 시작한다.
+macOS에서는 같은 일을 `tools/redeploy.sh`, `tools/mcp.sh [--dev|--chat]`로 한다.
+
+게임 로그는 `%APPDATA%\SlayTheSpire2\logs\godot.log`에 있다. 외부 MCP 모드가 남긴 줄은 `[STS2 Agent MCP]`로, 채팅 모드가 남긴 줄은 `[STS2 Agent Chat]`으로 시작한다.
 
 설정에서 `dev_tools`를 켜면 `dev_console(command)` 도구가 생긴다. 게임의 개발자 콘솔 명령(`room RestSite`, `event SPIRALING_WHIRLPOOL`, `fight ...`, `die` 등)을 그대로 실행하고, 모드가 더한 명령 두 개를 받는다. `event_any <ID>`는 일반 이벤트 목록에 없는 이벤트(`THE_ARCHITECT` 등)로 들어가고, `profile <n>`은 열려 있는 프로필 화면에서 n번째 프로필을 고른다. 시험은 실제 진행 기록이 아닌 다른 프로필에서 한다.
 

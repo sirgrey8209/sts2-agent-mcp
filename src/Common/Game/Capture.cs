@@ -39,10 +39,11 @@ internal static class Capture
     public static CaptureResult Screenshot(int maxWidth, bool wholeWindow = false)
     {
         var image = Ui.Root.GetViewport().GetTexture().GetImage();
-        // With the in-game chat panel on, show only the game (the panel is not part of what the agent should see).
-        if (Chat.ChatLayout.Enabled && !wholeWindow)
+        // With the in-game chat panel on (STS2AgentChat), show only the game (the panel is not part of what the agent
+        // should see). The chat mod tells where the game is through the bridge, also to the other mod.
+        if (!wholeWindow && Bridge.GameRect() is { Length: 4 } r)
         {
-            var rect = Chat.ChatLayout.GameRectPx.Intersection(new Rect2I(0, 0, image.GetWidth(), image.GetHeight()));
+            var rect = new Rect2I(r[0], r[1], r[2], r[3]).Intersection(new Rect2I(0, 0, image.GetWidth(), image.GetHeight()));
             if (rect.Size.X > 0 && rect.Size.Y > 0) image = image.GetRegion(rect);
         }
         Fit(image, maxWidth);

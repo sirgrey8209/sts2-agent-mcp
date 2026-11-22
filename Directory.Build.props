@@ -1,22 +1,23 @@
-<Project Sdk="Microsoft.NET.Sdk">
+<Project>
+  <!-- Shared by both mods (src/External: STS2AgentMcp, src/Chat: STS2AgentChat). Each compiles src/Common into its
+       own DLL: the two mods share source, not a runtime library (they talk through src/Common/Host/Bridge.cs). -->
   <PropertyGroup>
     <TargetFramework>net9.0</TargetFramework>
     <OutputType>Library</OutputType>
     <Nullable>enable</Nullable>
     <LangVersion>12.0</LangVersion>
     <ImplicitUsings>disable</ImplicitUsings>
-    <AssemblyName>STS2AgentMcp</AssemblyName>
-    <RootNamespace>Sts2AgentMcp</RootNamespace>
     <Version>0.2.0</Version>
     <!-- Game install path. Override with -p:STS2GameDir="..." or the STS2_GAME_DIR environment variable. -->
     <STS2GameDir Condition="'$(STS2GameDir)' == '' and '$(STS2_GAME_DIR)' != ''">$(STS2_GAME_DIR)</STS2GameDir>
     <STS2GameDir Condition="'$(STS2GameDir)' == ''">D:\SteamLibrary\steamapps\common\Slay the Spire 2</STS2GameDir>
+    <!-- Folder with sts2.dll, 0Harmony.dll, GodotSharp.dll. On macOS: <app>/Contents/Resources/data_sts2_macos_arm64. -->
     <STS2GameDataDir Condition="'$(STS2GameDataDir)' == ''">$(STS2GameDir)/data_sts2_windows_x86_64</STS2GameDataDir>
+    <RepoRoot>$(MSBuildThisFileDirectory)</RepoRoot>
   </PropertyGroup>
 
   <ItemGroup>
-    <!-- Chat prompt fragments (docs/chat-roadmap.md, step 1), read as "prompts.<name>.md". -->
-    <EmbeddedResource Include="prompts\*.md" LogicalName="prompts.%(Filename).md" />
+    <Compile Include="$(RepoRoot)src/Common/**/*.cs" Exclude="$(RepoRoot)src/Common/**/obj/**;$(RepoRoot)src/Common/**/bin/**" />
   </ItemGroup>
 
   <ItemGroup>

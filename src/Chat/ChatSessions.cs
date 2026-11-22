@@ -95,7 +95,7 @@ internal static class ChatSessions
         ChoiceBroker.Instance.AlwaysIntercept = false;
         Tools.ExternalPlay.Started += OnExternalPlay;
         InputLock.Install();
-        AgentLock.Changed += busy => _panel?.SetAgentBusy(busy);
+        AgentLock.BusyChanged += busy => _panel?.SetAgentBusy(busy);
         Activate(Control());
     }
 
@@ -395,7 +395,7 @@ internal static class ChatSessions
             if (room == null || !Ui.IsVisible(room)) return frames > 600 ? "gone" : null;
             if (room.Inventory?.IsOpen == true) return "open";
             if (frames < 30) return null; // let the room finish coming in
-            if (AgentLock.Held) return "agent"; // the agent is acting there itself
+            if (AgentLock.Busy) return "agent"; // an agent is acting there itself
             room.OpenInventory();
             Log.Info("chat: shop opened on entry");
             return "opened";

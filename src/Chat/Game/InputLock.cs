@@ -22,7 +22,7 @@ internal static class InputLock
         if (_installed) return;
         Features.Try("input-lock", () =>
         {
-            var harmony = new Harmony("sirgrey8209.STS2AgentMcp.InputLock");
+            var harmony = new Harmony("sirgrey8209.STS2AgentChat.InputLock");
             var onEvent = new HarmonyMethod(typeof(InputLock), nameof(EventPrefix));
             var onPoll = new HarmonyMethod(typeof(InputLock), nameof(PollPrefix));
             foreach (var name in new[] { nameof(InputEvent.IsActionPressed), nameof(InputEvent.IsActionReleased), nameof(InputEvent.IsAction) })
@@ -38,14 +38,14 @@ internal static class InputLock
 
     private static bool EventPrefix(ref bool __result)
     {
-        if (!AgentLock.Held) return true;
+        if (!AgentLock.Busy) return true;
         __result = false;
         return false;
     }
 
     private static bool PollPrefix(ref bool __result)
     {
-        if (!AgentLock.Held) return true;
+        if (!AgentLock.Busy) return true;
         __result = false;
         return false;
     }

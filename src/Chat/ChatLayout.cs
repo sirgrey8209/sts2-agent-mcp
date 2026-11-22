@@ -58,6 +58,8 @@ internal static class ChatLayout
     {
         _config = config;
         _chatWidth = config.ChatWidth;
+        // Screenshots of both mods crop to the game (the panel is not part of what an agent should see).
+        Bridge.SetGameRect(() => Enabled ? new[] { GameRectPx.Position.X, GameRectPx.Position.Y, GameRectPx.Size.X, GameRectPx.Size.Y } : null);
         _ = MainThread.Poll(() =>
         {
             if (NGame.Instance == null || !NGame.Instance.IsNodeReady()) return null;
@@ -101,7 +103,7 @@ internal static class ChatLayout
     private static void Hook()
     {
         if (_hooked) return;
-        var harmony = new Harmony("sirgrey8209.STS2AgentMcp");
+        var harmony = new Harmony("sirgrey8209.STS2AgentChat");
         // The game's "auto" aspect handlers would reset the content size on every window change and fight the layout.
         var skip = new HarmonyMethod(typeof(ChatLayout), nameof(SkipWhileEnabled));
         harmony.Patch(Required(AccessTools.Method(typeof(NGlobalUi), "OnWindowChange")), prefix: skip);
@@ -180,13 +182,16 @@ internal static class ChatLayout
 
     /// <summary>
     /// The content size the game's own "auto" aspect logic (NGlobalUi.OnWindowChange) would give a window of this
-    /// aspect ratio: KeepWidth 2580x1080 above 21:9, KeepHeight 1680x1260 below 4:3, otherwise Expand 1680x1080.
+    /// aspect ratio: KeepWidth 2580x1080 above 21:9, otherwise Expand 1680x1080. Below 4:3 it stays 1680x1260 and the
+    /// game is fitted to the area's width with bars above and below (Godot's keep_height): the game's screens place
+    /// panels with fixed margins for at least 1680 units of width, and narrower content broke them (the early access
+    /// panel, the profile cards, the map legend).
     /// </summary>
     private static Vector2I GameContentSize(float ratio)
     {
         static int R(float v) => (int)MathF.Round(v);
         if (ratio > 2.3888888f) return new Vector2I(2580, R(2580 / ratio));
-        if (ratio < 4f / 3f) return new Vector2I(R(1260 * ratio), 1260);
+        if (ratio < 4f / 3f) return new Vector2I(1680, 1260);
         if (ratio >= 1680f / 1080f) return new Vector2I(R(1080 * ratio), 1080);
         return new Vector2I(1680, R(1680 / ratio));
     }

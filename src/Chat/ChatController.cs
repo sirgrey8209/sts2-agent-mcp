@@ -1,4 +1,5 @@
 using System;
+using System.Diagnostics;
 using System.Linq;
 using System.Text.Json.Nodes;
 using System.Threading;
@@ -29,6 +30,7 @@ internal static class ChatController
     /// </summary>
     private static string? _settingUp;
     private static LoginProcess? _login;
+    private static Process? _install; // the windowless installer (outside Windows)
     private static bool _loginConsole;
 
     public static AuthState Auth => _auth;
@@ -79,7 +81,7 @@ internal static class ChatController
                 if (run != _checkRun) return; // a newer check is running
                 if (state.Ready) StopWatching();
                 // While a console window is watched or the browser login runs, the card keeps saying what it waits for.
-                if (_watch == null && _login == null) _settingUp = null;
+                if (_watch == null && _login == null && _install == null) _settingUp = null;
                 SetAuth(state);
             });
         });
@@ -204,6 +206,7 @@ internal static class ChatController
     {
         Log.Info($"chat: {_settingUp ?? "nothing"} cancelled by the player");
         StopLogin();
+        StopInstall();
         StopWatching();
         _settingUp = null;
         _panel?.ShowAuth(_auth, _settingUp);
@@ -216,15 +219,67 @@ internal static class ChatController
         login?.Cancel();
     }
 
-    /// <summary>Installs only; the card then offers both logins.</summary>
+    /// <summary>
+    /// Installs only; the card then offers both logins. Windows: Anthropic's PowerShell installer in a console window.
+    /// Elsewhere: Anthropic's shell installer runs inside the game, without a window, until it ends.
+    /// </summary>
     private static void OpenInstall()
     {
         _settingUp = "install";
         _panel?.ShowAuth(_auth, _settingUp);
+        if (!OperatingSystem.IsWindows())
+        {
+            StartHiddenInstall();
+            return;
+        }
         Log.Info("chat: opening Claude Code install");
         bool opened = ClaudeCli.OpenConsole("claude-install", "STS2 Agent - Claude install",
             ("powershell.exe", new[] { "-NoProfile", "-Command", "irm https://claude.ai/install.ps1 | iex" }));
         AfterOpen(opened);
+    }
+
+    private static void StartHiddenInstall()
+    {
+        StopInstall();
+        Log.Info("chat: starting Claude Code install (install.sh)");
+        Process? install = null;
+        install = ClaudeCli.StartHidden("claude-install", "/bin/bash",
+            new[] { "-c", "curl -fsSL https://claude.ai/install.sh | bash" },
+            (code, error) => MainThread.Run(() => InstallEnded(install!, code, error)));
+        _install = install;
+        if (install == null)
+        {
+            _settingUp = null;
+            _panel?.ShowAuth(_auth, _settingUp, "설치를 시작하지 못했어요. 로그를 확인해 주세요.");
+            return;
+        }
+        Watch();
+    }
+
+    private static void InstallEnded(Process install, int code, string? error)
+    {
+        if (_install != install) return; // cancelled or replaced
+        _install = null;
+        install.Dispose();
+        if (code == 0)
+        {
+            // The watch finds Claude Code within a few seconds; checking now saves the wait.
+            StopWatching();
+            Recheck();
+            return;
+        }
+        StopWatching();
+        _settingUp = null;
+        _panel?.ShowAuth(_auth, _settingUp, "설치하지 못했어요" + (error != null ? ": " + error : "."));
+    }
+
+    private static void StopInstall()
+    {
+        var install = _install;
+        _install = null;
+        if (install == null) return;
+        try { if (!install.HasExited) install.Kill(entireProcessTree: true); } catch { /* gone */ }
+        install.Dispose();
     }
 
     private static void AfterOpen(bool opened)
@@ -276,6 +331,7 @@ internal static class ChatController
                     if (_watch != cts) return;
                     _watch = null;
                     StopLogin();
+                    StopInstall();
                     _settingUp = null;
                     _panel?.ShowAuth(_auth, _settingUp);
                 });

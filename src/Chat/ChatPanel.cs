@@ -12,7 +12,7 @@ namespace Sts2AgentMcp.Chat;
 /// </summary>
 internal sealed partial class ChatPanel
 {
-    public const string NodeName = "AgentChatPanel";
+    public const string NodeName = Game.Ui.ChatPanelNodeName;
 
     private const float Pad = 20;
     private const float HeaderHeight = 84;
@@ -659,7 +659,15 @@ internal sealed partial class ChatPanel
             {
                 Note(message ?? "브라우저에서 로그인을 마치면 자동으로 확인합니다. 브라우저가 열리지 않았다면 [브라우저 열기]를 눌러 주세요.", message != null);
                 Buttons("브라우저 열기", "취소");
-                _cardAlt.Visible = true;
+                // The console window login exists on Windows only (ClaudeCli.OpenConsole).
+                _cardAlt.Visible = OperatingSystem.IsWindows();
+                return;
+            }
+            if (install && !OperatingSystem.IsWindows())
+            {
+                // The installer runs inside the game: nothing to open again.
+                Note(message ?? "설치가 진행 중입니다. 끝나면 자동으로 확인합니다.", message != null);
+                Buttons(null, "취소");
                 return;
             }
             Note(message ?? (install

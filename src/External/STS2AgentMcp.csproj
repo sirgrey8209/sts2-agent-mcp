@@ -1,0 +1,7 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <!-- The external MCP mod: the endpoint every MCP client uses (port 15527). No in-game chat. -->
+  <PropertyGroup>
+    <AssemblyName>STS2AgentMcp</AssemblyName>
+    <RootNamespace>Sts2AgentMcp</RootNamespace>
+  </PropertyGroup>
+</Project>

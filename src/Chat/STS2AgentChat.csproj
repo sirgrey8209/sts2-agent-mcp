@@ -1,0 +1,12 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <!-- The in-game chat mod: chat panel, Claude Code sessions, and their own MCP endpoint (port 15528). -->
+  <PropertyGroup>
+    <AssemblyName>STS2AgentChat</AssemblyName>
+    <RootNamespace>Sts2AgentMcp</RootNamespace>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <!-- Chat prompt fragments (docs/chat-roadmap.md, step 1), read as "prompts.<name>.md". -->
+    <EmbeddedResource Include="$(RepoRoot)prompts/*.md" LogicalName="prompts.%(Filename).md" />
+  </ItemGroup>
+</Project>

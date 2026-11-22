@@ -43,37 +43,12 @@ internal sealed class ToolError : Exception
 internal sealed class ToolRegistry
 {
     private readonly List<ITool> _tools = new();
-    // Game interaction is inherently sequential; serialize tool calls (shared with extended registries).
-    private readonly SemaphoreSlim _gate;
-
-    public ToolRegistry() : this(new SemaphoreSlim(1, 1)) { }
-
-    private ToolRegistry(SemaphoreSlim gate) => _gate = gate;
+    // Game interaction is inherently sequential; tool calls are serialized across both mods (one game).
+    private readonly SemaphoreSlim _gate = Bridge.Gate;
 
     public ToolRegistry Add(ITool tool)
     {
         _tools.Add(tool);
-        return this;
-    }
-
-    /// <summary>
-    /// A registry with this one's tools plus <paramref name="extra"/>, sharing the call gate (so calls through either
-    /// still run one at a time). Used for the in-game chat endpoint; this registry is left as it is.
-    /// </summary>
-    public ToolRegistry Extend(IEnumerable<ITool> extra)
-    {
-        var result = new ToolRegistry(_gate);
-        result._tools.AddRange(_tools);
-        result._tools.AddRange(extra);
-        return result;
-    }
-
-    /// <summary>Puts <paramref name="tool"/> in place of the tool with the same name (this registry only).</summary>
-    public ToolRegistry Replace(ITool tool)
-    {
-        int i = _tools.FindIndex(t => t.Name == tool.Name);
-        if (i >= 0) _tools[i] = tool;
-        else _tools.Add(tool);
         return this;
     }
 

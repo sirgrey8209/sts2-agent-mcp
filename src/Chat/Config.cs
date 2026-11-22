@@ -7,32 +7,33 @@ using System.Text.Json.Nodes;
 namespace Sts2AgentMcp.Host;
 
 /// <summary>
-/// STS2AgentMcp.conf next to the DLL. Created on first run with a random bearer token.
+/// STS2AgentChat.conf next to the DLL. Created on first run with a random bearer token; the chat settings of an older
+/// STS2AgentMcp.conf in the same folder (when the chat was part of that mod) are carried over then.
 /// </summary>
 internal sealed class Config
 {
-    public const string FileName = "STS2AgentMcp.conf";
+    public const string FileName = "STS2AgentChat.conf";
+    private const string LegacyFileName = "STS2AgentMcp.conf";
+    private static readonly string[] LegacyKeys =
+        { "capture_dir", "chat_width", "chat_agent", "chat_auto_connect", "chat_play_level", "claude_path" };
 
-    public int Port { get; private set; } = 15527;
+    /// <summary>The chat's own MCP endpoint (its Claude Code sessions and development tools).</summary>
+    public int Port { get; private set; } = 15528;
     public string Token { get; private set; } = "";
     /// <summary>"instant" (default) forces FastMode=Instant at startup; "keep" leaves the player's setting.</summary>
     public string FastMode { get; private set; } = "instant";
     /// <summary>Where screenshots and card sheets are written. Null = %TEMP%\sts2-agent-mcp.</summary>
     public string? CaptureDir { get; private set; }
-    /// <summary>In-game chat panel on the left, game on the right (docs/in-game-chat.md). Off by default (in development).</summary>
-    public bool ChatPanel { get; private set; }
     /// <summary>Chat panel width in units of a 1080-tall window (the panel scales with window height, not width).</summary>
     public float ChatWidth { get; private set; } = 480;
-    /// <summary>Claude Code executable for the chat panel. Null = search PATH and ~/.local/bin.</summary>
+    /// <summary>Claude Code executable. Null = search PATH and the usual install folders.</summary>
     public string? ClaudePath { get; private set; }
-    /// <summary>Chat panel: connect without asking once the login works (the card's "connect automatically" box).</summary>
+    /// <summary>Connect without asking once the login works (the card's "connect automatically" box).</summary>
     public bool ChatAutoConnect { get; private set; }
-    /// <summary>Chat panel: the agent card opened last ("claude" / "codex"), opened again at start.</summary>
+    /// <summary>The agent card opened last ("claude" / "codex"), opened again at start.</summary>
     public string? ChatAgent { get; private set; }
-    /// <summary>Chat: how much the agent does in a run (commentary / colow / cohigh / auto; docs/chat-roadmap.md).</summary>
+    /// <summary>How much the agent does in a run (commentary / colow / cohigh / auto; docs/chat-roadmap.md).</summary>
     public string ChatPlayLevel { get; private set; } = "colow";
-    /// <summary>Registers development tools (dev_console: the game's cheat console). Off by default.</summary>
-    public bool DevTools { get; private set; }
 
     public string? FilePath { get; private set; }
 
@@ -47,17 +48,13 @@ internal sealed class Config
         }
 
         config.FilePath = Path.Combine(dir, FileName);
-        JsonObject root;
-        try
+        bool exists = File.Exists(config.FilePath);
+        JsonObject root = Read(config.FilePath) ?? new JsonObject();
+        if (!exists && Read(Path.Combine(dir, LegacyFileName)) is { } legacy)
         {
-            root = File.Exists(config.FilePath)
-                ? JsonNode.Parse(File.ReadAllText(config.FilePath)) as JsonObject ?? new JsonObject()
-                : new JsonObject();
-        }
-        catch (Exception ex)
-        {
-            Log.Error($"failed to read {config.FilePath}: {ex.Message}; using defaults");
-            root = new JsonObject();
+            foreach (var key in LegacyKeys)
+                if (legacy[key] is JsonValue value) root[key] = value.DeepClone();
+            Log.Info($"carried the chat settings over from {LegacyFileName}");
         }
 
         if (root["port"] is JsonValue p && p.TryGetValue(out int port) && port is > 0 and <= 65535)
@@ -68,8 +65,6 @@ internal sealed class Config
             config.FastMode = fast;
         if (root["capture_dir"] is JsonValue c && c.TryGetValue(out string? captureDir) && !string.IsNullOrWhiteSpace(captureDir))
             config.CaptureDir = captureDir;
-        if (root["chat_panel"] is JsonValue cp && cp.TryGetValue(out bool chatPanel))
-            config.ChatPanel = chatPanel;
         if (root["chat_width"] is JsonValue cw && cw.TryGetValue(out double chatWidth) && chatWidth > 0)
             config.ChatWidth = (float)chatWidth;
         if (root["chat_agent"] is JsonValue ag && ag.TryGetValue(out string? agent) && agent is "claude" or "codex")
@@ -78,30 +73,18 @@ internal sealed class Config
             config.ChatAutoConnect = autoConnect;
         if (root["chat_play_level"] is JsonValue pl && pl.TryGetValue(out string? level) && level is "commentary" or "colow" or "cohigh" or "auto")
             config.ChatPlayLevel = level;
-        if (root["dev_tools"] is JsonValue dt && dt.TryGetValue(out bool devTools))
-            config.DevTools = devTools;
         if (root["claude_path"] is JsonValue cl && cl.TryGetValue(out string? claudePath) && !string.IsNullOrWhiteSpace(claudePath))
             config.ClaudePath = claudePath;
 
-        bool changed = false;
-        if (string.IsNullOrEmpty(config.Token))
+        if (string.IsNullOrEmpty(config.Token)) config.Token = NewToken();
+        if (!exists || root["token"] is null)
         {
-            config.Token = NewToken();
-            changed = true;
-        }
-
-        if (changed || !File.Exists(config.FilePath))
-        {
-            var output = new JsonObject
-            {
-                ["port"] = config.Port,
-                ["token"] = config.Token,
-                ["fast_mode"] = config.FastMode,
-                ["chat_panel"] = config.ChatPanel,
-            };
+            root["port"] = config.Port;
+            root["token"] = config.Token;
+            root["fast_mode"] = config.FastMode;
             try
             {
-                File.WriteAllText(config.FilePath, output.ToJsonString(new JsonSerializerOptions { WriteIndented = true }));
+                File.WriteAllText(config.FilePath, root.ToJsonString(new JsonSerializerOptions { WriteIndented = true }));
                 Log.Info($"wrote config {config.FilePath}");
             }
             catch (Exception ex)
@@ -113,6 +96,19 @@ internal sealed class Config
         return config;
     }
 
+    private static JsonObject? Read(string path)
+    {
+        try
+        {
+            return File.Exists(path) ? JsonNode.Parse(File.ReadAllText(path)) as JsonObject : null;
+        }
+        catch (Exception ex)
+        {
+            Log.Error($"failed to read {path}: {ex.Message}; using defaults");
+            return null;
+        }
+    }
+
     /// <summary>Remembers the chat panel width (written to the config file, other keys kept as they are).</summary>
     public void SaveChatWidth(float width)
     {
@@ -120,7 +116,7 @@ internal sealed class Config
         Save("chat_width", Math.Round(width));
     }
 
-    /// <summary>Remembers "connect automatically" for the chat panel.</summary>
+    /// <summary>Remembers "connect automatically".</summary>
     public void SaveChatAutoConnect(bool on)
     {
         ChatAutoConnect = on;

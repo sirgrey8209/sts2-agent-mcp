@@ -162,8 +162,10 @@ internal sealed class DevLayoutTool : ITool
         for (int i = 1; i <= steps; i++)
         {
             var p = from.Lerp(to, i / (float)steps);
+            // Relative too: the map scrolls by the motion's relative movement.
+            var relative = (to - from) / steps;
             await MainThread.Run(() => RootWindow.PushInput(new InputEventMouseMotion
-                { Position = p, GlobalPosition = p, ButtonMask = MouseButtonMask.Left }));
+                { Position = p, GlobalPosition = p, Relative = relative, ButtonMask = MouseButtonMask.Left }));
             await Task.Delay(30);
         }
         await MainThread.Run(() => RootWindow.PushInput(new InputEventMouseButton

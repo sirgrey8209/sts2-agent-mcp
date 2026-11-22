@@ -2,17 +2,18 @@ using System;
 using System.IO;
 using System.Text.RegularExpressions;
 using MegaCrit.Sts2.Core.Models;
+using Sts2AgentMcp.Host;
 
 namespace Sts2AgentMcp.Game;
 
 /// <summary>
-/// Knowledge-base documents (kb/ in the repo, installed next to the DLL as STS2AgentMcp-kb/). They summarize game
+/// Knowledge-base documents (kb/ in the repo, installed next to each mod's DLL as <mod id>-kb/). They summarize game
 /// behaviour that is not visible in game text (monster move effects, event outcomes), written from the decompiled
 /// source of a specific game version.
 /// </summary>
 internal static class KbDocs
 {
-    public const string FolderName = "STS2AgentMcp-kb";
+    public const string FolderName = ModInfo.Id + "-kb";
 
     private static readonly string? Root =
         Path.GetDirectoryName(typeof(KbDocs).Assembly.Location) is { } dir ? Path.Combine(dir, FolderName) : null;

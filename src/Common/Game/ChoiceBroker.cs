@@ -39,9 +39,11 @@ internal sealed class PendingChoice
 /// Answers the game's card-selection prompts through the official selector hook (CardSelectCmd.PushSelector),
 /// so they become agent decisions instead of UI clicks. Card rewards, relic and bundle choices are not routed here
 /// by the game and stay UI-driven.
-/// When it intercepts: always without the in-game chat (an MCP client plays the game). With the chat panel
-/// (<see cref="AlwaysIntercept"/> off), only while an agent's `act` runs (<see cref="AgentLock"/>), plus until a
-/// selection asked for then is answered; the rest of the time the player plays and the game shows its own screens.
+/// When it intercepts: always without the in-game chat (an MCP client plays the game). With the chat mod loaded
+/// (<see cref="Bridge.ChatPresent"/>; in the chat mod itself <see cref="AlwaysIntercept"/> is off), only while this
+/// mod's agent `act` runs (<see cref="AgentLock"/>), plus until a selection asked for then is answered; the rest of the
+/// time the player plays and the game shows its own screens. Each mod has its own broker; tool calls of the two run one
+/// at a time (<see cref="Bridge.Gate"/>), so at most one of them takes a selection.
 /// </summary>
 internal sealed class ChoiceBroker : ICardSelector
 {
@@ -65,11 +67,12 @@ internal sealed class ChoiceBroker : ICardSelector
         if (RunManager.Instance.IsInProgress) Instance.Refresh();
     }
 
-    /// <summary>Main thread. True (the default): every card selection waits for an agent's `choose`. The in-game chat
-    /// turns it off: then only selections asked for while an agent acts.</summary>
+    /// <summary>Main thread. True (the default, without the chat mod): every card selection waits for an agent's
+    /// `choose`. Off in the chat mod, and while the chat mod is loaded: then only selections asked for while an agent
+    /// acts.</summary>
     public bool AlwaysIntercept
     {
-        get => _always;
+        get => _always && !Bridge.ChatPresent;
         set
         {
             _always = value;
@@ -82,7 +85,7 @@ internal sealed class ChoiceBroker : ICardSelector
     public void Refresh()
     {
         if (!RunManager.Instance.IsInProgress) return;
-        bool want = _always || AgentLock.Held || Pending != null;
+        bool want = AlwaysIntercept || AgentLock.Held || Pending != null;
         bool registered = ReferenceEquals(CardSelectCmd.Selector, this);
         if (want && !registered)
         {

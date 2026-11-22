@@ -1,0 +1,11 @@
+{
+  "id": "STS2AgentChat",
+  "name": "STS2 Agent Chat",
+  "author": "sirgrey8209",
+  "description": "In-game chat panel: talk with Claude Code beside the game while you play",
+  "version": "0.2.0",
+  "has_pck": false,
+  "has_dll": true,
+  "affects_gameplay": false,
+  "min_game_version": "v0.111.1"
+}

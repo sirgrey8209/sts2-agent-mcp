@@ -1,9 +1,16 @@
 <#
 .SYNOPSIS
-    Development loop: build, quit the game, install the mod, relaunch through Steam, wait until the mod is ready.
+    Development loop: build, quit the game, install the mods, relaunch through Steam, wait until the mods are ready.
+
+.EXAMPLE
+    .\redeploy.ps1                 # both mods
+    .\redeploy.ps1 -Mods mcp       # external MCP only (the chat mod is taken out of the mods folder)
+    .\redeploy.ps1 -Mods chat      # in-game chat only
 #>
 param(
     [string]$GameDir = $(if ($env:STS2_GAME_DIR) { $env:STS2_GAME_DIR } else { "D:\SteamLibrary\steamapps\common\Slay the Spire 2" }),
+    [ValidateSet("mcp", "chat")]
+    [string[]]$Mods = @("mcp", "chat"),
     [int]$TimeoutSec = 180
 )
 
@@ -11,7 +18,8 @@ $ErrorActionPreference = "Stop"
 $root = Split-Path $PSScriptRoot -Parent
 $log = Join-Path $env:APPDATA "SlayTheSpire2\logs\godot.log"
 
-dotnet build (Join-Path $root "STS2AgentMcp.csproj") -c Release -o (Join-Path $root "out") -nologo -v q -p:STS2GameDir="$GameDir"
+# Build first (the game keeps running if the build fails).
+& (Join-Path $root "build.ps1") -GameDir $GameDir -Mods $Mods
 if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
 
 if (Get-Process -Name SlayTheSpire2 -ErrorAction SilentlyContinue) {
@@ -20,22 +28,20 @@ if (Get-Process -Name SlayTheSpire2 -ErrorAction SilentlyContinue) {
     Start-Sleep -Seconds 2
 }
 
-New-Item -ItemType Directory -Force (Join-Path $GameDir "mods") | Out-Null  # else the DLL is copied as a file named "mods"
-Copy-Item (Join-Path $root "out\STS2AgentMcp.dll") (Join-Path $GameDir "mods") -Force
-Copy-Item (Join-Path $root "mod_manifest.json") (Join-Path $GameDir "mods\STS2AgentMcp.json") -Force
-$kb = Join-Path $root "kb"
-if (Test-Path $kb) { robocopy $kb (Join-Path $GameDir "mods\STS2AgentMcp-kb") /MIR /NFL /NDL /NJH /NJS | Out-Null }
-if ($LASTEXITCODE -ge 8) { throw "robocopy failed ($LASTEXITCODE)" }  # 0-7 mean success
-$global:LASTEXITCODE = 0
+& (Join-Path $root "build.ps1") -GameDir $GameDir -Mods $Mods -Install
+if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+
+$ready = @()
+if ($Mods -contains "mcp") { $ready += "\[STS2 Agent MCP\] ready" }
+if ($Mods -contains "chat") { $ready += "\[STS2 Agent Chat\] ready" }
 
 $launchedAt = Get-Date
 Start-Process "steam://rungameid/2868840"
 $deadline = $launchedAt.AddSeconds($TimeoutSec)
 while ((Get-Date) -lt $deadline) {
     Start-Sleep -Seconds 3
-    if ((Test-Path $log) -and (Get-Item $log).LastWriteTime -gt $launchedAt -and
-        (Select-String -Path $log -Pattern "fast mode set to Instant|\[STS2 Agent MCP\] ready" -Quiet)) {
-        if (Select-String -Path $log -Pattern "fast mode set to Instant" -Quiet) { break }
-    }
+    if (-not (Test-Path $log) -or (Get-Item $log).LastWriteTime -le $launchedAt) { continue }
+    $missing = $ready | Where-Object { -not (Select-String -Path $log -Pattern $_ -Quiet) }
+    if (-not $missing -and (Select-String -Path $log -Pattern "Time to main menu" -Quiet)) { break }
 }
-Select-String -Path $log -Pattern "STS2 Agent MCP" | ForEach-Object { $_.Line }
+Select-String -Path $log -Pattern "STS2 Agent (MCP|Chat)\]" | ForEach-Object { $_.Line }

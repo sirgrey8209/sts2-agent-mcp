@@ -14,6 +14,9 @@ internal sealed record UiButton(string Key, string Label, NClickableControl Cont
 /// <summary>Godot scene-tree helpers for UI-driven screens.</summary>
 internal static class Ui
 {
+    /// <summary>The in-game chat panel's layer (STS2AgentChat); skipped when looking for the game's own nodes.</summary>
+    public const string ChatPanelNodeName = "AgentChatPanel";
+
     public static Node Root => ((SceneTree)Engine.GetMainLoop()).Root;
 
     public static bool IsLive(Node? node)
@@ -53,7 +56,7 @@ internal static class Ui
     {
         if (!IsLive(node)) return;
         // The in-game chat panel is not part of the game: its texts and buttons must not show up as the game's.
-        if (node.Name == Chat.ChatPanel.NodeName) return;
+        if (node.Name == ChatPanelNodeName) return;
         if (node is T match) found.Add(match);
         try
         {

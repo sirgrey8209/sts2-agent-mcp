@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Net;
 using System.Security.Cryptography;
@@ -8,37 +9,33 @@ using System.Threading.Tasks;
 namespace Sts2AgentMcp.Host;
 
 /// <summary>
-/// Localhost-only HTTP server exposing the MCP endpoints: POST /mcp (every MCP client) and POST /mcp/chat (the in-game
-/// chat's own sessions: the same tools plus in-game ones, docs/chat-roadmap.md step 2).
+/// Localhost-only HTTP server for one mod's MCP endpoints (each mod has its own port; paths map to endpoints).
 /// Browser requests are rejected (any Origin header), no CORS headers are sent, and a bearer token is required.
 /// </summary>
 internal sealed class HttpHost
 {
-    public const string ChatPath = "/mcp/chat";
     private const int MaxBodyBytes = 1 << 20;
 
-    private readonly Config _config;
-    private readonly McpEndpoint _endpoint;
-    private readonly McpEndpoint _chatEndpoint;
+    private readonly int _port;
+    private readonly IReadOnlyDictionary<string, McpEndpoint> _routes;
     private readonly byte[] _tokenBytes;
     private HttpListener? _listener;
 
-    public HttpHost(Config config, McpEndpoint endpoint, McpEndpoint chatEndpoint)
+    public HttpHost(int port, string token, IReadOnlyDictionary<string, McpEndpoint> routes)
     {
-        _config = config;
-        _endpoint = endpoint;
-        _chatEndpoint = chatEndpoint;
-        _tokenBytes = Encoding.UTF8.GetBytes(config.Token);
+        _port = port;
+        _routes = routes;
+        _tokenBytes = Encoding.UTF8.GetBytes(token);
     }
 
     public void Start()
     {
         _listener = new HttpListener();
-        _listener.Prefixes.Add($"http://127.0.0.1:{_config.Port}/");
-        _listener.Prefixes.Add($"http://localhost:{_config.Port}/");
+        _listener.Prefixes.Add($"http://127.0.0.1:{_port}/");
+        _listener.Prefixes.Add($"http://localhost:{_port}/");
         _listener.Start();
         _ = Task.Run(AcceptLoop);
-        Log.Info($"MCP endpoint listening on http://127.0.0.1:{_config.Port}/mcp");
+        foreach (var path in _routes.Keys) Log.Info($"MCP endpoint listening on http://127.0.0.1:{_port}{path}");
     }
 
     private async Task AcceptLoop()
@@ -69,7 +66,7 @@ internal sealed class HttpHost
                 return;
             }
             string path = req.Url?.AbsolutePath ?? "";
-            McpEndpoint? endpoint = path == "/mcp" ? _endpoint : path == ChatPath ? _chatEndpoint : null;
+            McpEndpoint? endpoint = _routes.TryGetValue(path, out var found) ? found : null;
             if (endpoint == null)
             {
                 await Send(res, 404, "not found");

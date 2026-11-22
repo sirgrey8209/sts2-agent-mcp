@@ -4,13 +4,12 @@
 
 게임 화면 왼쪽에 에이전트와 대화하는 채팅창을 두고, 게임은 나머지 영역에 전체 높이로 그린다. 채팅창 뒤에서는 모드가 Claude Code를 직접 실행하고, Claude Code는 이 모드의 MCP 도구로 게임을 본다.
 
-설정 파일(`STS2AgentMcp.conf`)에서 켠다. 기본값은 꺼짐이다.
+별도 모드 `STS2AgentChat`(src/Chat)다. 설치하면 켜지고, 게임 노드가 준비되는 즉시(메인 메뉴 전부터) 적용된다. 외부 MCP 모드(`STS2AgentMcp`)와 함께 켜면 외부 클라이언트가 먼저다(DESIGN.md 2절 `Bridge`). 설정 파일은 `STS2AgentChat.conf`(포트 15528)이고, 처음 만들 때 예전 `STS2AgentMcp.conf`의 채팅 설정을 옮겨 온다.
 
 ```json
-{ "chat_panel": true, "chat_width": 480, "claude_path": "C:\\...\\claude.exe" }
+{ "port": 15528, "token": "...", "chat_width": 480, "claude_path": "C:\\...\\claude.exe" }
 ```
 
-- `chat_panel`: 채팅창을 켠다. 게임 노드가 준비되는 즉시(메인 메뉴 전부터) 적용된다.
 - `chat_width`: 채팅창 폭. 창 높이를 1080으로 볼 때의 단위다. 경계선을 끌면 저장된다.
 - `chat_agent`: 마지막으로 연 시작 카드(`claude`/`codex`). 다음에 그 카드를 펼친 채로 시작한다.
 - `chat_auto_connect`: 로그인이 확인되면 [접속]을 누르지 않고 바로 접속한다. 카드의 "다음부터 자동으로 접속"으로 켠다.
@@ -37,7 +36,7 @@
 
 - 루트 창의 콘텐츠 크기를 게임 영역의 비율 r에 맞춰 바꾸고, 비율 모드를 `Ignore`로 둔다. 콘텐츠 크기는 게임의 "자동" 비율 규칙(`NGlobalUi.OnWindowChange`)을 그대로 따른다.
   - r > 21:9: 2580 × (2580 / r)
-  - r < 4:3: (1260 × r) × 1260
+  - r < 4:3: 1680 × 1260 고정. 게임을 영역 폭에 맞춰 줄이고 위아래는 띠로 남긴다(Godot `keep_height`와 같다). 게임 화면은 폭 1680 이상을 전제로 고정 여백을 두고 배치돼서, 더 좁은 콘텐츠를 주면 얼리 액세스 안내 판·프로필 카드·지도 범례가 어긋나거나 잘렸다(맥 16:10 전체 화면에 채팅 480이면 r ≈ 1.15).
   - 그 사이: 높이 1080(r ≥ 14:9) 또는 폭 1680
 - 게임은 이 크기를 자기 화면으로 보고 UI를 다시 배치한다. 렌더링은 창 전체에 한다(`Keep`과 달리 가운데 영역으로 잘리지 않는다).
 - `Ignore`로 생긴 늘어남은 캔버스 변환으로 되돌리면서 게임을 오른쪽에 붙인다. 변환은 기본 캔버스(`Viewport.CanvasTransform`)와 루트 뷰포트의 모든 게임 CanvasLayer에 같이 건다. 지금 게임 레이어는 `/root/Game/CanvasLayer`(L10) 하나다. 나중에 생기는 레이어는 `NodeAdded`로 잡는다. 다른 뷰포트(지도 그리기, 카드 이미지) 안의 레이어는 건드리지 않는다.
@@ -48,7 +47,7 @@
 - 위·아래·오른쪽에 게임이 영역 밖으로 그리는 것(큰 배경, 스크롤되는 지도)은 검은 마스크로 가린다.
 - 채팅창 폭: 최소 240단위. 최대는 게임 영역 비율이 1:1이 될 때까지(`MinGameAspect`).
 
-### 2.2 입력 (`src/Game/MouseRemap.cs`)
+### 2.2 입력 (`src/Chat/Game/MouseRemap.cs`)
 
 - GUI 입력(호버, 클릭)은 캔버스 변환을 따라가므로 따로 할 일이 없다.
 - `Viewport.GetMousePosition()`은 변환을 반영하지 않는다. 게임은 이 값으로 드래그한 카드 위치(`NMouseCardPlay`)와 대상 지정 화살표(`NTargetingArrow`)를 그린다. Harmony postfix로 루트 뷰포트일 때만 게임 좌표로 바꾸고, 게임 영역 안으로 자른다(원래 게임에서 창 가장자리가 커서를 막는 것과 같다). 인라인 문제 없이 게임 코드에도 적용되는 것을 확인했다.
@@ -84,7 +83,7 @@
 - 첫 메시지를 보낼 때 실행한다(3.1절 판정이 끝난 뒤에만):
   `claude -p --input-format stream-json --output-format stream-json --verbose --mcp-config <작업 폴더>/mcp.json --strict-mcp-config --tools "" --allowedTools mcp__sts2__state,mcp__sts2__act,mcp__sts2__info,mcp__sts2__search --permission-mode dontAsk --system-prompt-file <작업 폴더>/system-prompt.txt`
 - 프롬프트는 파일로 넘긴다. npm 설치(`.cmd`)는 cmd.exe를 거쳐 실행하는데, cmd는 인자 안의 줄바꿈을 넘기지 못한다.
-- 이 모드의 MCP 엔드포인트와 토큰만 연결한다. 내장 도구는 모두 끄고 플레이 도구 네 개만 허용한다. 나머지(이미지 도구, `dev_layout` 등)는 묻지 않고 거부한다.
+- 채팅 모드의 채팅 엔드포인트(`/mcp/chat`)와 토큰만 연결한다. 내장 도구는 모두 끈다. 이 엔드포인트에는 채팅 에이전트용 도구만 있다(이미지 도구, `dev_layout`은 개발용 `/mcp/dev`에만 있다).
 - 작업 폴더: `%LOCALAPPDATA%\sts2-agent-mcp\chat`. Claude Code는 대화를 작업 폴더 기준으로 저장하므로 바꾸지 않는다.
 - 환경변수와 설정 폴더: 3.1절(`src/Chat/ClaudeCli.cs`).
 - 시스템 프롬프트: 조언이 기본이고 `act`는 요청할 때만, 판단 전에 `state` 확인, 짧게(표·코드 블록 없이), 게임에 표시된 이름 사용.
@@ -206,7 +205,6 @@
 
 ### 3.6 남은 확인
 
-- 게임 영역이 4:3보다 좁을 때 게임의 좁은 창 배치가 깨지지 않는지. 깨지면 `MinGameAspect`를 4:3으로 올린다.
 - 전체 화면, 21:9 창, 설정에서 화면 비율을 바꿀 때.
 - 경계선에서 좌우 화살표 커서가 실제로 보이는지(게임이 커서를 따로 관리한다).
 - 채팅창 위에서 카드를 놓았을 때. 지금은 게임 왼쪽 가장자리에서 놓은 것으로 처리돼서, 높이가 사용 구역이면 대상 없는 카드가 사용될 수 있다.
@@ -215,14 +213,14 @@
 ## 4. 개발 메모
 
 - 브랜치: 채팅창 작업은 `in-game-chat` 브랜치에서만 한다. `main`은 배포된 MCP 모드 그대로 두고, 따로 정하기 전까지 병합하거나 PR을 만들지 않는다.
-- 게임 경로: 게임이 기본 경로(`D:\SteamLibrary\...`)에 없으면 `build.ps1`, `tools\redeploy.ps1`, `tools\mcp.ps1`을 실행하기 전에 `STS2_GAME_DIR`을 설정한다. 채팅창을 시험하려면 설치된 `STS2AgentMcp.conf`에 `"chat_panel": true`를 넣는다.
+- 게임 경로: 게임이 기본 경로(`D:\SteamLibrary\...`)에 없으면 `build.ps1`, `tools\redeploy.ps1`, `tools\mcp.ps1`을 실행하기 전에 `STS2_GAME_DIR`을 설정한다. 채팅창을 시험하려면 채팅 모드를 설치한다(`build.ps1 -Install`, 기본으로 두 모드 모두).
 - 게임 코드: `sts2.dll`을 저장소 밖 폴더에 디컴파일해서 본다(ilspycmd). 디컴파일 결과는 저장소에 넣지 않는다.
 - Windows PowerShell 5.1에서 주의할 점: `ProcessStartInfo.ArgumentList`와 `Process.Kill(bool)`이 없다. here-string을 `git commit -F -`로 넘기면 메시지가 인자로 들어가 커밋이 안 된다. 메시지는 임시 파일에 쓰고 `-F <파일>`로 넘긴다.
 - 사람이 PC를 쓰는 중일 수 있으므로 시험할 때 실제 마우스를 움직이지 않는다. `dev_layout`의 가짜 입력(move, click, drag, type, say, shot)을 쓴다. 게임이 실제 커서를 읽는 곳(드래그한 카드, 대상 지정 화살표)은 사람이 직접 시험한다.
 
 ## 5. 개발 도구 (`dev_layout`)
 
-MCP 도구로 노출된다. 채팅용 Claude Code에는 허용하지 않는다.
+채팅 모드의 개발용 엔드포인트(`/mcp/dev`, `tools/mcp.ps1 -Dev`, macOS `tools/mcp.sh --dev`)에 있다. 채팅용 Claude Code의 엔드포인트(`/mcp/chat`)에는 없다.
 
 | action | 하는 일 |
 |---|---|
