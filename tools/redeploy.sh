@@ -68,12 +68,18 @@ remove_mod() {
 if [ $want_mcp = 1 ]; then install_mod STS2AgentMcp External; else remove_mod STS2AgentMcp; fi
 if [ $want_chat = 1 ]; then install_mod STS2AgentChat Chat; else remove_mod STS2AgentChat; fi
 
+# The game starts a new godot.log on every launch (the old one is renamed): wait for a new file, not new lines.
+old_log=$( [ -f "$log" ] && stat -f %i "$log" || echo none )
 launched=$(date +%s)
 open "steam://rungameid/2868840"
 while [ $(( $(date +%s) - launched )) -lt "$timeout" ]; do
     sleep 3
+    if ! game_running && [ $(( $(date +%s) - launched )) -ge 60 ]; then
+        echo "ERROR: the game did not start within 60s. Check Steam (logged in? a dialog waiting?)." >&2
+        exit 1
+    fi
     [ -f "$log" ] || continue
-    [ "$(stat -f %m "$log")" -ge "$launched" ] || continue
+    [ "$(stat -f %i "$log")" != "$old_log" ] || continue
     ready=1
     [ $want_mcp = 1 ] && ! grep -q "\[STS2 Agent MCP\] ready" "$log" && ready=0
     [ $want_chat = 1 ] && ! grep -q "\[STS2 Agent Chat\] ready" "$log" && ready=0

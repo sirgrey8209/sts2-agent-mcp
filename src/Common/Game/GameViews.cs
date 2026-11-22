@@ -17,14 +17,16 @@ namespace Sts2AgentMcp.Game;
 
 /// <summary>
 /// Opens the game's own views for the chat agent (docs/chat-roadmap.md step 7): the deck, a combat pile, the map,
-/// a card's or relic's detail view, and a route drawn on the real map. Only views: nothing here plays or chooses.
+/// a card's or relic's detail view (routes on the real map: the chat mod's MapInk). Only views: nothing here plays or
+/// chooses.
 /// Main thread only.
 /// </summary>
 internal static class GameViews
 {
     public const string Help = "deck, draw, discard, exhaust, map, card:<id or name>, relic:<id or name>";
 
-    private const string RouteNodeName = "AgentRoute";
+    /// <summary>The fallback plain route drawn by the chat mod's MapInk.</summary>
+    internal const string RouteNodeName = "AgentRoute";
 
     public static string Open(string view)
     {
@@ -76,41 +78,7 @@ internal static class GameViews
             r.Id.ToString().Equals(query, StringComparison.OrdinalIgnoreCase) ||
             string.Equals(Text.Of(() => r.Title), query, StringComparison.OrdinalIgnoreCase));
 
-    /// <summary>
-    /// Opens the map and draws a route over it through the given nodes ("r&lt;row&gt;c&lt;col&gt;", "current", "boss"),
-    /// replacing any route drawn before. An empty list only clears it.
-    /// </summary>
-    public static string DrawRoute(IReadOnlyList<string> nodes, Color color)
-    {
-        if (GameCtx.Capture().Run == null) throw new ToolError("no run in progress");
-        var map = OpenMap();
-        var container = Ui.GetField(map, "_mapContainer") as Control ?? throw new ToolError("map not ready");
-        container.GetNodeOrNull(RouteNodeName)?.QueueFree();
-        if (nodes.Count == 0) return "cleared the route";
-        if (nodes.Count < 2) throw new ToolError("a route needs at least two nodes");
-
-        var points = MapPoints(map);
-        var line = new Line2D
-        {
-            Name = RouteNodeName,
-            Width = 10,
-            DefaultColor = color,
-            JointMode = Line2D.LineJointMode.Round,
-            BeginCapMode = Line2D.LineCapMode.Round,
-            EndCapMode = Line2D.LineCapMode.Round,
-            ZIndex = 5,
-        };
-        var inverse = container.GetGlobalTransform().AffineInverse();
-        foreach (var reference in nodes)
-        {
-            var point = Resolve(reference, points);
-            line.AddPoint(inverse * (point.GlobalPosition + point.Size * point.GetGlobalTransform().Scale / 2));
-        }
-        container.AddChild(line);
-        return $"drew a route through {nodes.Count} nodes";
-    }
-
-    private static NMapScreen OpenMap()
+    internal static NMapScreen OpenMap()
     {
         var map = NMapScreen.Instance ?? throw new ToolError("no map (not in a run)");
         CloseCapstone();
@@ -123,7 +91,7 @@ internal static class GameViews
         if (NCapstoneContainer.Instance is { InUse: true } capstone) capstone.Close();
     }
 
-    private static Dictionary<(int Col, int Row), NMapPoint> MapPoints(NMapScreen map)
+    internal static Dictionary<(int Col, int Row), NMapPoint> MapPoints(NMapScreen map)
     {
         var result = new Dictionary<(int, int), NMapPoint>();
         if (Ui.GetField(map, "_mapPointDictionary") is IDictionary dictionary)
@@ -135,7 +103,7 @@ internal static class GameViews
         return result;
     }
 
-    private static NMapPoint Resolve(string reference, Dictionary<(int Col, int Row), NMapPoint> points)
+    internal static NMapPoint Resolve(string reference, Dictionary<(int Col, int Row), NMapPoint> points)
     {
         string r = reference.Trim().ToLowerInvariant();
         if (r == "current")

@@ -1,5 +1,6 @@
 using Godot;
 using HarmonyLib;
+using MegaCrit.Sts2.Core.Nodes.Screens.Map;
 using Sts2AgentMcp.Host;
 
 namespace Sts2AgentMcp.Game;
@@ -9,6 +10,9 @@ namespace Sts2AgentMcp.Game;
 /// that transform, but <see cref="Viewport.GetMousePosition"/> on the root still returns untransformed viewport
 /// coordinates. Game code uses it for the dragged card and the targeting arrow, so they would drift away from the cursor.
 /// This postfix maps the root viewport's mouse position into the game's canvas coordinates while a remap is active.
+/// Map drawing (the quill) reads the mouse event's GlobalPosition in its own <c>_Input</c> and maps it with the drawing
+/// node's global transform, which leaves out the canvas transform too: its two mouse inputs get a copy of the event
+/// with the position mapped back, so the line starts under the cursor.
 /// </summary>
 internal static class MouseRemap
 {
@@ -30,6 +34,13 @@ internal static class MouseRemap
             harmony.Patch(original, postfix: new HarmonyMethod(typeof(MouseRemap), nameof(Postfix)));
             _installed = true;
         });
+        Features.Try("map-drawing-remap", () =>
+        {
+            var harmony = new Harmony("sirgrey8209.STS2AgentChat.MapDrawing");
+            var prefix = new HarmonyMethod(typeof(MouseRemap), nameof(DrawingInputPrefix));
+            foreach (var type in new[] { typeof(NMouseModeMapDrawingInput), typeof(NMouseHeldMapDrawingInput) })
+                harmony.Patch(AccessTools.Method(type, "_Input") ?? throw new System.MissingMethodException($"{type.Name}._Input"), prefix: prefix);
+        });
         return _installed;
     }
 
@@ -49,6 +60,16 @@ internal static class MouseRemap
     public static void Deactivate() => _active = false;
 
     private static Rect2 _bounds;
+
+    /// <summary>The drawing input's mouse events, with the position in the game's canvas (a copy; others get the original).</summary>
+    private static void DrawingInputPrefix(ref InputEvent __0)
+    {
+        if (!_active || __0 is not InputEventMouse mouse) return;
+        var copy = (InputEventMouse)mouse.Duplicate();
+        copy.GlobalPosition = _inverse * mouse.GlobalPosition;
+        copy.Position = _inverse * mouse.Position;
+        __0 = copy;
+    }
 
     private static void Postfix(Viewport __instance, ref Vector2 __result)
     {

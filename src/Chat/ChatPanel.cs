@@ -22,7 +22,7 @@ internal sealed partial class ChatPanel
     private float _inputHeight = InputHeight;
     private readonly StyleBox[] _inputStyles;
     private const float IconSize = 52;
-    private const float DividerHit = 12;   // grab area, panel units (inside the panel, at its right edge)
+    private const float DividerHit = 12;   // room kept free at the panel's right edge (the line and its grip)
     private const float DividerLine = 2;
     private static readonly Color LineIdle = new(0.22f, 0.25f, 0.32f, 1f);
     private static readonly Color LineActive = new(0.55f, 0.62f, 0.78f, 1f);
@@ -40,7 +40,6 @@ internal sealed partial class ChatPanel
     private readonly ScrollContainer _scroll;
     private readonly VBoxContainer _list;
     private readonly ColorRect _dividerLine;
-    private readonly Control _divider;
     private readonly List<BubbleRow> _bubbles = new();
     private BubbleRow? _typing;
     private bool _dragging;
@@ -273,12 +272,8 @@ internal sealed partial class ChatPanel
         _start.MinimumSizeChanged += PlaceCard;
 
         _dividerLine = new ColorRect { Color = LineIdle, MouseFilter = Control.MouseFilterEnum.Ignore };
-        _divider = new Control { MouseFilter = Control.MouseFilterEnum.Stop, MouseDefaultCursorShape = Control.CursorShape.Hsize };
-        _divider.GuiInput += OnDividerInput;
-        _divider.MouseEntered += () => { _hovered = true; UpdateDividerColor(); };
-        _divider.MouseExited += () => { _hovered = false; UpdateDividerColor(); };
         Layer.AddChild(_dividerLine);
-        Layer.AddChild(_divider);
+        BuildEdge();
         root.AddChild(Layer);
     }
 
@@ -578,11 +573,12 @@ internal sealed partial class ChatPanel
 
     private void UpdateVisibility()
     {
-        foreach (var c in new Control[] { _headerBg, _headerIcon, _name, _status, Input }) c.Visible = _hasRoom;
+        foreach (var c in new Control[] { _headerBg, _headerIcon, _name, _status, Input, _fold }) c.Visible = _hasRoom;
         _scroll.Visible = _hasRoom && !_cardShown;
         _start.Visible = _hasRoom && _cardShown;
         _logout.Visible = _hasRoom && _logoutShown;
-        _busyCover.Visible = _hasRoom && _agentBusy;
+        // Covers the game whenever an agent acts, folded or not (the player's clicks would mix with its actions).
+        _busyCover.Visible = _agentBusy;
     }
 
     // Status lines (docs/in-game-chat.md §3.1): red = cannot run yet, green = ready, yellow = billed per use.
@@ -1020,6 +1016,7 @@ internal sealed partial class ChatPanel
         // Keep the typing indicator last.
         _list.AddChild(control);
         if (_typing != null && control != _typing.Row) _list.MoveChild(_typing.Row, -1);
+        if (_typing == null || control != _typing.Row) NoteUnread();
         _stickToBottom = true;
         ScrollToBottom();
     }
@@ -1099,9 +1096,10 @@ internal sealed partial class ChatPanel
         _name.Position = strip.Position + new Vector2(textX, 10);
         _name.Size = new Vector2(Mathf.Max(0, strip.Size.X - textX - Pad), 36);
         // Logout at the header's right; the name and status stop before it while it is shown.
-        float logoutRoom = _logoutShown ? LogoutWidth + 12 : 0;
+        // The fold button sits at the far right, the logout left of it.
+        float logoutRoom = FoldRoom + (_logoutShown ? LogoutWidth + 12 : 0);
         _logout.Size = new Vector2(LogoutWidth, 48);
-        _logout.Position = strip.Position + new Vector2(strip.Size.X - DividerHit - Pad - LogoutWidth, (HeaderHeight - 48) / 2);
+        _logout.Position = strip.Position + new Vector2(strip.Size.X - DividerHit - Pad - FoldRoom - LogoutWidth, (HeaderHeight - 48) / 2);
         _name.Size = new Vector2(Mathf.Max(0, strip.Size.X - textX - Pad - DividerHit - logoutRoom), 36);
         _status.Position = strip.Position + new Vector2(textX, 48);
         _status.Size = new Vector2(Mathf.Max(0, strip.Size.X - textX - Pad - DividerHit - logoutRoom), 26);
@@ -1116,11 +1114,7 @@ internal sealed partial class ChatPanel
         _hasRoom = strip.Size.X >= 160;
         UpdateVisibility();
 
-        _divider.Position = new Vector2(strip.End.X - DividerHit, strip.Position.Y);
-        _divider.Size = new Vector2(DividerHit, strip.Size.Y);
-        _dividerLine.Position = new Vector2(strip.End.X - DividerLine, strip.Position.Y);
-        _dividerLine.Size = new Vector2(DividerLine, strip.Size.Y);
-        _divider.Visible = _dividerLine.Visible = strip.Size.X > DividerHit;
+        LayoutEdge(strip, win.Y / u);
 
         foreach (var bubble in _bubbles) bubble.Fit(RowWidth);
     }
@@ -1167,21 +1161,29 @@ internal sealed partial class ChatPanel
         {
             case InputEventMouseButton { ButtonIndex: MouseButton.Left } button:
                 _dragging = button.Pressed;
-                if (!_dragging) ChatLayout.ResizeChatDone();
+                // Where in the grip it was taken, so the line does not jump to the cursor.
+                if (_dragging) _grabOffset = button.Position.X - HandleWidth / 2;
+                else ChatLayout.ResizeChatDone();
                 UpdateDividerColor();
-                _divider.AcceptEvent();
+                _handle.AcceptEvent();
                 break;
             case InputEventMouseMotion motion when _dragging:
-                // GUI input positions are local to the divider; the divider sits directly in the panel layer, so
-                // adding its position gives panel units. While the button is held it keeps receiving motion even
-                // over the game.
-                ChatLayout.ResizeChat(_divider.Position.X + motion.Position.X + DividerHit / 2);
-                _divider.AcceptEvent();
+                // GUI input positions are local to the grip; the grip sits directly in the panel layer, centered on
+                // the line, so its position plus half its width is the line. While the button is held it keeps
+                // receiving motion even over the game.
+                ChatLayout.ResizeChat(_handle.Position.X + motion.Position.X - _grabOffset);
+                _handle.AcceptEvent();
                 break;
         }
     }
 
-    private void UpdateDividerColor() => _dividerLine.Color = _dragging || _hovered ? LineActive : LineIdle;
+    private void UpdateDividerColor()
+    {
+        bool active = _dragging || _hovered;
+        _dividerLine.Color = active ? LineActive : LineIdle;
+        _handleStyle.BorderColor = active ? Accent : LineIdle;
+        foreach (var dot in _grip) dot.Color = active ? Accent : ChatTheme.DimColor;
+    }
 
     /// <summary>
     /// One message: icon + tail + nine-patch bubble with the text, laid out like the Ancient dialogue line

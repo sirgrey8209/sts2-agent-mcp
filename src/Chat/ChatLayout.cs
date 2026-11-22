@@ -53,11 +53,26 @@ internal static class ChatLayout
     /// <summary>Chat panel width in units of a 1080-tall window.</summary>
     public static float ChatWidth => _chatWidth;
 
+    /// <summary>The chat is folded away: the game has the whole window, the panel shows only its badge.</summary>
+    public static bool Collapsed { get; private set; }
+
+    /// <summary>Main thread. Folds the chat away or opens it again (remembered in the config).</summary>
+    public static void SetCollapsed(bool collapsed)
+    {
+        if (Collapsed == collapsed) return;
+        Collapsed = collapsed;
+        _dirty = true;
+        var config = _config;
+        if (config != null) System.Threading.Tasks.Task.Run(() => config.SaveChatCollapsed(collapsed));
+        Log.Info($"chat layout: {(collapsed ? "collapsed" : "opened")}");
+    }
+
     /// <summary>Mod init: enables the layout as soon as the game node is ready (before the main menu shows).</summary>
     public static void Start(Config config)
     {
         _config = config;
         _chatWidth = config.ChatWidth;
+        Collapsed = config.ChatCollapsed;
         // Screenshots of both mods crop to the game (the panel is not part of what an agent should see).
         Bridge.SetGameRect(() => Enabled ? new[] { GameRectPx.Position.X, GameRectPx.Position.Y, GameRectPx.Size.X, GameRectPx.Size.Y } : null);
         _ = MainThread.Poll(() =>
@@ -203,7 +218,7 @@ internal static class ChatLayout
         if (win.X < 1 || win.Y < 1) return; // minimized
         float u = win.Y / 1080f;
         _chatWidth = ClampChatWidth(_chatWidth, win);
-        float chatPx = MathF.Round(Math.Max(0, Math.Min(_chatWidth * u, win.X - MinGameAspect * win.Y)));
+        float chatPx = Collapsed ? 0 : MathF.Round(Math.Max(0, Math.Min(_chatWidth * u, win.X - MinGameAspect * win.Y)));
         var area = new Rect2(chatPx, 0, win.X - chatPx, win.Y);
 
         _content = GameContentSize(area.Size.X / area.Size.Y);

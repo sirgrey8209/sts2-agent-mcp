@@ -28,6 +28,8 @@ internal sealed class Config
     public float ChatWidth { get; private set; } = 480;
     /// <summary>Claude Code executable. Null = search PATH and the usual install folders.</summary>
     public string? ClaudePath { get; private set; }
+    /// <summary>The chat folded away (only the Neow badge at the left edge); the game has the whole window.</summary>
+    public bool ChatCollapsed { get; private set; }
     /// <summary>Connect without asking once the login works (the card's "connect automatically" box).</summary>
     public bool ChatAutoConnect { get; private set; }
     /// <summary>The agent card opened last ("claude" / "codex"), opened again at start.</summary>
@@ -71,6 +73,8 @@ internal sealed class Config
             config.ChatAgent = agent;
         if (root["chat_auto_connect"] is JsonValue ac && ac.TryGetValue(out bool autoConnect))
             config.ChatAutoConnect = autoConnect;
+        if (root["chat_collapsed"] is JsonValue cc && cc.TryGetValue(out bool collapsed))
+            config.ChatCollapsed = collapsed;
         if (root["chat_play_level"] is JsonValue pl && pl.TryGetValue(out string? level) && level is "commentary" or "colow" or "cohigh" or "auto")
             config.ChatPlayLevel = level;
         if (root["claude_path"] is JsonValue cl && cl.TryGetValue(out string? claudePath) && !string.IsNullOrWhiteSpace(claudePath))
@@ -114,6 +118,13 @@ internal sealed class Config
     {
         ChatWidth = width;
         Save("chat_width", Math.Round(width));
+    }
+
+    /// <summary>Remembers whether the chat is folded away.</summary>
+    public void SaveChatCollapsed(bool collapsed)
+    {
+        ChatCollapsed = collapsed;
+        Save("chat_collapsed", collapsed);
     }
 
     /// <summary>Remembers "connect automatically".</summary>

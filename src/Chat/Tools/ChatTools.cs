@@ -140,38 +140,101 @@ internal sealed class OpenViewTool : ITool
     internal static void ChatWatchMute() => GameWatch.IgnoreViewsFor(TimeSpan.FromSeconds(2));
 }
 
-/// <summary>A route drawn on the game's real map.</summary>
+/// <summary>Routes and circled nodes drawn on the game's real map with the game's quill (<see cref="MapInk"/>).</summary>
 internal sealed class MapRouteTool : ITool
 {
     public string Name => "map_route";
 
     public string Description =>
-        "Open the game's map and draw a suggested route over it. `nodes` in order: r<row>c<col> (as in render_map with " +
-        "coords), \"current\" or \"boss\". An empty list clears the route.";
+        "Open the game's map and draw on it with the map quill, in your own ink (the player's drawings are left alone): " +
+        "`routes` (1-3, each `nodes` in order, optional `color` and `label`; compare paths with different colors) and " +
+        "`marks` (nodes to circle, each a node or {node, label, color}). Every route and mark gets a badge in its color " +
+        "(routes A, B, C and marks 1, 2, 3 unless labeled): name them that way in the chat (\"A 경로\", \"2번 칸\"). " +
+        "Nodes: r<row>c<col> (as in render_map with coords), \"current\" or \"boss\". Each call replaces your earlier " +
+        "drawing; nothing given clears it. (`nodes` + `color` alone draw one route.)";
+
+    private static JsonObject NodeList() => new() { ["type"] = "array", ["items"] = new JsonObject { ["type"] = "string" } };
 
     public JsonObject InputSchema() => new()
     {
         ["type"] = "object",
         ["properties"] = new JsonObject
         {
-            ["nodes"] = new JsonObject { ["type"] = "array", ["items"] = new JsonObject { ["type"] = "string" } },
-            ["color"] = new JsonObject { ["type"] = "string", ["description"] = "Line color (name or #hex). Default gold." },
+            ["routes"] = new JsonObject
+            {
+                ["type"] = "array",
+                ["maxItems"] = 3,
+                ["items"] = new JsonObject
+                {
+                    ["type"] = "object",
+                    ["properties"] = new JsonObject
+                    {
+                        ["nodes"] = NodeList(),
+                        ["color"] = new JsonObject { ["type"] = "string", ["description"] = "Ink color (name or #hex). Default: blue, green, purple in order." },
+                        ["label"] = new JsonObject { ["type"] = "string", ["maxLength"] = 2, ["description"] = "Badge text. Default A, B, C in order." },
+                    },
+                    ["required"] = new JsonArray("nodes"),
+                },
+            },
+            ["marks"] = new JsonObject
+            {
+                ["type"] = "array",
+                ["items"] = new JsonObject
+                {
+                    ["anyOf"] = new JsonArray(
+                        new JsonObject { ["type"] = "string" },
+                        new JsonObject
+                        {
+                            ["type"] = "object",
+                            ["properties"] = new JsonObject
+                            {
+                                ["node"] = new JsonObject { ["type"] = "string" },
+                                ["label"] = new JsonObject { ["type"] = "string", ["maxLength"] = 2 },
+                                ["color"] = new JsonObject { ["type"] = "string" },
+                            },
+                            ["required"] = new JsonArray("node"),
+                        }),
+                },
+            },
+            ["nodes"] = NodeList(),
+            ["color"] = new JsonObject { ["type"] = "string" },
         },
-        ["required"] = new JsonArray("nodes"),
     };
 
     public Task<ToolOutput> Call(JsonObject args)
     {
-        var nodes = ChatToolArgs.Strings(args, "nodes");
-        string? colorName = ChatToolArgs.Str(args, "color");
+        var routes = new List<InkRoute>();
+        foreach (var node in args["routes"] as JsonArray ?? new JsonArray())
+            if (node is JsonObject r)
+                routes.Add(new InkRoute(ChatToolArgs.Strings(r, "nodes"), ParseColor(ChatToolArgs.Str(r, "color")), Badge(ChatToolArgs.Str(r, "label"))));
+        var single = ChatToolArgs.Strings(args, "nodes");
+        if (single.Count > 0) routes.Add(new InkRoute(single, ParseColor(ChatToolArgs.Str(args, "color"))));
+        if (routes.Count > 3) throw new ToolError("at most 3 routes");
+        var marks = new List<InkMark>();
+        foreach (var node in args["marks"] as JsonArray ?? new JsonArray())
+        {
+            if (node is JsonValue v && v.TryGetValue(out string? text) && !string.IsNullOrWhiteSpace(text))
+                marks.Add(new InkMark(text.Trim(), null));
+            else if (node is JsonObject m && ChatToolArgs.Str(m, "node") is { } at)
+                marks.Add(new InkMark(at, ParseColor(ChatToolArgs.Str(m, "color")), Badge(ChatToolArgs.Str(m, "label"))));
+        }
         return MainThread.Run<ToolOutput>(() =>
         {
             OpenViewTool.ChatWatchMute();
-            var color = colorName != null && Color.HtmlIsValid(colorName.TrimStart('#'))
-                ? Color.FromHtml(colorName)
-                : colorName != null ? Color.FromString(colorName, new Color(1f, 0.84f, 0.3f, 0.9f)) : new Color(1f, 0.84f, 0.3f, 0.9f);
-            return GameViews.DrawRoute(nodes, color);
+            return MapInk.Draw(routes, marks);
         });
+    }
+
+    /// <summary>Badge text: one or two characters (it has to fit in the disc).</summary>
+    private static string? Badge(string? label) => label == null ? null : label.Length <= 2 ? label : label[..2];
+
+    private static Color? ParseColor(string? name)
+    {
+        if (name == null) return null;
+        if (Color.HtmlIsValid(name.TrimStart('#'))) return Color.FromHtml(name);
+        var parsed = Color.FromString(name, new Color(0, 0, 0, 0));
+        if (parsed.A == 0) throw new ToolError($"unknown color '{name}'");
+        return parsed;
     }
 }
 
