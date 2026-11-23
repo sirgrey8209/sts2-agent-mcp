@@ -9,11 +9,13 @@ using Sts2AgentMcp.Chat;
 using Sts2AgentMcp.Game;
 using Sts2AgentMcp.Host;
 using Sts2AgentMcp.Screens;
+using Sts2AgentMcp.Session;
 
 namespace Sts2AgentMcp.Tools;
 
-// Tools of the in-game chat's own sessions (docs/chat-roadmap.md steps 1, 2 and 7). They are served only on the chat
-// endpoint (/mcp/chat); clients of /mcp never see them.
+// Tools of the in-game chat's agents (docs/chat-tools.md), served only on the chat endpoint (/mcp/chat):
+// look (quietly), info / info_grep (knowledge), open (the game's own views), mark (draw on the game, the drawer),
+// operate (the chat's act), wait (be told when something happens), notes (memory-style learning notes).
 
 internal static class ChatToolArgs
 {
@@ -32,93 +34,67 @@ internal static class ChatToolArgs
     }
 }
 
-/// <summary>Cards in the chat, in the game's card look, with the game's tooltips on hover.</summary>
-internal sealed class ShowCardsTool : ITool
+
+/// <summary>Looks at the game without changing anything on the player's screen.</summary>
+internal sealed class LookTool : ITool
 {
-    public string Name => "show_cards";
+    private readonly ActRunner _runner;
+
+    public LookTool(ActRunner runner) => _runner = runner;
+
+    public string Name => "look";
 
     public string Description =>
-        "Show cards in the chat panel in the game's card look (the player gets the game's tooltip on hover). " +
-        $"Give `cards` (combat ids like c3, or card ids/names like BASH) or `source` ({CardSources.Help}).";
+        "Look at the game quietly: never changes what the player sees. Returns the current screen, run status, what " +
+        "can be done (the operate syntax) and the ids mark and operate use: hand cards c<n>, creatures e<n>/me/pet<n>, " +
+        "potions by slot p<n>, options of the screen opt<n> (the number choose takes), map nodes r<row>c<col>. " +
+        "view=full adds the deck, every pile and relic texts. operate returns the same view after acting.";
 
     public JsonObject InputSchema() => new()
     {
         ["type"] = "object",
         ["properties"] = new JsonObject
         {
-            ["cards"] = new JsonObject { ["type"] = "array", ["items"] = new JsonObject { ["type"] = "string" } },
-            ["source"] = new JsonObject
-            {
-                ["type"] = "string",
-                ["enum"] = new JsonArray("hand", "draw", "discard", "exhaust", "deck", "choice", "screen"),
-            },
+            ["view"] = new JsonObject { ["type"] = "string", ["enum"] = new JsonArray("screen", "full"), ["description"] = "screen (default) or full" },
         },
     };
 
-    public Task<ToolOutput> Call(JsonObject args)
+    public async Task<ToolOutput> Call(JsonObject args) =>
+        await _runner.RenderCurrent(ChatToolArgs.Str(args, "view") == "full");
+}
+
+/// <summary>Finds cards, relics and potions, and lines of the monster and event documents.</summary>
+internal sealed class InfoGrepTool : ITool
+{
+    private readonly SearchTool _search = new();
+
+    public string Name => "info_grep";
+
+    public string Description =>
+        "Find things to look up with info: cards, relics and potions by words in their name or text and by filters " +
+        "(pool, type, rarity, cost, keyword), and lines of the monster and event documents that contain every word of " +
+        "query (e.g. \"취약\", \"골드 잃\"). Returns ids for info.";
+
+    public JsonObject InputSchema() => _search.InputSchema();
+
+    public async Task<ToolOutput> Call(JsonObject args)
     {
-        var ids = ChatToolArgs.Strings(args, "cards");
-        string? source = ChatToolArgs.Str(args, "source");
-        if (ids.Count == 0 && source == null) throw new ToolError("give `cards` or `source`");
-        return MainThread.Run<ToolOutput>(() =>
-        {
-            ChatToolArgs.RequirePanel();
-            var cards = (ids.Count > 0 ? CardSources.FromIds(ids) : CardSources.FromSource(GameCtx.Capture(), source!))
-                .Select(c => c.Card).ToList();
-            if (cards.Count == 0) return "no cards to show";
-            ChatSessions.ShowCards(cards);
-            return $"shown {cards.Count} card(s): " + string.Join(", ", cards.Select(View.Fmt.CardLabel));
-        });
+        var catalog = await _search.Call(args);
+        string? query = ChatToolArgs.Str(args, "query");
+        if (query == null) return catalog;
+        var lines = KbDocs.Grep(query, 20);
+        return lines.Count == 0 ? catalog : catalog.Text + "\n--- documents ---\n" + string.Join("\n", lines);
     }
 }
 
-/// <summary>Relics in the chat with their icons, with the game's tooltips on hover.</summary>
-internal sealed class ShowRelicsTool : ITool
+/// <summary>Opens one of the game's own views; the player closes it.</summary>
+internal sealed class OpenTool : ITool
 {
-    public string Name => "show_relics";
+    public string Name => "open";
 
     public string Description =>
-        "Show relics in the chat panel with their game icons (the player gets the relic's tooltip on hover). " +
-        "Give `relics` (ids or names), or `mine: true` for all of the player's relics.";
-
-    public JsonObject InputSchema() => new()
-    {
-        ["type"] = "object",
-        ["properties"] = new JsonObject
-        {
-            ["relics"] = new JsonObject { ["type"] = "array", ["items"] = new JsonObject { ["type"] = "string" } },
-            ["mine"] = new JsonObject { ["type"] = "boolean" },
-        },
-    };
-
-    public Task<ToolOutput> Call(JsonObject args)
-    {
-        var names = ChatToolArgs.Strings(args, "relics");
-        bool mine = args["mine"] is JsonValue m && m.TryGetValue(out bool b) && b;
-        if (names.Count == 0 && !mine) throw new ToolError("give `relics` or `mine: true`");
-        return MainThread.Run<ToolOutput>(() =>
-        {
-            ChatToolArgs.RequirePanel();
-            var owned = GameCtx.Capture().Me?.Relics.ToList() ?? new List<RelicModel>();
-            var relics = new List<RelicModel>();
-            if (mine) relics.AddRange(owned);
-            foreach (var name in names)
-                relics.Add(GameViews.FindRelic(owned, name) ?? Catalog.FindRelic(name) ?? throw new ToolError($"relic '{name}' not found"));
-            if (relics.Count == 0) return "no relics to show";
-            ChatSessions.ShowRelics(relics);
-            return $"shown {relics.Count} relic(s): " + string.Join(", ", relics.Select(r => Text.Of(() => r.Title)));
-        });
-    }
-}
-
-/// <summary>Opens one of the game's views on the game screen.</summary>
-internal sealed class OpenViewTool : ITool
-{
-    public string Name => "open_view";
-
-    public string Description =>
-        $"Open a view on the game screen to show the player what you are explaining: {GameViews.Help}. " +
-        "Only opens the view (nothing is played or chosen); the player closes it.";
+        $"Open one of the game's own views on the player's screen to show what you are explaining: {GameViews.Help}. " +
+        "The player sees it and closes it; nothing is played or chosen. To only read these, use look.";
 
     public JsonObject InputSchema() => new()
     {
@@ -132,100 +108,219 @@ internal sealed class OpenViewTool : ITool
         string view = ChatToolArgs.Str(args, "view") ?? throw new ToolError("give `view`");
         return MainThread.Run<ToolOutput>(() =>
         {
-            ChatWatchMute();
+            GameWatch.IgnoreViewsFor(TimeSpan.FromSeconds(2));
             return GameViews.Open(view);
         });
     }
-
-    internal static void ChatWatchMute() => GameWatch.IgnoreViewsFor(TimeSpan.FromSeconds(2));
 }
 
-/// <summary>Routes and circled nodes drawn on the game's real map with the game's quill (<see cref="MapInk"/>).</summary>
-internal sealed class MapRouteTool : ITool
+/// <summary>Draws on the game screen (badges, circles, arrows, lines) and fills the drawer (combat_plan, overlay).</summary>
+internal sealed class MarkTool : ITool
 {
-    public string Name => "map_route";
+    public string Name => "mark";
 
     public string Description =>
-        "Open the game's map and draw on it with the map quill, in your own ink (the player's drawings are left alone): " +
-        "`routes` (1-3, each `nodes` in order, optional `color` and `label`; compare paths with different colors) and " +
-        "`marks` (nodes to circle, each a node or {node, label, color}). Every route and mark gets a badge in its color " +
-        "(routes A, B, C and marks 1, 2, 3 unless labeled): name them that way in the chat (\"A 경로\", \"2번 칸\"). " +
-        "Nodes: r<row>c<col> (as in render_map with coords), \"current\" or \"boss\". Each call replaces your earlier " +
-        "drawing; nothing given clears it. (`nodes` + `color` alone draw one route.)";
+        "Draw on the player's game screen to point at things, in your own ink colors (A blue, B green, C purple, then " +
+        "amber, unless `color`). items[].kind: badge (a letter or number next to each target), circle, arrow (targets " +
+        "[from, to], e.g. [\"c3\", \"e1\"]), line (targets in order; on map nodes it is a route), combat_plan (the drawer " +
+        "beside the chat: up to 3 `plans` to pick from, each a name, steps of cards and potions with their targets and " +
+        "a short `note` per step when it helps, a `summary` result, and a select button), overlay (the same drawer: " +
+        "`cards` side by side with captions, short `lines`). Targets are look's ids (c<n>, e<n>, " +
+        "me, p<n>, opt<n>, relic:<id>, deck_button, map_button, r<row>c<col>). Badges get A, B, C unless `label`. " +
+        "`click` makes a badge or a plan pressable: answer (its label comes back as the player's message) or operate " +
+        "(its `actions` run as if the player did them). Each call replaces your earlier marks unless keep=true; " +
+        "clear=true removes them all. Marks and the drawer also go when the turn or the room changes. Call them by " +
+        "their labels in the chat (\"A안\", \"1번\"), never by ids.";
 
-    private static JsonObject NodeList() => new() { ["type"] = "array", ["items"] = new JsonObject { ["type"] = "string" } };
+    private static JsonObject Strings() => new() { ["type"] = "array", ["items"] = new JsonObject { ["type"] = "string" } };
 
     public JsonObject InputSchema() => new()
     {
         ["type"] = "object",
         ["properties"] = new JsonObject
         {
-            ["routes"] = new JsonObject
+            ["items"] = new JsonObject
             {
                 ["type"] = "array",
-                ["maxItems"] = 3,
                 ["items"] = new JsonObject
                 {
                     ["type"] = "object",
                     ["properties"] = new JsonObject
                     {
-                        ["nodes"] = NodeList(),
-                        ["color"] = new JsonObject { ["type"] = "string", ["description"] = "Ink color (name or #hex). Default: blue, green, purple in order." },
-                        ["label"] = new JsonObject { ["type"] = "string", ["maxLength"] = 2, ["description"] = "Badge text. Default A, B, C in order." },
-                    },
-                    ["required"] = new JsonArray("nodes"),
-                },
-            },
-            ["marks"] = new JsonObject
-            {
-                ["type"] = "array",
-                ["items"] = new JsonObject
-                {
-                    ["anyOf"] = new JsonArray(
-                        new JsonObject { ["type"] = "string" },
-                        new JsonObject
+                        ["kind"] = new JsonObject { ["type"] = "string", ["enum"] = new JsonArray("badge", "circle", "arrow", "line", "combat_plan", "overlay") },
+                        ["targets"] = Strings(),
+                        ["label"] = new JsonObject { ["type"] = "string", ["maxLength"] = 2 },
+                        ["color"] = new JsonObject { ["type"] = "string" },
+                        ["click"] = new JsonObject { ["type"] = "string", ["enum"] = new JsonArray("answer", "operate") },
+                        ["actions"] = Strings(),
+                        ["title"] = new JsonObject { ["type"] = "string", ["description"] = "combat_plan / overlay: the drawer's title, e.g. 이번 턴" },
+                        ["plans"] = new JsonObject
                         {
-                            ["type"] = "object",
-                            ["properties"] = new JsonObject
+                            ["type"] = "array",
+                            ["maxItems"] = 3,
+                            ["items"] = new JsonObject
                             {
-                                ["node"] = new JsonObject { ["type"] = "string" },
-                                ["label"] = new JsonObject { ["type"] = "string", ["maxLength"] = 2 },
-                                ["color"] = new JsonObject { ["type"] = "string" },
+                                ["type"] = "object",
+                                ["properties"] = new JsonObject
+                                {
+                                    ["label"] = new JsonObject { ["type"] = "string", ["maxLength"] = 2 },
+                                    ["name"] = new JsonObject { ["type"] = "string", ["description"] = "a short name shown above the steps, e.g. 전부 공격" },
+                                    ["recommended"] = new JsonObject { ["type"] = "boolean" },
+                                    ["steps"] = new JsonObject
+                                    {
+                                        ["type"] = "array",
+                                        ["items"] = new JsonObject
+                                        {
+                                            ["type"] = "object",
+                                            ["properties"] = new JsonObject
+                                            {
+                                                ["card"] = new JsonObject { ["type"] = "string", ["description"] = "c<n>, or a card id or name" },
+                                                ["potion"] = new JsonObject { ["type"] = "string", ["description"] = "p<n> (a potion slot), or a potion id or name" },
+                                                ["target"] = new JsonObject { ["type"] = "string", ["description"] = "e<n> / me" },
+                                                ["end_turn"] = new JsonObject { ["type"] = "boolean" },
+                                                ["note"] = new JsonObject { ["type"] = "string", ["description"] = "only when it helps: what this step does, very short, e.g. -6, 처치, 방어 5, 취약 2" },
+                                                ["text"] = new JsonObject { ["type"] = "string", ["description"] = "a step that is neither a card nor a potion, shown in a card's place (short)" },
+                                            },
+                                        },
+                                    },
+                                    ["summary"] = new JsonObject { ["type"] = "string", ["description"] = "the plan's result, shown right of the steps, parts split by \" · \", e.g. 받을 피해 0 · 처치 2" },
+                                    ["click"] = new JsonObject { ["type"] = "string", ["enum"] = new JsonArray("answer", "operate") },
+                                    ["actions"] = Strings(),
+                                },
+                                ["required"] = new JsonArray("steps"),
                             },
-                            ["required"] = new JsonArray("node"),
-                        }),
+                        },
+                        ["cards"] = new JsonObject
+                        {
+                            ["type"] = "array",
+                            ["items"] = new JsonObject
+                            {
+                                ["type"] = "object",
+                                ["properties"] = new JsonObject
+                                {
+                                    ["card"] = new JsonObject { ["type"] = "string" },
+                                    ["caption"] = new JsonObject { ["type"] = "string" },
+                                },
+                                ["required"] = new JsonArray("card"),
+                            },
+                        },
+                        ["lines"] = Strings(),
+                    },
+                    ["required"] = new JsonArray("kind"),
                 },
             },
-            ["nodes"] = NodeList(),
-            ["color"] = new JsonObject { ["type"] = "string" },
+            ["keep"] = new JsonObject { ["type"] = "boolean", ["description"] = "add to the earlier marks instead of replacing them" },
+            ["clear"] = new JsonObject { ["type"] = "boolean", ["description"] = "remove every mark and close the drawer" },
         },
     };
 
     public Task<ToolOutput> Call(JsonObject args)
     {
-        var routes = new List<InkRoute>();
-        foreach (var node in args["routes"] as JsonArray ?? new JsonArray())
-            if (node is JsonObject r)
-                routes.Add(new InkRoute(ChatToolArgs.Strings(r, "nodes"), ParseColor(ChatToolArgs.Str(r, "color")), Badge(ChatToolArgs.Str(r, "label"))));
-        var single = ChatToolArgs.Strings(args, "nodes");
-        if (single.Count > 0) routes.Add(new InkRoute(single, ParseColor(ChatToolArgs.Str(args, "color"))));
-        if (routes.Count > 3) throw new ToolError("at most 3 routes");
-        var marks = new List<InkMark>();
-        foreach (var node in args["marks"] as JsonArray ?? new JsonArray())
-        {
-            if (node is JsonValue v && v.TryGetValue(out string? text) && !string.IsNullOrWhiteSpace(text))
-                marks.Add(new InkMark(text.Trim(), null));
-            else if (node is JsonObject m && ChatToolArgs.Str(m, "node") is { } at)
-                marks.Add(new InkMark(at, ParseColor(ChatToolArgs.Str(m, "color")), Badge(ChatToolArgs.Str(m, "label"))));
-        }
+        bool clear = args["clear"] is JsonValue c && c.TryGetValue(out bool cb) && cb;
+        bool keep = args["keep"] is JsonValue k && k.TryGetValue(out bool kb) && kb;
+        var nodes = (args["items"] as JsonArray ?? new JsonArray()).OfType<JsonObject>().ToList();
         return MainThread.Run<ToolOutput>(() =>
         {
-            OpenViewTool.ChatWatchMute();
-            return MapInk.Draw(routes, marks);
+            if (clear || nodes.Count == 0)
+            {
+                ScreenMarks.Clear();
+                ChatLayout.Panel?.ClearDrawer();
+                return "cleared";
+            }
+            var marks = new List<MarkItem>();
+            var notes = new List<string>();
+            foreach (var node in nodes)
+            {
+                string kind = ChatToolArgs.Str(node, "kind") ?? throw new ToolError("each item needs `kind`");
+                if (kind is "combat_plan" or "overlay")
+                {
+                    ChatToolArgs.RequirePanel();
+                    var content = Drawer(node, kind);
+                    ChatLayout.Panel!.ShowDrawer(content);
+                    notes.Add(kind == "combat_plan"
+                        ? $"combat_plan: {content.Plans.Count} plan(s) {string.Join(", ", content.Plans.Select(p => p.Label))}"
+                        : $"overlay: {content.Cards.Count} card(s), {content.Lines.Count} line(s)");
+                    continue;
+                }
+                string? click = ChatToolArgs.Str(node, "click");
+                var actions = ChatToolArgs.Strings(node, "actions");
+                if (click == "operate" && actions.Count == 0) throw new ToolError("click=operate needs `actions`");
+                marks.Add(new MarkItem(kind, ChatToolArgs.Strings(node, "targets"), Badge(ChatToolArgs.Str(node, "label")),
+                    ParseColor(ChatToolArgs.Str(node, "color")), click, actions));
+            }
+            if (marks.Count > 0) notes.Add(ScreenMarks.Draw(marks, keep));
+            else if (!keep) ScreenMarks.Clear();
+            return string.Join("\n", notes);
         });
     }
 
-    /// <summary>Badge text: one or two characters (it has to fit in the disc).</summary>
+    /// <summary>The drawer's content: plans for combat_plan, cards and lines for overlay.</summary>
+    private static DrawerContent Drawer(JsonObject node, string kind)
+    {
+        var plans = new List<DrawerPlan>();
+        int i = 0;
+        var planNodes = (node["plans"] as JsonArray ?? new JsonArray()).OfType<JsonObject>().ToList();
+        bool hasOverlay = node["cards"] is JsonArray { Count: > 0 } || node["lines"] is JsonArray { Count: > 0 };
+        if (kind == "combat_plan" && planNodes.Count == 0) throw new ToolError("combat_plan: give `plans`");
+        if (kind == "combat_plan" && hasOverlay) throw new ToolError("combat_plan takes `plans` only; cards and lines go in an overlay");
+        if (kind == "overlay" && planNodes.Count > 0) throw new ToolError("plans go in a combat_plan, not an overlay");
+        if (planNodes.Count > ChatPanel.MaxPlans) throw new ToolError($"combat_plan: {ChatPanel.MaxPlans} plans at most");
+        foreach (var p in planNodes)
+        {
+            string label = Badge(ChatToolArgs.Str(p, "label")) ?? ((char)('A' + i)).ToString();
+            var color = i < MapInk.RouteColors.Length ? MapInk.RouteColors[i] : MapInk.MarkColor;
+            var steps = new List<DrawerStep>();
+            foreach (var s in (p["steps"] as JsonArray ?? new JsonArray()).OfType<JsonObject>())
+            {
+                bool endTurn = s["end_turn"] is JsonValue e && e.TryGetValue(out bool eb) && eb;
+                string? cardRef = ChatToolArgs.Str(s, "card");
+                string? potionRef = ChatToolArgs.Str(s, "potion");
+                string? target = ChatToolArgs.Str(s, "target");
+                string? text = endTurn ? "턴 종료" : ChatToolArgs.Str(s, "text");
+                CardModel? card = cardRef == null ? null : FindCard(cardRef) ?? throw new ToolError($"card '{cardRef}' not found");
+                PotionModel? potion = card != null || potionRef == null ? null : FindPotion(potionRef) ?? throw new ToolError($"potion '{potionRef}' not found");
+                if (card == null && potion == null && string.IsNullOrWhiteSpace(text)) throw new ToolError($"plan {label}: each step needs card, potion, end_turn or text");
+                string? screenRef = card != null ? (Ids.ResolveCard(cardRef!) != null ? cardRef : null)
+                    : potion != null && IsSlot(potionRef!) ? potionRef!.Trim().ToLowerInvariant() : null;
+                steps.Add(new DrawerStep(card, potion, screenRef, target,
+                    target != null ? ScreenTargets.DisplayName(target) : null, card == null && potion == null ? text : null,
+                    ChatToolArgs.Str(s, "note")));
+            }
+            if (steps.Count == 0) throw new ToolError($"plan {label}: give `steps`");
+            string click = ChatToolArgs.Str(p, "click") ?? "answer";
+            var actions = ChatToolArgs.Strings(p, "actions");
+            if (click == "operate" && actions.Count == 0) throw new ToolError($"plan {label}: click=operate needs `actions`");
+            bool recommended = p["recommended"] is JsonValue r && r.TryGetValue(out bool rb) && rb;
+            plans.Add(new DrawerPlan(label, ChatToolArgs.Str(p, "name"), recommended, steps, ChatToolArgs.Str(p, "summary"), click, actions, color));
+            i++;
+        }
+        var cards = new List<DrawerCard>();
+        foreach (var c in (node["cards"] as JsonArray ?? new JsonArray()).OfType<JsonObject>())
+        {
+            string id = ChatToolArgs.Str(c, "card") ?? throw new ToolError("each card needs `card`");
+            cards.Add(new DrawerCard(FindCard(id) ?? throw new ToolError($"card '{id}' not found"), ChatToolArgs.Str(c, "caption")));
+        }
+        var lines = ChatToolArgs.Strings(node, "lines");
+        if (plans.Count == 0 && cards.Count == 0 && lines.Count == 0) throw new ToolError("overlay: give `cards` or `lines`");
+        return new DrawerContent(ChatToolArgs.Str(node, "title"), plans, cards, lines);
+    }
+
+    private static CardModel? FindCard(string reference) => Ids.ResolveCard(reference) ?? Catalog.FindCard(reference);
+
+    private static bool IsSlot(string reference) => System.Text.RegularExpressions.Regex.IsMatch(reference.Trim(), @"^[pP]\d+$");
+
+    /// <summary>A potion in the player's slot (p0) or from the game's catalog by id or name.</summary>
+    private static PotionModel? FindPotion(string reference)
+    {
+        if (IsSlot(reference))
+        {
+            var me = GameCtx.Capture().Me;
+            int slot = int.Parse(reference.Trim()[1..]);
+            return me != null && slot < me.PotionSlots.Count ? me.PotionSlots[slot] : null;
+        }
+        return (Catalog.FindById(reference) ?? Catalog.FindByTitle(reference)) as PotionModel;
+    }
+
     private static string? Badge(string? label) => label == null ? null : label.Length <= 2 ? label : label[..2];
 
     private static Color? ParseColor(string? name)
@@ -238,95 +333,94 @@ internal sealed class MapRouteTool : ITool
     }
 }
 
-/// <summary>The learning notes kept across runs (given to every play session in its brief).</summary>
-internal sealed class NotesTool : ITool
+/// <summary>Asks to be told when something happens in the game (the player picks, the turn or the room changes).</summary>
+internal sealed class WaitTool : ITool
 {
-    public string Name => "notes";
+    public string Name => "wait";
 
     public string Description =>
-        "The learning notes kept across runs (lessons, the player's preferences). Without `text`: read them. " +
-        "With `text`: replace them all (keep them short; merge, fix, or drop items as needed). Every play session gets " +
-        "them in its run brief.";
-
-    public JsonObject InputSchema() => new()
-    {
-        ["type"] = "object",
-        ["properties"] = new JsonObject { ["text"] = new JsonObject { ["type"] = "string" } },
-    };
-
-    public Task<ToolOutput> Call(JsonObject args)
-    {
-        if (args["text"] is JsonValue v && v.TryGetValue(out string? text) && text != null)
-        {
-            Prompts.SaveNotes(text);
-            return Task.FromResult<ToolOutput>($"notes saved ({text.Trim().Length} chars)");
-        }
-        string notes = Prompts.Notes();
-        return Task.FromResult<ToolOutput>(notes.Length > 0 ? notes : "(no notes yet)");
-    }
-}
-
-/// <summary>The play level: how much the agent does in a run.</summary>
-internal sealed class PlayLevelTool : ITool
-{
-    public string Name => "play_level";
-
-    public string Description =>
-        "The play level of runs: commentary (light comments), colow (the player leads, you gather reasons), cohigh " +
-        "(you play, the player approves key choices), auto (you play the run). Without `level`: read it.";
+        "Be told when something happens in the game, then end your turn: pick (the player picks on the game screen: " +
+        "a reward, a path, an option), turn (a new turn starts), combat_end, room (the player enters the next room). " +
+        "A message from the player also ends the wait. You get an [자동] message when it happens.";
 
     public JsonObject InputSchema() => new()
     {
         ["type"] = "object",
         ["properties"] = new JsonObject
         {
-            ["level"] = new JsonObject { ["type"] = "string", ["enum"] = new JsonArray("commentary", "colow", "cohigh", "auto") },
+            ["for"] = new JsonObject
+            {
+                ["type"] = "array",
+                ["items"] = new JsonObject { ["type"] = "string", ["enum"] = new JsonArray("pick", "turn", "combat_end", "room") },
+            },
         },
+        ["required"] = new JsonArray("for"),
     };
 
     public Task<ToolOutput> Call(JsonObject args)
     {
-        string? text = ChatToolArgs.Str(args, "level");
-        return MainThread.Run<ToolOutput>(() =>
-        {
-            if (text == null) return $"play level: {Prompts.LevelKey(ChatSessions.Level)} ({Prompts.LevelName(ChatSessions.Level)})";
-            var level = Prompts.ParseLevel(text) ?? throw new ToolError("level: commentary | colow | cohigh | auto");
-            ChatSessions.SetLevel(level);
-            return $"play level set to {Prompts.LevelKey(level)} ({Prompts.LevelName(level)}); the play session uses it from its next message";
-        });
+        var kinds = ChatToolArgs.Strings(args, "for");
+        if (kinds.Count == 0) throw new ToolError("give `for`");
+        return MainThread.Run<ToolOutput>(() => ChatSessions.Wait(kinds)
+            ? $"waiting for: {string.Join(", ", kinds)}. End your turn now."
+            : "not in a run: nothing to wait for");
     }
 }
 
-/// <summary>The control session's brief for the next run's play session.</summary>
-internal sealed class RunBriefTool : ITool
+/// <summary>The learning notes, as Claude's memory tool: files under /notes.</summary>
+internal sealed class NotesTool : ITool
 {
-    public string Name => "run_brief";
+    public string Name => "notes";
 
     public string Description =>
-        "A short brief for the next run's play session (this run's goal, things to watch, how the player wants to " +
-        "play). Given once, with its first message. Without `text`: read the brief waiting for the next run.";
+        "Your learning notes kept across runs, as files under /notes (like the memory tool). command: view (a folder " +
+        "or a file; view_range [from, to] lines), create (path, file_text), str_replace (path, old_str, new_str; " +
+        "old_str must be unique), insert (path, insert_line, insert_text: after that line, 0 = top), delete (path), " +
+        "rename (old_path, new_path). /notes/general.md holds lessons for every run, /notes/characters/<id>.md per " +
+        "character (ironclad, silent, defect, necrobinder, regent); add other files as needed. The run brief gives you " +
+        "the file list, general.md and this character's file. Keep notes short and correct: fix or merge, do not pile up.";
 
     public JsonObject InputSchema() => new()
     {
         ["type"] = "object",
-        ["properties"] = new JsonObject { ["text"] = new JsonObject { ["type"] = "string" } },
+        ["properties"] = new JsonObject
+        {
+            ["command"] = new JsonObject { ["type"] = "string", ["enum"] = new JsonArray("view", "create", "str_replace", "insert", "delete", "rename") },
+            ["path"] = new JsonObject { ["type"] = "string" },
+            ["view_range"] = new JsonObject { ["type"] = "array", ["items"] = new JsonObject { ["type"] = "integer" } },
+            ["file_text"] = new JsonObject { ["type"] = "string" },
+            ["old_str"] = new JsonObject { ["type"] = "string" },
+            ["new_str"] = new JsonObject { ["type"] = "string" },
+            ["insert_line"] = new JsonObject { ["type"] = "integer" },
+            ["insert_text"] = new JsonObject { ["type"] = "string" },
+            ["old_path"] = new JsonObject { ["type"] = "string" },
+            ["new_path"] = new JsonObject { ["type"] = "string" },
+        },
+        ["required"] = new JsonArray("command"),
     };
 
     public Task<ToolOutput> Call(JsonObject args)
     {
-        string? text = args["text"] is JsonValue v && v.TryGetValue(out string? s) ? s : null;
-        return MainThread.Run<ToolOutput>(() =>
+        string? Raw(string key) => args[key] is JsonValue v && v.TryGetValue(out string? s) ? s : null;
+        string command = ChatToolArgs.Str(args, "command") ?? throw new ToolError("give `command`");
+        ToolOutput result = command switch
         {
-            if (text == null) return ChatSessions.Brief ?? "(no brief waiting)";
-            ChatSessions.Brief = text;
-            return "brief saved for the next run";
-        });
+            "view" => NotesStore.View(Raw("path"),
+                args["view_range"] is JsonArray r ? r.Select(n => n is JsonValue v && v.TryGetValue(out int x) ? x : 0).ToArray() : null),
+            "create" => NotesStore.Create(Raw("path"), Raw("file_text")),
+            "str_replace" => NotesStore.StrReplace(Raw("path"), Raw("old_str"), Raw("new_str")),
+            "insert" => NotesStore.Insert(Raw("path"), args["insert_line"] is JsonValue l && l.TryGetValue(out int line) ? line : -1, Raw("insert_text")),
+            "delete" => NotesStore.Delete(Raw("path")),
+            "rename" => NotesStore.Rename(Raw("old_path"), Raw("new_path")),
+            _ => throw new ToolError($"unknown command '{command}'"),
+        };
+        return Task.FromResult(result);
     }
 }
 
 /// <summary>
-/// Questions to the player with options (the same shape as Claude Code's own AskUserQuestion), shown in the chat
-/// panel as radio buttons; the player's answer comes as their next message.
+/// Questions to the player with options, shown in the chat panel as a card. No longer offered to the chat's agents
+/// (plans in the drawer took its place); kept for dev_layout's preview of the card until the card is removed.
 /// </summary>
 internal sealed class AskUserQuestionTool : ITool
 {
@@ -418,20 +512,3 @@ internal sealed class AskUserQuestionTool : ITool
     }
 }
 
-/// <summary>Waits for the player's pick on the game screen (cohigh / auto), then the agent is told and goes on.</summary>
-internal sealed class WaitForPlayerTool : ITool
-{
-    public string Name => "wait_for_player";
-
-    public string Description =>
-        "When the choice is on the game screen (card reward, event option, map path, shop, rest site, relic pick) and " +
-        "the player should make it there: give your recommendation in text first, then call this and end your turn. " +
-        "When the player picks in the game, you get an [자동] message with what happened, and go on.";
-
-    public JsonObject InputSchema() => new() { ["type"] = "object", ["properties"] = new JsonObject() };
-
-    public Task<ToolOutput> Call(JsonObject args) =>
-        MainThread.Run<ToolOutput>(() => ChatSessions.WaitForPlayer()
-            ? "waiting for the player's pick on the game screen. End your turn now."
-            : "not in a run: nothing to wait for");
-}

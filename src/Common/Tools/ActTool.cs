@@ -35,14 +35,16 @@ internal sealed class ActTool : ITool
 
     /// <param name="external">An endpoint for outside clients: their acts are noted (<see cref="ExternalPlay"/>).</param>
     /// <param name="guard">Checked before acting (main thread); a returned reason refuses the act.</param>
-    public ActTool(ActRunner runner, bool external = true, Func<string?>? guard = null)
+    /// <param name="name">The tool's name (the in-game chat calls it <c>operate</c>).</param>
+    public ActTool(ActRunner runner, bool external = true, Func<string?>? guard = null, string name = "act")
     {
         _runner = runner;
         _external = external;
         _guard = guard;
+        Name = name;
     }
 
-    public string Name => "act";
+    public string Name { get; }
 
     public string Description =>
         "Perform one or more actions in order, using the action syntax listed by the current screen " +

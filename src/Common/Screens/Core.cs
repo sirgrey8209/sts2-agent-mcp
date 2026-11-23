@@ -109,6 +109,12 @@ internal interface IScreenHandler
     ScreenView Render(GameCtx ctx, bool full);
     /// <summary>Starts the action on the main thread; the runner then waits per the returned settle mode.</summary>
     ExecResult Execute(GameCtx ctx, ActionSpec action);
+
+    /// <summary>
+    /// The control that shows option <paramref name="index"/> (the number <c>choose</c> takes on this screen), for
+    /// pointing at it on the screen (the in-game chat's marks). Null when this screen has no such control.
+    /// </summary>
+    Godot.Control? Target(GameCtx ctx, int index) => null;
 }
 
 internal static class ScreenRegistry
@@ -134,6 +140,17 @@ internal static class ScreenRegistry
         new CombatHandler(),
         new GenericHandler(),
     };
+
+    /// <summary>Main thread. The control of option <paramref name="index"/> on the current screen, or null.</summary>
+    public static Godot.Control? Target(GameCtx ctx, int index)
+    {
+        try { return Find(ctx).Target(ctx, index); }
+        catch (Exception ex)
+        {
+            Host.Log.Warn($"screen target {index} failed: {ex.Message}");
+            return null;
+        }
+    }
 
     public static IScreenHandler Find(GameCtx ctx)
     {

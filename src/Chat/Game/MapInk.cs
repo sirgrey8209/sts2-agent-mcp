@@ -44,13 +44,14 @@ internal static class MapInk
     /// <summary>Points added per frame while drawing (about one stroke segment in a third of a second at 60 fps).</summary>
     private const int PointsPerFrame = 3;
 
-    private static readonly Color[] RouteColors =
+    /// <summary>The agent's ink colors, in the order routes and marks take them (shared with ScreenMarks).</summary>
+    internal static readonly Color[] RouteColors =
     {
         new(0.16f, 0.36f, 0.66f), // blue ink
         new(0.17f, 0.50f, 0.30f), // green
         new(0.47f, 0.26f, 0.64f), // purple
     };
-    private static readonly Color MarkColor = new(0.78f, 0.45f, 0.08f); // amber
+    internal static readonly Color MarkColor = new(0.78f, 0.45f, 0.08f); // amber
 
     private static int _generation;
 
@@ -142,7 +143,7 @@ internal static class MapInk
         return (a + b) / 2 + new Vector2(-dir.Y, dir.X) * BadgeOffset;
     }
 
-    private static string ColorName(Color color)
+    internal static string ColorName(Color color)
     {
         for (int i = 0; i < RouteColors.Length; i++)
             if (RouteColors[i].IsEqualApprox(color)) return new[] { "blue", "green", "purple" }[i];
@@ -249,7 +250,7 @@ internal static class MapInk
     // ---- hand-drawn shapes (map units, in the drawings' local space) ----
 
     /// <summary>Same nodes, same wobble: drawing a route again does not make it jump.</summary>
-    private static int Seed(string a, string b, int salt)
+    internal static int Seed(string a, string b, int salt)
     {
         unchecked
         {
@@ -263,7 +264,7 @@ internal static class MapInk
     /// A stroke from a toward b, stopping short of both nodes: a slight bow to one side, a slow wave, and a little
     /// jitter, all fading out at the ends so the stroke starts and ends where it aims.
     /// </summary>
-    private static List<Vector2> Segment(Vector2 a, Vector2 b, int seed)
+    internal static List<Vector2> Segment(Vector2 a, Vector2 b, int seed, float gapAtEnds = NodeGap)
     {
         var rng = new Random(seed);
         var dir = b - a;
@@ -271,7 +272,7 @@ internal static class MapInk
         var result = new List<Vector2>();
         if (length < 1) return result;
         var unit = dir / length;
-        float gap = Math.Min(NodeGap, length * 0.3f);
+        float gap = Math.Min(gapAtEnds, length * 0.3f);
         var start = a + unit * gap;
         var end = b - unit * gap * (0.8f + 0.4f * (float)rng.NextDouble());
         var span = end - start;
@@ -296,17 +297,20 @@ internal static class MapInk
     }
 
     /// <summary>A loop around a node, a bit wider than tall, overshooting its start like a quick hand-drawn circle.</summary>
-    private static List<Vector2> Circle(Vector2 center, int seed)
+    private static List<Vector2> Circle(Vector2 center, int seed) => Circle(center, MarkRadius * 1.1f, MarkRadius * 0.95f, seed);
+
+    /// <summary>A hand-drawn loop of about <paramref name="radiusX"/> by <paramref name="radiusY"/> around a point.</summary>
+    internal static List<Vector2> Circle(Vector2 center, float radiusX, float radiusY, int seed)
     {
         var rng = new Random(seed);
         float start = (float)(rng.NextDouble() * Math.PI * 2);
         float sweep = MathF.PI * 2 * 1.12f;
-        float rx = MarkRadius * (1.05f + 0.1f * (float)rng.NextDouble());
-        float ry = MarkRadius * (0.9f + 0.1f * (float)rng.NextDouble());
+        float rx = radiusX * (0.95f + 0.1f * (float)rng.NextDouble());
+        float ry = radiusY * (0.95f + 0.1f * (float)rng.NextDouble());
         float tilt = (float)(rng.NextDouble() - 0.5) * 0.4f;
         float phase = (float)(rng.NextDouble() * Math.PI * 2);
         var result = new List<Vector2>();
-        int count = (int)(sweep * MarkRadius / Step);
+        int count = Math.Max(24, (int)(sweep * Math.Max(rx, ry) / Step));
         for (int i = 0; i <= count; i++)
         {
             float t = i / (float)count;

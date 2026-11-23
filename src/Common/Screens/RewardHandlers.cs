@@ -47,6 +47,9 @@ internal sealed class RewardsHandler : IScreenHandler
         };
     }
 
+    public Godot.Control? Target(GameCtx ctx, int index) =>
+        ctx.Screen is NRewardsScreen s && Buttons(s) is var b && index >= 0 && index < b.Count ? b[index] : null;
+
     public ExecResult Execute(GameCtx ctx, ActionSpec action)
     {
         var screen = (NRewardsScreen)ctx.Screen!;
@@ -101,6 +104,9 @@ internal sealed class CardRewardHandler : IScreenHandler
         view.Actions = "choose <i>" + (alternatives.Count > 0 ? " · skip (= alt 0, back to the rewards list) · alt <i>" : "");
         return view;
     }
+
+    public Godot.Control? Target(GameCtx ctx, int index) =>
+        ctx.Screen is NCardRewardSelectionScreen s && Cards(s) is var c && index >= 0 && index < c.Count ? c[index] : null;
 
     public ExecResult Execute(GameCtx ctx, ActionSpec action)
     {

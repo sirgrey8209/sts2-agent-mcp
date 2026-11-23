@@ -1,5 +1,7 @@
 using System;
 using System.IO;
+using System.Collections.Generic;
+using System.Linq;
 using System.Text.RegularExpressions;
 using MegaCrit.Sts2.Core.Models;
 using Sts2AgentMcp.Host;
@@ -22,6 +24,34 @@ internal static class KbDocs
 
     // Tool markers such as the glossary marker are for the kb scripts, not the reader.
     private static readonly Regex HtmlComment = new(@"[ \t]*<!--.*?-->[ \t]*\r?\n?", RegexOptions.Singleline);
+
+    /// <summary>
+    /// Lines of the knowledge-base documents (monsters, events) that contain every word of <paramref name="query"/>
+    /// (case-insensitive), as "FOLDER/ID: line", at most <paramref name="limit"/>.
+    /// </summary>
+    public static List<string> Grep(string query, int limit)
+    {
+        var result = new List<string>();
+        var words = query.Split(' ', StringSplitOptions.RemoveEmptyEntries);
+        if (Root == null || words.Length == 0 || !Directory.Exists(Root)) return result;
+        foreach (var file in Directory.EnumerateFiles(Root, "*.md", SearchOption.AllDirectories).OrderBy(f => f, StringComparer.Ordinal))
+        {
+            string doc = Path.GetRelativePath(Root, file).Replace('\\', '/');
+            if (!doc.Contains('/')) continue; // README and other notes at the top
+            doc = doc[..^3];
+            try
+            {
+                foreach (var line in File.ReadLines(file))
+                {
+                    if (!words.All(w => line.Contains(w, StringComparison.OrdinalIgnoreCase))) continue;
+                    result.Add($"{doc}: {line.Trim()}");
+                    if (result.Count >= limit) return result;
+                }
+            }
+            catch (Exception ex) { Log.Warn($"kb grep: {doc}: {ex.Message}"); }
+        }
+        return result;
+    }
 
     /// <summary>The document body for a model, or null. Notes when it was written for another game version.</summary>
     public static string? For(AbstractModel model)

@@ -41,21 +41,18 @@ public static class ModEntry
             Capture.Configure(config.CaptureDir);
 
             var runner = new ActRunner();
-            // The chat's own act: not an outside client's, and checked against the chat's rules first.
+            // The chat's tools (docs/chat-tools.md). operate is the chat's act: not an outside client's, and checked
+            // against the chat's rules first.
+            ChatSessions.Runner = runner;
             var chatTools = new ToolRegistry()
-                .Add(new StateTool(runner))
-                .Add(new ActTool(runner, external: false, guard: ChatSessions.ActRefusal))
+                .Add(new LookTool(runner))
                 .Add(new InfoTool())
-                .Add(new SearchTool())
-                .Add(new ShowCardsTool())
-                .Add(new ShowRelicsTool())
-                .Add(new OpenViewTool())
-                .Add(new MapRouteTool())
-                .Add(new NotesTool())
-                .Add(new PlayLevelTool())
-                .Add(new RunBriefTool())
-                .Add(new AskUserQuestionTool())
-                .Add(new WaitForPlayerTool());
+                .Add(new InfoGrepTool())
+                .Add(new OpenTool())
+                .Add(new MarkTool())
+                .Add(new ActTool(runner, external: false, guard: ChatSessions.ActRefusal, name: "operate"))
+                .Add(new WaitTool())
+                .Add(new NotesTool());
             var devTools = new ToolRegistry()
                 .Add(new StateTool(runner))
                 .Add(new ActTool(runner, external: false))

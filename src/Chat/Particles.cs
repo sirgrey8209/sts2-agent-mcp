@@ -43,7 +43,8 @@ internal static class Particles
     /// <summary>Whether the word ends in a final consonant (and whether it is ㄹ); null when unknown.</summary>
     private static (bool Final, bool Rieul)? Ending(string word)
     {
-        string w = word.TrimEnd();
+        // Closing brackets and quotes are not read: "가지 슬라임 (중)" ends in 중.
+        string w = word.TrimEnd().TrimEnd(')', ']', '"', '\'', '」', '』', '》', '〉').TrimEnd();
         if (w.Length == 0) return null;
         char c = w[^1];
         if (c == '+') return (false, false); // 플러스

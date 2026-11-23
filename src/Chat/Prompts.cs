@@ -7,26 +7,26 @@ using Sts2AgentMcp.Host;
 
 namespace Sts2AgentMcp.Chat;
 
-/// <summary>Who the chat talks to: the main-menu session, or the session of one run.</summary>
-internal enum ChatRole { Control, Play }
-
 /// <summary>How much the agent does in a run (docs/chat-roadmap.md).</summary>
 internal enum PlayLevel { Commentary, CoLow, CoHigh, Auto }
 
 /// <summary>
-/// System prompts for the chat sessions, put together from fragments (docs/chat-roadmap.md, step 1): common tools and
-/// answer style, the in-game panel, the role (control / play) and, for play, the play level. The defaults are built
-/// into the mod (prompts/*.md); a file with the same name in the game's chat folder (<see cref="UserDir"/>) replaces
-/// one. <c>prefs.md</c> there (the player's own wishes) is added when it exists. The learning notes and the run brief
-/// are not in the system prompt: they go into the first message of a play session.
+/// System prompts for the chat sessions, put together from fragments (docs/chat-roadmap.md, step 1), in this order:
+/// <list type="number">
+/// <item><c>system</c>: the situation, how to explain, and guidance per screen (combat, map, rewards, ...).</item>
+/// <item><c>persona</c>: tone and character, when the file exists.</item>
+/// <item>the play level (<c>level-*</c>).</item>
+/// <item>tips for the run's character (<c>character-&lt;id&gt;</c>, e.g. character-ironclad), when it exists.</item>
+/// <item><c>prefs</c>: the player's own wishes, when the file exists.</item>
+/// </list>
+/// The chat has one session per run (none at the main menu). The defaults are built into the mod (prompts/*.md); a file
+/// with the same name in the game's chat folder (<see cref="UserDir"/>) replaces one. The learning notes are not in the
+/// system prompt: they go into the run's first message (the run brief).
 /// </summary>
 internal static class Prompts
 {
     public static string UserDir =>
         Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "sts2-agent-mcp", "prompts");
-
-    public static string NotesFile =>
-        Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "sts2-agent-mcp", "notes.md");
 
     public static string LevelKey(PlayLevel level) => level switch
     {
@@ -56,33 +56,19 @@ internal static class Prompts
     };
 
     /// <summary>The system prompt for a session.</summary>
-    public static string System(ChatRole role, PlayLevel level)
+    /// <param name="character">The run's character id (e.g. "IRONCLAD").</param>
+    public static string System(PlayLevel level, string? character)
     {
-        var parts = new List<string> { Fragment("common"), Fragment("ingame") };
-        if (role == ChatRole.Control) parts.Add(Fragment("role-control"));
-        else
-        {
-            parts.Add(Fragment("role-play"));
-            parts.Add(Fragment("level-" + LevelKey(level)));
-        }
-        if (UserFile("prefs") is { } prefs) parts.Add("## 플레이어가 원하는 것\n\n" + prefs);
+        var parts = new List<string> { Fragment("system"), Optional("persona"), Fragment("level-" + LevelKey(level)) };
+        if (!string.IsNullOrWhiteSpace(character)) parts.Add(Optional("character-" + character.Trim().ToLowerInvariant()));
+        if (UserFile("prefs") is { } prefs) parts.Add("# 플레이어가 원하는 것\n\n" + prefs);
         return string.Join("\n\n", parts.Where(p => p.Length > 0));
     }
 
-    /// <summary>The learning notes (empty when none).</summary>
-    public static string Notes()
-    {
-        try { return File.Exists(NotesFile) ? File.ReadAllText(NotesFile).Trim() : ""; }
-        catch (Exception ex) { Log.Warn($"chat: notes unreadable: {ex.Message}"); return ""; }
-    }
-
-    public static void SaveNotes(string text)
-    {
-        Directory.CreateDirectory(Path.GetDirectoryName(NotesFile)!);
-        File.WriteAllText(NotesFile, text.Trim() + "\n", new UTF8Encoding(false));
-    }
-
     private static string Fragment(string name) => UserFile(name) ?? Builtin(name) ?? "";
+
+    /// <summary>A fragment that may not exist (persona, character tips): empty without a warning.</summary>
+    private static string Optional(string name) => UserFile(name) ?? Builtin(name, quiet: true) ?? "";
 
     private static string? UserFile(string name)
     {
@@ -98,12 +84,12 @@ internal static class Prompts
         }
     }
 
-    private static string? Builtin(string name)
+    private static string? Builtin(string name, bool quiet = false)
     {
         using var stream = typeof(Prompts).Assembly.GetManifestResourceStream($"prompts.{name}.md");
         if (stream == null)
         {
-            Log.Warn($"chat: built-in prompt {name} missing");
+            if (!quiet) Log.Warn($"chat: built-in prompt {name} missing");
             return null;
         }
         using var reader = new StreamReader(stream, Encoding.UTF8);

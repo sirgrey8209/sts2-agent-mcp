@@ -80,6 +80,10 @@ internal sealed partial class ChatPanel
     private string? _settingUp;
     private bool _connected;
     private bool _popupOpen;
+    // Over the chat while one of the chat's own popups (login, install, connect) is up: the chat waits for its answer
+    // like the game does (the game's backstop does not reach the panel, which is drawn above the game). The game's own
+    // popups leave the chat usable, so the player can ask about them.
+    private ColorRect _popupDim = null!;
     private bool _confirmLogout;
     private int _logoutArm;
     private bool _cardShown;
@@ -274,6 +278,9 @@ internal sealed partial class ChatPanel
         _dividerLine = new ColorRect { Color = LineIdle, MouseFilter = Control.MouseFilterEnum.Ignore };
         Layer.AddChild(_dividerLine);
         BuildEdge();
+        BuildDrawer();
+        _popupDim = Rect(new Color(0, 0, 0, 0.75f));
+        _popupDim.Visible = false;
         root.AddChild(Layer);
     }
 
@@ -739,10 +746,31 @@ internal sealed partial class ChatPanel
         _cardSecondary.Text = secondary ?? "";
     }
 
+    // Buttons that start a setup step through a guidance popup. The game shows one modal at a time, so they work only
+    // while no game window (popup, notice) is up: the guidance (and its consent, e.g. API billing) is never skipped.
+    private static readonly HashSet<string> SetupButtons = new() { "설치", LoginSubscription, LoginConsole, "접속", "다시 열기" };
+    private const string ModalBlockedTip = "게임 창을 닫으면 누를 수 있어요.";
+
+    private static bool GameModalOpen => MegaCrit.Sts2.Core.Nodes.CommonUi.NModalContainer.Instance?.OpenModal != null;
+
+    /// <summary>Main thread, every frame (ChatLayout): disables the setup buttons while a game window is up.</summary>
+    public void RefreshSetupButtons()
+    {
+        bool blocked = GameModalOpen;
+        foreach (var button in new[] { _cardPrimary, _cardSecondary })
+        {
+            bool disable = blocked && SetupButtons.Contains(button.Text);
+            if (button.Disabled == disable) continue;
+            button.Disabled = disable;
+            button.TooltipText = disable ? ModalBlockedTip : "";
+        }
+    }
+
     private async void OnCardPrimary()
     {
         var auth = _auth;
         if (auth == null || auth.Checking || _popupOpen) return;
+        if (GameModalOpen && SetupButtons.Contains(_cardPrimary.Text)) return;
         switch (_cardPrimary.Text)
         {
             case "설치":
@@ -776,6 +804,7 @@ internal sealed partial class ChatPanel
     {
         var auth = _auth;
         if (auth == null || auth.Checking || _popupOpen) return;
+        if (GameModalOpen && SetupButtons.Contains(_cardSecondary.Text)) return;
         if (_cardSecondary.Text == "취소") CancelSetupPressed?.Invoke();
         else if (_cardSecondary.Text == LoginConsole) OpenLoginPopup(true);
     }
@@ -795,14 +824,14 @@ internal sealed partial class ChatPanel
         var popup = GamePopup.Open(title, AccountGuide, "확인", "취소");
         if (popup == null)
         {
-            Host.Log.Warn("chat: login popup unavailable; going ahead");
-            LoginPressed?.Invoke(console);
+            // Not without the guidance: the player presses again once the game's window is closed.
+            Host.Log.Warn("chat: login popup unavailable (another game window is up); not starting the login");
             return;
         }
         _loginPopup = popup;
         _loginTitle = title;
         _loginWaiting = false;
-        _popupOpen = true;
+        SetPopupOpen(true);
         bool started = false;
         popup.Yes += () =>
         {
@@ -843,7 +872,13 @@ internal sealed partial class ChatPanel
         _loginPopup?.Close();
         _loginPopup = null;
         _loginWaiting = false;
-        _popupOpen = false;
+        SetPopupOpen(false);
+    }
+
+    private void SetPopupOpen(bool open)
+    {
+        _popupOpen = open;
+        _popupDim.Visible = open;
     }
 
     /// <summary>A clockwise circular arrow, drawn over the refresh button.</summary>
@@ -872,19 +907,25 @@ internal sealed partial class ChatPanel
     }
 
     /// <summary>
-    /// The game's own confirm popup (the one its menus use) with our text and [확인]/[취소]. Falls back to
-    /// "yes" when the popup cannot be shown, since the card already showed the status.
+    /// The game's own confirm popup (the one its menus use) with our text and [확인]/[취소]. "No" when it cannot be
+    /// shown (another game window is up): the guidance carries consent and is never skipped.
     /// </summary>
     private async System.Threading.Tasks.Task<bool> Confirm(string title, string body)
     {
         var modal = MegaCrit.Sts2.Core.Nodes.CommonUi.NModalContainer.Instance;
-        var popup = MegaCrit.Sts2.Core.Nodes.Multiplayer.NGenericPopup.Create();
-        if (modal == null || popup == null)
+        // Another game window is up: the game would refuse ours. Not without the guidance (it carries consent).
+        if (modal == null || modal.OpenModal != null)
         {
-            Host.Log.Warn("chat: confirm popup unavailable; going ahead");
-            return true;
+            Host.Log.Warn("chat: confirm popup unavailable (another game window is up); not going ahead");
+            return false;
         }
-        _popupOpen = true;
+        var popup = MegaCrit.Sts2.Core.Nodes.Multiplayer.NGenericPopup.Create();
+        if (popup == null)
+        {
+            Host.Log.Warn("chat: confirm popup unavailable; not going ahead");
+            return false;
+        }
+        SetPopupOpen(true);
         try
         {
             modal.Add(popup);
@@ -902,10 +943,10 @@ internal sealed partial class ChatPanel
         }
         catch (Exception ex)
         {
-            Host.Log.Warn($"chat: confirm popup failed: {ex.Message}; going ahead");
-            return true;
+            Host.Log.Warn($"chat: confirm popup failed: {ex.Message}; not going ahead");
+            return false;
         }
-        finally { _popupOpen = false; }
+        finally { SetPopupOpen(false); }
     }
 
     /// <summary>Logout asks once more on the button itself; the question goes away after a few seconds.</summary>
@@ -1088,6 +1129,8 @@ internal sealed partial class ChatPanel
 
         var strip = R(0, 0, game.Position.X, win.Y);
         Place(_background, strip);
+        _popupDim.Position = strip.Position;
+        _popupDim.Size = strip.Size;
         float inner = Mathf.Max(0, strip.Size.X - 2 * Pad - DividerHit);
 
         Place(_headerBg, new Rect2(strip.Position, new Vector2(strip.Size.X, HeaderHeight)));
@@ -1115,6 +1158,7 @@ internal sealed partial class ChatPanel
         UpdateVisibility();
 
         LayoutEdge(strip, win.Y / u);
+        LayoutDrawer(strip);
 
         foreach (var bubble in _bubbles) bubble.Fit(RowWidth);
     }

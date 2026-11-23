@@ -107,6 +107,9 @@ internal sealed class EventRoomHandler : IScreenHandler
         }
     }
 
+    public Godot.Control? Target(GameCtx ctx, int index) =>
+        ctx.Screen is NEventRoom { Layout: not null } room && Options(room) is var o && index >= 0 && index < o.Count ? o[index] : null;
+
     public ExecResult Execute(GameCtx ctx, ActionSpec action)
     {
         var room = (NEventRoom)ctx.Screen!;

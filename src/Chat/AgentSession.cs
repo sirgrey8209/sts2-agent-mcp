@@ -39,10 +39,8 @@ internal sealed class AgentSession
 {
     public static readonly string[] AllowedTools =
     {
-        "mcp__sts2__state", "mcp__sts2__act", "mcp__sts2__info", "mcp__sts2__search",
-        "mcp__sts2__show_cards", "mcp__sts2__show_relics", "mcp__sts2__open_view", "mcp__sts2__map_route",
-        "mcp__sts2__notes", "mcp__sts2__play_level", "mcp__sts2__run_brief", "mcp__sts2__AskUserQuestion",
-        "mcp__sts2__wait_for_player",
+        "mcp__sts2__look", "mcp__sts2__info", "mcp__sts2__info_grep", "mcp__sts2__open", "mcp__sts2__mark",
+        "mcp__sts2__operate", "mcp__sts2__wait", "mcp__sts2__notes",
     };
 
     // Fixed for now (docs/chat-roadmap.md): Sonnet at medium effort.
@@ -65,17 +63,15 @@ internal sealed class AgentSession
 
     /// <param name="sessionId">A conversation to resume (from an earlier game start), or null.</param>
     /// <param name="systemPrompt">Read each time the process starts, so prompt changes apply on the next start.</param>
-    public AgentSession(Config config, ChatRole role, string? runKey, string? sessionId, Func<string> systemPrompt)
+    public AgentSession(Config config, string runKey, string? sessionId, Func<string> systemPrompt)
     {
         _config = config;
-        Role = role;
         RunKey = runKey;
         _sessionId = sessionId;
         _systemPrompt = systemPrompt;
         AppDomain.CurrentDomain.ProcessExit += (_, _) => Stop();
     }
 
-    public ChatRole Role { get; }
     /// <summary>The run this play session belongs to (null for the control session).</summary>
     public string? RunKey { get; }
     public string? SessionId => _sessionId;
@@ -205,7 +201,7 @@ internal sealed class AgentSession
 
         // The prompt goes through a file: an npm install starts through cmd.exe, which cannot pass line breaks.
         // One file per role, so a control and a play process never read each other's prompt.
-        string promptFile = Path.Combine(dir, $"system-prompt-{(Role == ChatRole.Control ? "control" : "play")}.txt");
+        string promptFile = Path.Combine(dir, "system-prompt.txt");
         File.WriteAllText(promptFile, _systemPrompt(), new UTF8Encoding(false));
 
         var args = new List<string>
@@ -245,7 +241,7 @@ internal sealed class AgentSession
             _process = process;
             _ = Task.Run(() => ReadStdout(process));
             _ = Task.Run(() => ReadStderr(process));
-            Log.Info($"chat: started claude {Role}{(RunKey != null ? " " + RunKey : "")} (pid {process.Id}, {auth.Method})" +
+            Log.Info($"chat: started claude {RunKey} (pid {process.Id}, {auth.Method})" +
                      (_sessionId != null ? " resuming " + _sessionId : ""));
             Raise(new AgentEvent.Status("연결 중…"));
             return true;

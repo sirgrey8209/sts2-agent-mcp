@@ -8,10 +8,8 @@ using Sts2AgentMcp.Host;
 namespace Sts2AgentMcp.Chat;
 
 /// <summary>
-/// What the chat keeps between game starts (sessions.json in the game's chat folder): the control session's
-/// conversation id, each run's play session id (by run key) and whether that run ended, the brief the control session
-/// left for the next run, and the last run's report waiting for the control session. Run reports are also kept as
-/// files (reports/&lt;run key&gt;.md). Main thread only.
+/// What the chat keeps between game starts (sessions.json in the game's chat folder): each run's session id (by run
+/// key) and whether that run ended. Run reports are kept as files (reports/&lt;run key&gt;.md). Main thread only.
 /// </summary>
 internal sealed class SessionStore
 {
@@ -36,12 +34,6 @@ internal sealed class SessionStore
         return store;
     }
 
-    public string? ControlId
-    {
-        get => Str(_root["control"]);
-        set { _root["control"] = value; Save(); }
-    }
-
     /// <summary>The play session id of a run, unless the run already ended (a replayed seed starts fresh).</summary>
     public string? PlayId(string runKey) =>
         Runs[runKey] is JsonObject run && !(run["ended"] is JsonValue e && e.TryGetValue(out bool ended) && ended)
@@ -59,20 +51,6 @@ internal sealed class SessionStore
         if (Runs[runKey] is JsonObject run) run["ended"] = true;
         else Runs[runKey] = new JsonObject { ["ended"] = true };
         Save();
-    }
-
-    /// <summary>What the control session wants the next run's play session to know.</summary>
-    public string? Brief
-    {
-        get => Str(_root["brief"]);
-        set { _root["brief"] = string.IsNullOrWhiteSpace(value) ? null : value.Trim(); Save(); }
-    }
-
-    /// <summary>The last run's report, until the control session has been given it.</summary>
-    public string? PendingReport
-    {
-        get => Str(_root["report"]);
-        set { _root["report"] = string.IsNullOrWhiteSpace(value) ? null : value.Trim(); Save(); }
     }
 
     public void SaveReport(string runKey, string text)
@@ -93,7 +71,6 @@ internal sealed class SessionStore
     /// <summary>After a logout: no conversation is resumed (the next login may be another account).</summary>
     public void ForgetSessions()
     {
-        _root["control"] = null;
         _root["runs"] = new JsonObject();
         Save();
     }

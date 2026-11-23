@@ -98,6 +98,9 @@ internal sealed class MapHandler : IScreenHandler
         _ => type.ToString(),
     };
 
+    public Godot.Control? Target(GameCtx ctx, int index) =>
+        ctx.Screen is NMapScreen s && Travelable(s) is var t && index >= 0 && index < t.Count ? t[index] : null;
+
     public ExecResult Execute(GameCtx ctx, ActionSpec action)
     {
         if (action.Verb != "choose") return ExecResult.Fail($"unknown map action '{action.Verb}'");

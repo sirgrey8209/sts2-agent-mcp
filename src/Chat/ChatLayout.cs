@@ -40,6 +40,12 @@ internal static class ChatLayout
     private static bool _dirty;
     private static bool _hooked;
     private static ChatPanel? _panel;
+    // The game's fit in the window (window pixels per canvas unit, and the canvas origin's place): popups use it.
+    private static float _fitScale = 1;
+    private static Vector2 _fitOrigin;
+    private static Vector2 _fitWindow;
+    // The popup container's own offsets, put back when the layout is turned off.
+    private static (Control Node, float Left, float Top, float Right, float Bottom)? _modalSaved;
 
     public static bool Enabled { get; private set; }
 
@@ -105,6 +111,7 @@ internal static class ChatLayout
         Layers.Clear();
         PendingLayers.Clear();
         MouseRemap.Deactivate();
+        RestoreModal();
         _panel?.SetVisible(false);
         if (_savedContent is { } saved)
         {
@@ -150,6 +157,7 @@ internal static class ChatLayout
         if (!Enabled) return;
         try
         {
+            _panel?.RefreshSetupButtons();
             var w = Root;
             if (_dirty || w.Size != _appliedWindow || w.ContentScaleSize != _content
                 || w.ContentScaleAspect != Window.ContentScaleAspectEnum.Ignore)
@@ -162,6 +170,7 @@ internal static class ChatLayout
                 foreach (var layer in PendingLayers) TransformLayer(w, layer);
                 PendingLayers.Clear();
             }
+            PlaceModal(); // the game may lay the container out again (window or parent change)
         }
         catch (Exception ex)
         {
@@ -239,6 +248,10 @@ internal static class ChatLayout
         MouseRemap.Activate(w, _xf, new Rect2(Vector2.Zero, _content));
 
         GameRectPx = new Rect2I((Vector2I)target.Round(), (Vector2I)size.Round());
+        _fitScale = k;
+        _fitOrigin = target;
+        _fitWindow = win;
+        PlaceModal();
         if (_panel == null)
         {
             _panel = new ChatPanel(w);
@@ -250,6 +263,38 @@ internal static class ChatLayout
         _appliedWindow = w.Size;
         _dirty = false;
         if (!_resizing) Log.Info($"chat layout: window {w.Size}, chat {chatPx}px, game {GameRectPx} content {_content}");
+    }
+
+    /// <summary>
+    /// The game's popups (NModalContainer: confirmations, the early access note, ...) are centered in their container,
+    /// which fills the game's area. The container is stretched over the whole window instead (same scale as the game, so
+    /// popups keep their size), so popups sit in the middle of the window, chat included. Applied on every layout and
+    /// again whenever the game lays the container out by itself.
+    /// </summary>
+    private static void PlaceModal()
+    {
+        if (NModalContainer.Instance is not { } modal || !Ui.IsLive(modal)) return;
+        if (_modalSaved?.Node != modal)
+            _modalSaved = (modal, modal.OffsetLeft, modal.OffsetTop, modal.OffsetRight, modal.OffsetBottom);
+        // Canvas units: the window's top-left corner and size (canvas → window pixels is scale _fitScale, offset _fitOrigin).
+        var topLeft = -_fitOrigin / _fitScale;
+        var size = _fitWindow / _fitScale;
+        var parentInverse = modal.GetParent() is CanvasItem parent ? parent.GetGlobalTransform().AffineInverse() : Transform2D.Identity;
+        var position = parentInverse * topLeft;
+        if (modal.Position.IsEqualApprox(position) && modal.Size.IsEqualApprox(size)) return;
+        modal.Position = position;
+        modal.Size = size;
+    }
+
+    private static void RestoreModal()
+    {
+        if (_modalSaved is not { } saved) return;
+        _modalSaved = null;
+        if (!Ui.IsLive(saved.Node)) return;
+        saved.Node.OffsetLeft = saved.Left;
+        saved.Node.OffsetTop = saved.Top;
+        saved.Node.OffsetRight = saved.Right;
+        saved.Node.OffsetBottom = saved.Bottom;
     }
 
     private static void TransformLayer(Window root, CanvasLayer layer)

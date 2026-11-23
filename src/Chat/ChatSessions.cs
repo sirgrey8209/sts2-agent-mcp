@@ -10,6 +10,7 @@ using MegaCrit.Sts2.Core.Nodes.Rooms;
 using MegaCrit.Sts2.Core.Rooms;
 using Sts2AgentMcp.Game;
 using Sts2AgentMcp.Host;
+using Sts2AgentMcp.Session;
 
 namespace Sts2AgentMcp.Chat;
 
@@ -40,7 +41,6 @@ internal static class ChatSessions
     private static ChatPanel? _panel;
     private static SessionStore _store = null!;
     private static AuthState? _auth;
-    private static AgentSession? _control;
     private static AgentSession? _play;
     private static AgentSession? _active;
     private static readonly Dictionary<AgentSession, List<Item>> Transcripts = new();
@@ -60,8 +60,11 @@ internal static class ChatSessions
     private static bool _externalHold;
     /// <summary>The question card waiting for the player's answer (AskUserQuestion), if any.</summary>
     private static Item? _pendingQuestion;
-    /// <summary>The agent waits for the player to pick something on the game screen (wait_for_player).</summary>
+    /// <summary>The agent waits to be told when one of these happens (wait: pick, turn, combat_end, room).</summary>
     private static bool _waitingForGame;
+    private static readonly HashSet<string> WaitFor = new();
+    /// <summary>Runs a pressed mark's actions as the player's (set by the mod at start).</summary>
+    public static ActRunner? Runner { get; set; }
     /// <summary>Closes a waiting question card (the player went on in the game instead).</summary>
     private static Action<IReadOnlyList<string>>? _closeQuestion;
     /// <summary>Each answered question card's answers (one per question), to draw it again answered.</summary>
@@ -73,7 +76,6 @@ internal static class ChatSessions
 
     public static PlayLevel Level => Prompts.ParseLevel(_config?.ChatPlayLevel) ?? PlayLevel.CoLow;
 
-    public static ChatRole? ActiveRole => _active?.Role;
 
     public static void Attach(ChatPanel panel, Config config)
     {
@@ -96,7 +98,11 @@ internal static class ChatSessions
         Tools.ExternalPlay.Started += OnExternalPlay;
         InputLock.Install();
         AgentLock.BusyChanged += busy => _panel?.SetAgentBusy(busy);
-        Activate(Control());
+        ScreenMarks.Clicked += MarkPressed;
+        panel.PlanPressed += MarkPressed;
+        // The chat has an agent only inside a run (one session per run); at the main menu it waits for a run.
+        if (GameWatch.RunKey is { } run) Activate(Play(run));
+        else ShowMenu();
     }
 
     public static void SetAuth(AuthState state)
@@ -141,7 +147,13 @@ internal static class ChatSessions
             if (_active != null) Record(_active, new Item("note", back));
             _panel?.AddNote(back);
         }
-        var session = _active ?? Activate(Control());
+        if (_active is not { } session)
+        {
+            // No run, no agent: the text goes back into the input box.
+            _panel?.AddNote(MenuNote);
+            if (visible && _panel != null && _panel.Input.Text.Length == 0) _panel.Input.Text = text;
+            return;
+        }
         _autoTurn = false;
         if (visible)
         {
@@ -165,12 +177,6 @@ internal static class ChatSessions
         _levelChanged = true;
         _autoPaused = false;
         UpdateStatus();
-    }
-
-    public static string? Brief
-    {
-        get => _store.Brief;
-        set => _store.Brief = value;
     }
 
     // ---- showing things (chat tools) ----
@@ -200,13 +206,60 @@ internal static class ChatSessions
         return true;
     }
 
-    /// <summary>The agent recommended a pick that is on the game screen and waits for the player to make it there
-    /// (wait_for_player). When the game moves on, the agent is told and goes on (in the levels where it plays).</summary>
-    public static bool WaitForPlayer()
+    /// <summary>
+    /// The agent waits to be told when something happens (wait): the player picks on the game screen, a new turn,
+    /// the combat ends, or the next room. A message from the player ends the wait too.
+    /// </summary>
+    public static bool Wait(IEnumerable<string> kinds)
     {
-        if (_active?.Role != ChatRole.Play) return false;
-        _waitingForGame = true;
+        if (_active == null) return false;
+        WaitFor.Clear();
+        foreach (var kind in kinds) WaitFor.Add(kind);
+        _waitingForGame = WaitFor.Count > 0;
         return true;
+    }
+
+    /// <summary>Which game signals end a wait for each kind.</summary>
+    private static bool Awaited(string signalKind) =>
+        WaitFor.Contains("pick") && signalKind is "deck" or "room" or "log" or "combat_start" ||
+        WaitFor.Contains("turn") && signalKind == "turn" ||
+        WaitFor.Contains("combat_end") && signalKind == "combat_end" ||
+        WaitFor.Contains("room") && signalKind == "room";
+
+    /// <summary>
+    /// A pressable mark or a drawer plan was pressed: "answer" sends the pick as the player's message (a drawer plan
+    /// comes as "B 선택 — what it does"); "operate" runs its actions as the player's own (they pressed it), then tells
+    /// the agent.
+    /// </summary>
+    private static void MarkPressed(string label, string click, IReadOnlyList<string> actions)
+    {
+        if (click != "operate")
+        {
+            SendPlayer(label.Contains(" 선택") ? label : $"{label} 선택", visible: true);
+            return;
+        }
+        if (Runner is not { } runner || actions.Count == 0) return;
+        label = label.Split(" 선택")[0]; // a plan's pick carries its description; the note needs only its name
+        if (Tools.ExternalPlay.Running)
+        {
+            _panel?.AddNote("외부 에이전트가 행동하는 중이에요. 끝나면 다시 눌러 주세요.");
+            return;
+        }
+        _panel?.AddNote($"{label} 실행");
+        Task.Run(async () =>
+        {
+            string result;
+            await Bridge.Gate.WaitAsync();
+            try { result = await runner.Run(actions); }
+            catch (Exception ex) { result = "failed: " + ex.Message; }
+            finally { Bridge.Gate.Release(); }
+            Log.Info($"chat: player pressed {label}: {string.Join(", ", actions)}");
+            await MainThread.Run(() =>
+            {
+                if (_active is { } session && Connected)
+                    SendAuto(session, $"플레이어가 {label}을(를) 눌러 실행했습니다({string.Join(", ", actions)}). 결과를 확인하세요.");
+            });
+        });
     }
 
     /// <summary>Something happened in the game while a question card or a wait was open: the player went on in the
@@ -221,37 +274,29 @@ internal static class ChatSessions
             _pendingQuestion = null;
             _closeQuestion = null;
         }
-        if (!_waitingForGame) return;
+        if (!_waitingForGame || !Awaited(signal.Kind)) return;
         _waitingForGame = false;
+        WaitFor.Clear();
         var session = _play;
-        if (session == null || session != _active || !Connected || Level is not (PlayLevel.CoHigh or PlayLevel.Auto)) return;
+        if (session == null || session != _active || !Connected) return;
         // Let the game settle on its next screen first.
         Task.Delay(1000).ContinueWith(_ => MainThread.Run(() =>
         {
             if (session != _active || !session.Idle || PlayerTyping() || _autoPaused) return;
-            SendAuto(session, $"플레이어가 게임에서 직접 골랐다({signal.Text}). 이어서 진행해.");
+            SendAuto(session, $"기다리던 일이 일어났습니다({signal.Text}). 이어서 진행하세요.");
         }));
     }
 
     // ---- sessions ----
 
     private static IEnumerable<AgentSession> AllSessions() =>
-        new[] { _control, _play }.Where(s => s != null).Select(s => s!);
-
-    private static AgentSession Control()
-    {
-        if (_control != null) return _control;
-        var session = NewSession(ChatRole.Control, null, _store.ControlId);
-        session.SessionIdChanged += id => MainThread.Run(() => _store.ControlId = id);
-        _control = session;
-        return session;
-    }
+        new[] { _play }.Where(s => s != null).Select(s => s!);
 
     private static AgentSession Play(string runKey)
     {
         if (_play?.RunKey == runKey) return _play;
         string? resume = _store.PlayId(runKey);
-        var session = NewSession(ChatRole.Play, runKey, resume);
+        var session = NewSession(runKey, resume);
         session.SessionIdChanged += id => MainThread.Run(() => _store.SetPlayId(runKey, id));
         // A resumed conversation already had its brief.
         if (resume != null) Briefed.Add(session);
@@ -259,9 +304,11 @@ internal static class ChatSessions
         return session;
     }
 
-    private static AgentSession NewSession(ChatRole role, string? runKey, string? resume)
+    private static AgentSession NewSession(string runKey, string? resume)
     {
-        var session = new AgentSession(_config, role, runKey, resume, () => Prompts.System(role, Level));
+        // The run's character picks its tips fragment (read now, on the main thread).
+        string? character = Text.Of(() => GameCtx.Capture().Me?.Character.Id.Entry);
+        var session = new AgentSession(_config, runKey, resume, () => Prompts.System(Level, character));
         session.Event += ev => MainThread.Run(() => OnEvent(session, ev));
         session.Auth = _auth;
         // A resumed conversation shows again what was said before (read from Claude Code's own record of it).
@@ -275,10 +322,7 @@ internal static class ChatSessions
         _active = session;
         Signals.Clear();
         Replay();
-        string note = session.Role == ChatRole.Control
-            ? "메인 메뉴 · 관제 세션"
-            : $"런 · 플레이 세션 · {Prompts.LevelName(Level)}";
-        _panel?.AddNote(note);
+        _panel?.AddNote($"런 · {Prompts.LevelName(Level)}");
         UpdateStatus();
         return session;
     }
@@ -324,9 +368,7 @@ internal static class ChatSessions
         _panel.SetStatus(StatusPrefix() + "메시지를 보내면 연결해요");
     }
 
-    private static string StatusPrefix() => _active?.Role == ChatRole.Play
-        ? $"플레이 · {Prompts.LevelName(Level)} · "
-        : "관제 · ";
+    private static string StatusPrefix() => _active != null ? $"{Prompts.LevelName(Level)} · " : "메인 메뉴 · ";
 
     // ---- run changes ----
 
@@ -351,12 +393,25 @@ internal static class ChatSessions
             var session = Play(key);
             Activate(session);
             // In the levels where the agent plays, it starts right away.
-            if (Level is PlayLevel.CoHigh or PlayLevel.Auto && Connected) SendAuto(session, "런이 시작됐다. 진행해.");
+            if (Level is PlayLevel.CoHigh or PlayLevel.Auto && Connected) SendAuto(session, "런이 시작됐습니다. 진행하세요.");
         }
         else
         {
-            Activate(Control());
+            ShowMenu();
         }
+    }
+
+    private const string MenuNote = "런을 시작하면 이 런의 에이전트와 이야기할 수 있어요.";
+
+    /// <summary>No run: no agent. The chat is cleared and says so.</summary>
+    private static void ShowMenu()
+    {
+        _active = null;
+        Signals.Clear();
+        _panel?.ClearMessages();
+        _panel?.ShowTyping(false);
+        _panel?.AddNote(MenuNote);
+        UpdateStatus();
     }
 
     private static void OnSignal(GameSignal signal)
@@ -371,11 +426,17 @@ internal static class ChatSessions
             RequestReport();
             return;
         }
-        if (signal.Kind is "deck" or "room" or "log" or "combat_start" && (_pendingQuestion != null || _waitingForGame))
+        if (_pendingQuestion != null && signal.Kind is "deck" or "room" or "log" or "combat_start" || _waitingForGame && Awaited(signal.Kind))
             PlayerMovedInGame(signal);
+        // Marks and the drawer belong to the moment they were made for.
+        if (signal.Kind is "turn" or "room" or "combat_start" or "combat_end")
+        {
+            ScreenMarks.Clear();
+            _panel?.ClearDrawer();
+        }
         if (StepBackForExternal()) return;
         if (signal.Kind == "room") OpenShopOnEntry();
-        if (_active?.Role != ChatRole.Play) return;
+        if (_active == null) return;
         if (!Wants(Level, signal.Kind)) return;
         Signals.Add(signal.Text);
     }
@@ -436,7 +497,7 @@ internal static class ChatSessions
     {
         if (_externalHold || Tools.ExternalPlay.Running)
             return "Another MCP client is playing this game right now; do not act. Tell the player in one line if needed.";
-        if (_active?.Role != ChatRole.Play) return null;
+        if (_active == null) return "No run is in progress: there is nothing to act on.";
         if (Level == PlayLevel.Commentary)
             return "Play level is commentary: you do not act. Comment only; the player plays.";
         if (Level == PlayLevel.CoLow && _autoTurn)
@@ -462,7 +523,7 @@ internal static class ChatSessions
     {
         if (Signals.Count == 0) return;
         var session = _active;
-        if (session?.Role != ChatRole.Play || !Connected)
+        if (session == null || !Connected)
         {
             Signals.Clear();
             return;
@@ -498,18 +559,14 @@ internal static class ChatSessions
         const string note = "런이 끝나 보고를 요청했어요.";
         Record(session, new Item("note", note));
         if (session == _active) _panel?.AddNote(note);
-        session.Send(Compose(session, "[런 종료] 런이 끝났다. state로 결과 화면을 확인하고 관제에게 넘길 보고를 써라."),
+        session.Send(Compose(session, "[런 종료] 런이 끝났습니다. look으로 결과 화면을 확인하고, 다음 런에 쓸 교훈을 notes에 정리한 뒤, 플레이어에게 결과와 교훈을 짧게 말하세요."),
             reply => MainThread.Run(() => ReportReceived(session, key, reply)));
     }
 
     private static void ReportReceived(AgentSession session, string key, string reply)
     {
         _store.MarkEnded(key);
-        if (reply.Trim().Length > 0)
-        {
-            _store.SaveReport(key, reply);
-            _store.PendingReport = reply;
-        }
+        if (reply.Trim().Length > 0) _store.SaveReport(key, reply);
         if (_active != session) session.Stop();
         Log.Info($"chat: run report received ({key}, {reply.Length} chars)");
     }
@@ -575,12 +632,11 @@ internal static class ChatSessions
         }));
     }
 
-    /// <summary>What actually goes to the session: the brief (first message of a run), the last run's report (control),
-    /// a play level change, and the game log since the last message, then the text.</summary>
+    /// <summary>What actually goes to the session: the brief (first message of a run), a play level change, and the
+    /// game log since the last message, then the text.</summary>
     private static string Compose(AgentSession session, string text)
     {
         var sb = new StringBuilder();
-        if (session.Role == ChatRole.Play)
         {
             if (Briefed.Add(session))
             {
@@ -592,14 +648,9 @@ internal static class ChatSessions
                 _levelChanged = false;
                 // The level is in the system prompt: start the process again so it is read (the conversation resumes).
                 session.Stop();
-                sb.Append($"[설정] 플레이 단계가 {Prompts.LevelName(Level)}(으)로 바뀌었다.\n\n");
+                sb.Append($"[설정] 플레이 단계가 {Prompts.LevelName(Level)}(으)로 바뀌었습니다.\n\n");
             }
             if (GameLog() is { } log) sb.Append(log).Append("\n\n");
-        }
-        else if (_store.PendingReport is { } report)
-        {
-            _store.PendingReport = null;
-            sb.Append("[지난 런 보고]\n").Append(OneBlock(report)).Append("\n\n");
         }
         sb.Append(text);
         return sb.ToString();
@@ -615,7 +666,7 @@ internal static class ChatSessions
 
     // ---- a resumed conversation, shown again ----
 
-    private static readonly string[] AddedBlocks = { "[런 브리핑]", "[게임 기록]", "[지난 런 보고]", "[설정]" };
+    private static readonly string[] AddedBlocks = { "[런 브리핑]", "[게임 기록]", "[지난 런 보고]", "[설정]" }; // the report block: older control sessions
 
     /// <summary>
     /// The items of a saved conversation (Claude Code's <c>projects/.../&lt;id&gt;.jsonl</c> in the game's config
@@ -727,13 +778,8 @@ internal static class ChatSessions
     {
         var sb = new StringBuilder("[런 브리핑]\n");
         sb.Append("플레이 단계: ").Append(Prompts.LevelName(Level)).Append('\n');
-        if (_store.Brief is { } brief)
-        {
-            sb.Append("관제 브리핑: ").Append(OneBlock(brief)).Append('\n');
-            _store.Brief = null;
-        }
-        string notes = Prompts.Notes();
-        if (notes.Length > 0) sb.Append("학습 메모:\n").Append(OneBlock(notes)).Append('\n');
+        string notes = NotesStore.Brief(Text.Of(() => GameCtx.Capture().Me?.Character.Id.Entry));
+        if (notes.Length > 0) sb.Append("학습 메모 (/notes):\n").Append(OneBlock(notes)).Append('\n');
         return sb.ToString().TrimEnd();
     }
 
@@ -765,20 +811,15 @@ internal static class ChatSessions
         string List(string key) => input?[key] is JsonArray a ? string.Join(", ", a.Select(x => x?.ToString())) : "";
         string text = tool switch
         {
-            "state" => "상황 확인",
-            "act" => "행동: " + List("actions"),
+            "look" => "상황 확인",
+            "operate" => "조작: " + List("actions"),
             "info" => "정보 조회: " + List("ids"),
-            "search" => "검색: " + string.Join(" ", new[] { "query", "kind", "pool", "type", "rarity" }
+            "info_grep" => "찾기: " + string.Join(" ", new[] { "query", "kind", "pool", "type", "rarity" }
                 .Select(k => input?[k]?.ToString()).Where(v => !string.IsNullOrEmpty(v))),
-            "show_cards" => "카드 보여 주기",
-            "show_relics" => "유물 보여 주기",
-            "open_view" => "화면 열기: " + input?["view"],
-            "map_route" => "지도에 경로 표시",
-            "notes" => "학습 메모 " + (input?["text"] != null ? "정리" : "확인"),
-            "play_level" => "플레이 단계 " + (input?["level"] != null ? "변경" : "확인"),
-            "run_brief" => "런 브리핑 작성",
-            "AskUserQuestion" => "질문",
-            "wait_for_player" => "게임에서 고르시길 기다려요",
+            "open" => "화면 열기: " + input?["view"],
+            "mark" => input?["clear"] != null ? "표시 지우기" : "화면에 표시",
+            "notes" => "학습 메모 " + (input?["command"]?.ToString() is "view" or null ? "확인" : "정리"),
+            "wait" => "기다리기: " + List("for"),
             _ => tool,
         };
         if (text.Length > 120) text = text[..120] + "…";

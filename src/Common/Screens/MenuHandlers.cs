@@ -66,6 +66,9 @@ internal sealed class PopupHandler : IScreenHandler
         return view;
     }
 
+    public Godot.Control? Target(GameCtx ctx, int index) =>
+        Ui.VisibleButtons(ModalNode()) is var b && index >= 0 && index < b.Count ? b[index].Control : null;
+
     public ExecResult Execute(GameCtx ctx, ActionSpec action)
     {
         if (action.Verb != "choose") return ExecResult.Fail("a popup is open; use choose <i>");
@@ -103,6 +106,9 @@ internal sealed class MainMenuHandler : IScreenHandler
             view.Actions += " · mode <key>";
         return view;
     }
+
+    public Godot.Control? Target(GameCtx ctx, int index) =>
+        ctx.Screen != null && Buttons(ctx.Screen) is var b && index >= 0 && index < b.Count ? b[index].Control : null;
 
     public ExecResult Execute(GameCtx ctx, ActionSpec action)
     {
@@ -347,6 +353,9 @@ internal sealed class GenericHandler : IScreenHandler
         view.Actions = "click <i>";
         return view;
     }
+
+    public Godot.Control? Target(GameCtx ctx, int index) =>
+        Ui.VisibleButtons(ScreenNode(ctx)) is var b && index >= 0 && index < b.Count ? b[index].Control : null;
 
     public ExecResult Execute(GameCtx ctx, ActionSpec action)
     {

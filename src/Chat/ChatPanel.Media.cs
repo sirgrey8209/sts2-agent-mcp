@@ -18,16 +18,23 @@ namespace Sts2AgentMcp.Chat;
 
 /// <summary>
 /// An agent message turned into chat BBCode (docs/chat-roadmap.md step 3). Markdown-ish marks as in
-/// <see cref="ChatTheme.ToBbcode"/>; text in backticks names a card or relic: a combat id (c3), a game id (BASH;
-/// BASH+ for the upgraded card) or the name shown in the game (발놀림, 발놀림+). It shows as the name, in gold, with
-/// the game's tooltip on hover. Other text in backticks shows as plain text, ids inside it still becoming names
-/// (`c3 → c5` reads 발놀림+ → 탈출구). Built on the main thread when the message arrives, while combat ids still
-/// resolve. Names are links <c>[url=t&lt;tip&gt;]</c>.
+/// <see cref="ChatTheme.ToBbcode"/>. Ids anywhere in the text show as the names the player sees, with the game's
+/// tooltip on hover: combat ids of cards (c3), creatures (e1, pet1) and potion slots (p0), and game ids of cards,
+/// relics and potions (BASH; BASH+ for the upgraded card). So the agent may write ids; the player never sees them.
+/// The particle after a name is fitted to it (e3를 → 가지 슬라임을). Text in backticks may also be a name shown in
+/// the game (발놀림, 발놀림+); other text in backticks shows as plain text, ids in it still becoming names. Cards,
+/// relics and potions show in gold, creatures in red. Built on the main thread when the message arrives, while combat
+/// ids still resolve. Names are links <c>[url=t&lt;tip&gt;]</c>.
 /// </summary>
 internal sealed class Markup
 {
-    private static readonly Regex IdToken = new(@"(?<![A-Za-z0-9_])(c\d+|[A-Z][A-Z0-9_]{2,}\+?)(?![A-Za-z0-9_])", RegexOptions.Compiled);
+    private static readonly Regex IdToken = new(@"(?<![A-Za-z0-9_])(c\d+|e\d+|p\d+|pet\d+|[A-Z][A-Z0-9_]{2,}\+?)(?![A-Za-z0-9_])", RegexOptions.Compiled);
+    private static readonly Regex Slot = new("\uE000(\\d+)\uE001", RegexOptions.Compiled);
     private const string NameFg = "#f2c96b";
+    private const string CreatureFg = "#f0a08c";
+
+    private static bool IsCreatureId(string token) =>
+        Regex.IsMatch(token, @"^(e\d+|pet\d+)$");
 
     public string Bbcode { get; private set; } = "";
     public string Plain { get; private set; } = "";
@@ -35,6 +42,11 @@ internal sealed class Markup
     public List<List<(string Title, string Body)>> Tips { get; } = new();
     /// <summary>The game's own hover tips of each name (card picture with its keywords, relic tip).</summary>
     public List<List<IHoverTip>> GameTips { get; } = new();
+    /// <summary>The card behind each name when it is one of the player's own (it may be in the hand), else null.</summary>
+    public List<CardModel?> Cards { get; } = new();
+
+    /// <summary>A resolved name: shown text, text tooltip, the game's tooltip, and the player's own card if it is one.</summary>
+    internal sealed record Named(string Name, List<(string, string)> Tips, List<IHoverTip> GameTips, CardModel? Card = null);
 
     public static Markup Parse(string text)
     {
@@ -62,8 +74,7 @@ internal sealed class Markup
                 if (i % 2 == 0)
                 {
                     string piece = shownBefore != null ? Particles.Fit(shownBefore, parts[i]) : parts[i];
-                    bb.Append(Bold(Escape(ChatTheme.KeepAll(piece))));
-                    plain.Append(piece.Replace("**", ""));
+                    m.AddText(piece, bb, plain);
                 }
                 else
                 {
@@ -78,6 +89,53 @@ internal sealed class Markup
         return m;
     }
 
+    /// <summary>
+    /// Text outside backticks: **bold** marks, and every id that resolves shown as its name (the particle after it
+    /// fitted). Names go in as slots first so the bold marks and escaping never cut through their links.
+    /// </summary>
+    private void AddText(string piece, StringBuilder bb, StringBuilder plain)
+    {
+        var text = new StringBuilder();
+        var shown = new StringBuilder();
+        var links = new List<string>();
+        int at = 0;
+        while (IdToken.Match(piece, at) is { Success: true } match)
+        {
+            int end = match.Index + match.Length;
+            text.Append(piece[at..match.Index]);
+            shown.Append(piece[at..match.Index]);
+            if (Resolve(match.Value) is { } named)
+            {
+                text.Append('\uE000').Append(links.Count).Append('\uE001');
+                links.Add(NameLink(named, match.Value));
+                shown.Append(named.Name);
+                piece = piece[..end] + Particles.Fit(named.Name, piece[end..]);
+            }
+            else
+            {
+                text.Append(match.Value);
+                shown.Append(match.Value);
+            }
+            at = end;
+        }
+        text.Append(piece[at..]);
+        shown.Append(piece[at..]);
+        string body = Bold(Escape(ChatTheme.KeepAll(text.ToString())));
+        bb.Append(Slot.Replace(body, slot => links[int.Parse(slot.Groups[1].Value)]));
+        plain.Append(shown.ToString().Replace("**", ""));
+    }
+
+    /// <summary>A name as a link to its tooltip (card, relic and potion names in gold, creatures in red).</summary>
+    private string NameLink(Named r, string token)
+    {
+        int k = Tips.Count;
+        Tips.Add(r.Tips);
+        GameTips.Add(r.GameTips);
+        Cards.Add(r.Card);
+        string color = IsCreatureId(token) ? CreatureFg : NameFg;
+        return $"[url=t{k}][color={color}]{Escape(ChatTheme.KeepAll(r.Name))}[/color][/url]";
+    }
+
     /// <summary>Text in backticks: one card or relic as a whole, else plain text with any ids in it as names.
     /// Returns the name it ends with (the particle after it is fitted to it), or null.</summary>
     private string? AddCode(string code, StringBuilder bb, StringBuilder plain)
@@ -85,7 +143,7 @@ internal sealed class Markup
         string whole = code.Trim();
         if ((Resolve(whole) ?? ResolveName(whole)) is { } named)
         {
-            AddName(named);
+            AddName(named, whole);
             return named.Name;
         }
         int at = 0;
@@ -96,7 +154,7 @@ internal sealed class Markup
             last = null;
             if (Resolve(match.Value) is { } resolved)
             {
-                AddName(resolved);
+                AddName(resolved, match.Value);
                 last = resolved.Name;
             }
             else AppendText(match.Value);
@@ -114,18 +172,18 @@ internal sealed class Markup
             plain.Append(piece);
         }
 
-        void AddName((string Name, List<(string, string)> Tips, List<IHoverTip> GameTips) r)
+        void AddName(Named r, string token)
         {
-            int k = Tips.Count;
-            Tips.Add(r.Tips);
-            GameTips.Add(r.GameTips);
-            bb.Append($"[url=t{k}][color={NameFg}]{Escape(ChatTheme.KeepAll(r.Name))}[/color][/url]");
+            bb.Append(NameLink(r, token));
             plain.Append(r.Name);
         }
     }
 
-    /// <summary>A card (combat id or game id, "+" for upgraded) or relic id: its name and tooltip; null otherwise.</summary>
-    private static (string Name, List<(string, string)> Tips, List<IHoverTip> GameTips)? Resolve(string token)
+    /// <summary>
+    /// A card (combat id or game id, "+" for upgraded), creature (e1, pet1), potion (slot p0 or game id) or relic id:
+    /// its name and tooltip; null otherwise.
+    /// </summary>
+    private static Named? Resolve(string token)
     {
         try
         {
@@ -133,7 +191,23 @@ internal sealed class Markup
             if (token.Length > 1 && token[0] == 'c' && char.IsDigit(token[1]))
             {
                 var card = Ids.ResolveCard(token);
-                return card == null ? null : (Fmt.CardLabel(card), CardTip(card), CardGameTips(card));
+                return card == null ? null : new Named(Fmt.CardLabel(card), CardTip(card), CardGameTips(card), card);
+            }
+            if (IsCreatureId(token))
+            {
+                var ctx = GameCtx.Capture();
+                if (ctx.Combat == null || Ids.ResolveCreature(ctx.Combat, ctx.Me?.Creature, token) is not { } creature) return null;
+                string name = Text.Of(() => creature.Name) ?? token;
+                var tips = HoverTips(Safe(() => creature.HoverTips.ToList()) ?? new List<IHoverTip>());
+                tips.Insert(0, (name, $"체력 {creature.CurrentHp}/{creature.MaxHp}"));
+                return new Named(name, tips, new List<IHoverTip>());
+            }
+            if (Regex.Match(token, @"^p(\d+)$") is { Success: true } slot)
+            {
+                var me = GameCtx.Capture().Me;
+                int index = int.Parse(slot.Groups[1].Value);
+                if (me == null || index >= me.PotionSlots.Count || me.PotionSlots[index] is not { } held) return null;
+                return new Named(Text.Of(() => held.Title) ?? held.Id.Entry, PotionTip(held), PotionGameTips(held));
             }
             bool upgraded = token.EndsWith('+');
             string id = token.TrimEnd('+');
@@ -142,10 +216,12 @@ internal sealed class Markup
                 case CardModel card:
                 {
                     var shown = upgraded ? Upgraded(card) ?? card : card;
-                    return (Fmt.CardName(card) + (upgraded ? "+" : ""), CardTip(shown), CardGameTips(shown));
+                    return new Named(Fmt.CardName(card) + (upgraded ? "+" : ""), CardTip(shown), CardGameTips(shown));
                 }
                 case RelicModel relic:
-                    return (Text.Of(() => relic.Title) ?? relic.Id.Entry, RelicTip(relic), RelicGameTips(relic));
+                    return new Named(Text.Of(() => relic.Title) ?? relic.Id.Entry, RelicTip(relic), RelicGameTips(relic));
+                case PotionModel potion when !upgraded:
+                    return new Named(Text.Of(() => potion.Title) ?? potion.Id.Entry, PotionTip(potion), PotionGameTips(potion));
             }
         }
         catch (Exception ex)
@@ -159,7 +235,7 @@ internal sealed class Markup
     /// A card or relic by the name shown in the game: the player's own first (this fight's piles, the deck, the relics,
     /// so the tooltip has their current numbers), then the game's catalog ("+" for the upgraded card).
     /// </summary>
-    private static (string Name, List<(string, string)> Tips, List<IHoverTip> GameTips)? ResolveName(string name)
+    private static Named? ResolveName(string name)
     {
         if (name.Length == 0 || name.Length > 40) return null;
         try
@@ -173,9 +249,9 @@ internal sealed class Markup
                 if (ctx.InCombat && pcs != null)
                     owned = pcs.Hand.Cards.Concat(pcs.DrawPile.Cards).Concat(pcs.DiscardPile.Cards).Concat(pcs.ExhaustPile.Cards).Concat(owned);
                 var card = owned.FirstOrDefault(c => Fmt.CardName(c) == name);
-                if (card != null) return (Fmt.CardLabel(card), CardTip(card), CardGameTips(card));
+                if (card != null) return new Named(Fmt.CardLabel(card), CardTip(card), CardGameTips(card), card);
                 var relic = me.Relics.FirstOrDefault(r => Text.Of(() => r.Title) == name);
-                if (relic != null) return (name, RelicTip(relic), RelicGameTips(relic));
+                if (relic != null) return new Named(name, RelicTip(relic), RelicGameTips(relic));
             }
             bool upgraded = name.EndsWith('+');
             switch (Catalog.FindByTitle(name.TrimEnd('+')))
@@ -183,10 +259,10 @@ internal sealed class Markup
                 case CardModel card:
                 {
                     var shown = upgraded ? Upgraded(card) ?? card : card;
-                    return (Fmt.CardName(card) + (upgraded ? "+" : ""), CardTip(shown), CardGameTips(shown));
+                    return new Named(Fmt.CardName(card) + (upgraded ? "+" : ""), CardTip(shown), CardGameTips(shown));
                 }
                 case RelicModel relic when !upgraded:
-                    return (name, RelicTip(relic), RelicGameTips(relic));
+                    return new Named(name, RelicTip(relic), RelicGameTips(relic));
             }
         }
         catch (Exception ex)
@@ -221,6 +297,15 @@ internal sealed class Markup
     }
 
     public static List<IHoverTip> RelicGameTips(RelicModel relic) => Safe(() => relic.HoverTips.ToList()) ?? new List<IHoverTip>();
+
+    public static List<IHoverTip> PotionGameTips(PotionModel potion) => Safe(() => potion.HoverTips.ToList()) ?? new List<IHoverTip>();
+
+    public static List<(string Title, string Body)> PotionTip(PotionModel potion)
+    {
+        var entries = HoverTips(Safe(() => potion.HoverTips.ToList()) ?? new List<IHoverTip>());
+        if (entries.Count == 0) entries.Add((Text.Of(() => potion.Title) ?? potion.Id.Entry, ""));
+        return entries;
+    }
 
     public static List<(string Title, string Body)> CardTip(CardModel card)
     {
@@ -290,17 +375,52 @@ internal sealed partial class ChatPanel
 
     // ---- names in agent messages ----
 
+    private Control? _focusedHandCard;
+
     private void OnMetaHover(Markup markup, string meta, bool on, Control label, Vector2 mouse)
     {
         if (!on)
         {
             HideTip();
+            UnfocusHandCard();
             return;
         }
         if (!TryIndex(meta, 't', out int tip) || tip >= markup.Tips.Count) return;
+        // A card in the hand: the hand card itself rises as if hovered (with the game's own tips).
+        if (tip < markup.Cards.Count && markup.Cards[tip] is { } card && FocusHandCard(card)) return;
         // Right of the chat panel, level with the hovered name.
         float y = mouse.Y - 20;
         if (!ShowGameTip(label, y, markup.GameTips[tip])) ShowTip(y, markup.Tips[tip]);
+    }
+
+    /// <summary>Hovers the card's holder in the hand (the game's own focus: it rises, its tips show); false when it is
+    /// not in the hand.</summary>
+    private bool FocusHandCard(CardModel card)
+    {
+        UnfocusHandCard();
+        try
+        {
+            if (MegaCrit.Sts2.Core.Nodes.Combat.NPlayerHand.Instance?.GetCardHolder(card) is not MegaCrit.Sts2.Core.Nodes.Cards.Holders.NHandCardHolder holder
+                || !Ui.IsVisible(holder))
+                return false;
+            holder.Call("OnFocus");
+            _focusedHandCard = holder;
+            return true;
+        }
+        catch (Exception ex)
+        {
+            Log.Warn($"chat: hand card focus failed: {ex.Message}");
+            return false;
+        }
+    }
+
+    private void UnfocusHandCard()
+    {
+        var holder = _focusedHandCard;
+        _focusedHandCard = null;
+        if (holder == null || !GodotObject.IsInstanceValid(holder)) return;
+        try { holder.Call("OnUnfocus"); }
+        catch (Exception ex) { Log.Warn($"chat: hand card unfocus failed: {ex.Message}"); }
     }
 
     private static bool TryIndex(string meta, char prefix, out int index)
@@ -452,7 +572,8 @@ internal sealed partial class ChatPanel
     /// area), so it is moved into the panel's layer and placed right of <paramref name="anchor"/> (panel units; it
     /// may reach over the game). False when the game would not show one (the text tooltip is used instead).
     /// </summary>
-    private bool ShowGameTip(Control owner, float y, List<IHoverTip> tips)
+    /// <param name="at">Place it beside this point (panel units, the mouse) instead of in the tip column.</param>
+    private bool ShowGameTip(Control owner, float y, List<IHoverTip> tips, Vector2? at = null)
     {
         HideTip();
         if (tips.Count == 0) return false;
@@ -466,9 +587,9 @@ internal sealed partial class ChatPanel
             set.Scale = Vector2.One;
             set.ZIndex = 20;
             set.MouseFilter = Control.MouseFilterEnum.Ignore;
-            PlaceGameTip(set, y);
+            PlaceGameTip(set, y, at);
             // Containers size themselves when their content is laid out.
-            Callable.From(() => { if (_gameTipOwner == owner && GodotObject.IsInstanceValid(set)) PlaceGameTip(set, y); }).CallDeferred();
+            Callable.From(() => { if (_gameTipOwner == owner && GodotObject.IsInstanceValid(set)) PlaceGameTip(set, y, at); }).CallDeferred();
             return true;
         }
         catch (Exception ex)
@@ -487,16 +608,31 @@ internal sealed partial class ChatPanel
     /// <summary>Where tooltips may go (panel units): from just right of the chat panel to the window's right edge.</summary>
     private (float Left, float Right) TipColumn()
     {
-        float left = _background.Position.X + _background.Size.X + TipGap;
+        float left = Mathf.Max(_background.Position.X + _background.Size.X, DrawerRight() ?? 0) + TipGap;
         float right = _lastLayout is { } l && l.Win.Y > 0 ? l.Win.X / (l.Win.Y / LayerHeight) : 1920;
         return (left, right - ScreenMargin);
+    }
+
+    private const float MouseTipGap = 18;
+
+    /// <summary>
+    /// Where a tooltip of <paramref name="size"/> goes beside the mouse at <paramref name="at"/>: right of and below
+    /// it, or left of it when that would leave the window; kept on screen.
+    /// </summary>
+    private Vector2 BesideMouse(Vector2 at, Vector2 size)
+    {
+        float right = _lastLayout is { } l && l.Win.Y > 0 ? l.Win.X / (l.Win.Y / LayerHeight) : 1920;
+        float x = at.X + MouseTipGap;
+        if (x + size.X > right - ScreenMargin) x = at.X - MouseTipGap - size.X;
+        x = Mathf.Clamp(x, ScreenMargin, Mathf.Max(ScreenMargin, right - ScreenMargin - size.X));
+        return new Vector2(x, ClampY(at.Y + MouseTipGap, size.Y));
     }
 
     private static float ClampY(float y, float height) =>
         Mathf.Clamp(y, ScreenMargin, Mathf.Max(ScreenMargin, LayerHeight - height - ScreenMargin));
 
     /// <summary>The card picture first, the keyword tips right of it; all moved left if it would leave the screen.</summary>
-    private void PlaceGameTip(Control set, float y)
+    private void PlaceGameTip(Control set, float y, Vector2? at = null)
     {
         var cards = Ui.GetField(set, "_cardHoverTipContainer") as Control;
         var text = Ui.GetField(set, "_textHoverTipContainer") as Control;
@@ -505,6 +641,13 @@ internal sealed partial class ChatPanel
         float width = (hasCards ? cards!.Size.X : 0) + (hasCards && hasText ? 6 : 0) + (hasText ? text!.Size.X : 0);
         var (left, right) = TipColumn();
         float x = Mathf.Max(ScreenMargin, Mathf.Min(left, right - width));
+        if (at is { } mouse)
+        {
+            float height = Mathf.Max(hasCards ? cards!.Size.Y : 0, hasText ? text!.Size.Y : 0);
+            var spot = BesideMouse(mouse, new Vector2(width, height));
+            x = spot.X;
+            y = spot.Y;
+        }
         if (hasCards)
         {
             cards!.Position = new Vector2(x, ClampY(y, cards.Size.Y));
@@ -514,7 +657,8 @@ internal sealed partial class ChatPanel
     }
 
     /// <summary>A text tooltip right of the chat panel at height <paramref name="y"/> (panel units), kept on screen.</summary>
-    private void ShowTip(float y, List<(string Title, string Body)> entries)
+    /// <param name="at">Place it beside this point (panel units, the mouse) instead of in the tip column.</param>
+    private void ShowTip(float y, List<(string Title, string Body)> entries, Vector2? at = null)
     {
         HideTip();
         if (entries.Count == 0) return;
@@ -543,16 +687,21 @@ internal sealed partial class ChatPanel
         _tip.CustomMinimumSize = new Vector2(width, 0);
         Layer.AddChild(_tip);
         _tip.Size = new Vector2(width, 0);
-        PlaceTip(y);
+        PlaceTip(y, at);
         // Wrapped labels report their height a frame late.
         var tip = _tip;
-        Callable.From(() => { if (_tip == tip) PlaceTip(y); }).CallDeferred();
+        Callable.From(() => { if (_tip == tip) PlaceTip(y, at); }).CallDeferred();
     }
 
-    private void PlaceTip(float y)
+    private void PlaceTip(float y, Vector2? at = null)
     {
         if (_tip == null) return;
         _tip.Size = new Vector2(_tip.Size.X, 0);
+        if (at is { } mouse)
+        {
+            _tip.Position = BesideMouse(mouse, _tip.Size);
+            return;
+        }
         var (left, right) = TipColumn();
         float x = Mathf.Max(ScreenMargin, Mathf.Min(left, right - _tip.Size.X));
         _tip.Position = new Vector2(x, ClampY(y, _tip.Size.Y));
